@@ -1,0 +1,52 @@
+# Garmin Connect IQ build artifacts
+bin/
+gen/
+build/
+*.prg
+*.prg.debug.xml
+*.iq
+
+# Keys and certificates
+*.pem
+*.der
+developer_key*
+signing_key*
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Configuration files with sensitive data
+garatch-settings.json
+settings.json
+config.json
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+
+# External dependencies
+external-mir/
+internal-mir/
+node_modules/
+vendor/
+
+# Test outputs
+test-results/
+coverage/
+*.test
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Archive files
+*.zip
+*.tar
+*.gz

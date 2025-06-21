@@ -1,0 +1,9 @@
+<strings>
+    <string id="AppName">Garatch</string>
+    <string id="ThemeTitle">Color Theme</string>
+    <string id="ThemeDefault">Default (Gold)</string>
+    <string id="ThemeDark">Dark Mode</string>
+    <string id="ThemeLight">Light Mode</string>
+    <string id="ThemeColorful">Colorful</string>
+    <string id="ThemeNight">Night Mode</string>
+</strings>
