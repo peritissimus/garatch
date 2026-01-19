@@ -88,7 +88,7 @@ module GaratchSettings {
     function getTheme() {
         var app = Application.getApp();
         var theme = app.getProperty("theme");
-        if (theme == null) {
+        if (theme == null || !THEMES.hasKey(theme)) {
             theme = THEME_DEFAULT;
         }
         return THEMES[theme];
