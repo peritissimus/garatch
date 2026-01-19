@@ -70,6 +70,13 @@ info:
 	@echo "  make clean-all  - Remove all generated files"
 	@echo "  make info       - Show this help"
 
+# Watch for changes and auto-rebuild
+.PHONY: watch
+watch:
+	@echo "Watching for changes... (Press Ctrl+C to stop)"
+	@which fswatch > /dev/null || (echo "Error: fswatch not installed. Run: brew install fswatch" && exit 1)
+	@fswatch -o source/ resources/ | xargs -n1 -I{} sh -c 'clear && make run'
+
 # Help target
 .PHONY: help
 help: info
