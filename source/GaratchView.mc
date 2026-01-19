@@ -12,6 +12,7 @@ class GaratchView extends WatchUi.WatchFace {
     private var _centerX;
     private var _centerY;
 
+
     function initialize() {
         WatchFace.initialize();
     }
@@ -29,58 +30,88 @@ class GaratchView extends WatchUi.WatchFace {
         if (_centerX == null || _centerY == null) {
             onLayout(dc);
         }
-        
+
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
         dc.clear();
-        
+
+        drawBorder(dc);
+        drawGrid(dc);  // GRID HELPER - shows layout lines
         drawTime(dc);
         drawDate(dc);
         drawStats(dc);
     }
 
+    function drawBorder(dc) {
+        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+        dc.setPenWidth(1);
+        dc.drawRectangle(0, 0, _screenWidth, _screenHeight);
+    }
+
+    // Helper function to draw grid lines for layout testing
+    function drawGrid(dc) {
+        dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_TRANSPARENT);
+        dc.setPenWidth(1);
+
+        // Vertical center line
+        dc.drawLine(_centerX, 0, _centerX, _screenHeight);
+
+        // Horizontal center lines
+        dc.drawLine(0, _centerY, _screenWidth, _centerY);
+    }
+
     function drawTime(dc) {
         var clockTime = System.getClockTime();
-        var timeString = Lang.format("$1$:$2$", [
-            clockTime.hour.format("%02d"),
-            clockTime.min.format("%02d")
-        ]);
-        
+        var hourString = _screenHeight.format("%02d");
+        var minString = _screenWidth.format("%02d");
+
+        var leftX = 15;
+        var timeY = _centerY - 30;
+
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(_centerX, _centerY - 20, Graphics.FONT_NUMBER_MEDIUM, timeString, Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
+        dc.drawText(leftX, timeY, Graphics.FONT_NUMBER_HOT, hourString, Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER);
+        dc.drawText(leftX, timeY + 50, Graphics.FONT_NUMBER_HOT, minString, Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER);
     }
 
     function drawDate(dc) {
         var now = Time.now();
         var date = Gregorian.info(now, Time.FORMAT_SHORT);
-        var dateString = Lang.format("$1$ $2$", [
+        var dateString = Lang.format("$1$ $2$.$3$", [
             date.day_of_week.toString().substring(0, 3).toUpper(),
-            date.day
+            date.day,
+            date.month
         ]);
-        
+
         dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(_centerX, _centerY - 60, Graphics.FONT_TINY, dateString, Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(10, 10, Graphics.FONT_XTINY, dateString, Graphics.TEXT_JUSTIFY_LEFT);
     }
 
     function drawStats(dc) {
-        var yOffset = _centerY + 20;
-        var statSpacing = 25;
-        
-        var steps = ActivityMonitor.getInfo().steps;
-        drawStatLine(dc, _centerX, yOffset, "STEPS", steps.toString());
-        
-        var hr = getHeartRate();
-        drawStatLine(dc, _centerX, yOffset + statSpacing, "HR", hr);
-        
-        var stress = getStress();
-        drawStatLine(dc, _centerX, yOffset + statSpacing * 2, "STRESS", stress);
-    }
+        var rightX = _screenWidth - 10;
+        var startY = _centerY - 30;
+        var spacing = 35;
 
-    function drawStatLine(dc, x, y, label, value) {
+        var info = ActivityMonitor.getInfo();
+        var steps = info.steps;
+        var hr = getHeartRate();
+        var stress = getStress();
+
         dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(x - 40, y, Graphics.FONT_XTINY, label, Graphics.TEXT_JUSTIFY_RIGHT | Graphics.TEXT_JUSTIFY_VCENTER);
-        
+        dc.drawText(rightX, startY, Graphics.FONT_XTINY, "STEPS", Graphics.TEXT_JUSTIFY_RIGHT);
+
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(x + 40, y, Graphics.FONT_TINY, value, Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER);
+        dc.drawText(rightX, startY + 15, Graphics.FONT_SMALL, steps.toString(), Graphics.TEXT_JUSTIFY_RIGHT);
+
+        dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(rightX, startY + spacing, Graphics.FONT_XTINY, "HR", Graphics.TEXT_JUSTIFY_RIGHT);
+
+        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(rightX, startY + spacing + 15, Graphics.FONT_SMALL, hr, Graphics.TEXT_JUSTIFY_RIGHT);
+
+        dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(rightX, startY + spacing * 2, Graphics.FONT_XTINY, "STRESS", Graphics.TEXT_JUSTIFY_RIGHT);
+
+        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(rightX, startY + spacing * 2 + 15, Graphics.FONT_SMALL, stress, Graphics.TEXT_JUSTIFY_RIGHT);
     }
 
     function getHeartRate() {
