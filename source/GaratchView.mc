@@ -9,11 +9,14 @@ using Toybox.ActivityMonitor;
 class GaratchView extends WatchUi.WatchFace {
     private var _w; // Width
     private var _h; // Height
-    
+
     // Fonts
-    private var _fTime;  
-    private var _fData;  
-    private var _fLabel; // Tiny font for "technical" labels
+    private var _fTime;
+    private var _fData;
+
+    // Pre-calculated heights
+    private var _hLabel = 10;  // Pixel-drawn label height (6x8 grid)
+    private var _hData;
 
     function initialize() {
         WatchFace.initialize();
@@ -24,9 +27,98 @@ class GaratchView extends WatchUi.WatchFace {
         _h = dc.getHeight(); // 360
 
         // Load Fonts
-        _fTime  = Graphics.FONT_SYSTEM_NUMBER_HOT; 
-        _fData  = Graphics.FONT_SYSTEM_MEDIUM;
-        _fLabel = Graphics.FONT_SYSTEM_XTINY; 
+        _fTime = Graphics.FONT_SYSTEM_NUMBER_HOT;
+        _fData = Graphics.FONT_XTINY;
+
+        // Get actual font height for data values
+        _hData = dc.getFontHeight(_fData);
+    }
+
+    // Draw a tiny pixel letter (6x8 grid) at position x,y
+    // Returns width of drawn character for spacing
+    function drawPixelChar(dc, x, y, ch) {
+        // Each char is 6w x 8h pixels, 1px pen
+        dc.setPenWidth(1);
+
+        if (ch == 'B') {
+            dc.drawLine(x, y, x, y+7);           // Left vertical
+            dc.drawLine(x, y, x+4, y);           // Top horizontal
+            dc.drawLine(x+4, y, x+5, y+1);       // Top-right curve
+            dc.drawLine(x+5, y+1, x+5, y+2);
+            dc.drawLine(x+5, y+2, x+4, y+3);     // Middle curve
+            dc.drawLine(x, y+3, x+4, y+3);       // Middle horizontal
+            dc.drawLine(x+4, y+3, x+5, y+4);     // Bottom-right curve
+            dc.drawLine(x+5, y+4, x+5, y+6);
+            dc.drawLine(x+5, y+6, x+4, y+7);
+            dc.drawLine(x, y+7, x+4, y+7);       // Bottom horizontal
+            return 6;
+        } else if (ch == 'A') {
+            dc.drawLine(x+2, y, x, y+7);         // Left diagonal
+            dc.drawLine(x+3, y, x+5, y+7);       // Right diagonal
+            dc.drawLine(x+1, y+4, x+4, y+4);     // Middle bar
+            return 6;
+        } else if (ch == 'T') {
+            dc.drawLine(x, y, x+5, y);           // Top horizontal
+            dc.drawLine(x+2, y, x+2, y+7);       // Vertical
+            return 6;
+        } else if (ch == 'D') {
+            dc.drawLine(x, y, x, y+7);           // Left vertical
+            dc.drawLine(x, y, x+4, y);           // Top
+            dc.drawLine(x+4, y, x+5, y+1);
+            dc.drawLine(x+5, y+1, x+5, y+6);     // Right vertical
+            dc.drawLine(x+5, y+6, x+4, y+7);
+            dc.drawLine(x, y+7, x+4, y+7);       // Bottom
+            return 6;
+        } else if (ch == 'E') {
+            dc.drawLine(x, y, x, y+7);           // Left vertical
+            dc.drawLine(x, y, x+5, y);           // Top
+            dc.drawLine(x, y+3, x+4, y+3);       // Middle
+            dc.drawLine(x, y+7, x+5, y+7);       // Bottom
+            return 6;
+        } else if (ch == 'S') {
+            dc.drawLine(x+1, y, x+5, y);         // Top
+            dc.drawLine(x, y+1, x, y+2);         // Top-left
+            dc.drawLine(x+1, y+3, x+4, y+3);     // Middle
+            dc.drawLine(x+5, y+4, x+5, y+6);     // Bottom-right
+            dc.drawLine(x, y+7, x+4, y+7);       // Bottom
+            return 6;
+        } else if (ch == 'P') {
+            dc.drawLine(x, y, x, y+7);           // Left vertical
+            dc.drawLine(x, y, x+4, y);           // Top
+            dc.drawLine(x+4, y, x+5, y+1);
+            dc.drawLine(x+5, y+1, x+5, y+2);
+            dc.drawLine(x+5, y+2, x+4, y+3);
+            dc.drawLine(x, y+3, x+4, y+3);       // Middle
+            return 6;
+        } else if (ch == 'H') {
+            dc.drawLine(x, y, x, y+7);           // Left vertical
+            dc.drawLine(x+5, y, x+5, y+7);       // Right vertical
+            dc.drawLine(x, y+3, x+5, y+3);       // Middle
+            return 6;
+        } else if (ch == 'R') {
+            dc.drawLine(x, y, x, y+7);           // Left vertical
+            dc.drawLine(x, y, x+4, y);           // Top
+            dc.drawLine(x+4, y, x+5, y+1);
+            dc.drawLine(x+5, y+1, x+5, y+2);
+            dc.drawLine(x+5, y+2, x+4, y+3);
+            dc.drawLine(x, y+3, x+4, y+3);       // Middle
+            dc.drawLine(x+2, y+3, x+5, y+7);     // Leg
+            return 6;
+        }
+        return 0;
+    }
+
+    // Draw a label string centered at x,y using pixel characters
+    function drawPixelLabel(dc, cx, y, label) {
+        var charW = 6;
+        var spacing = 2;
+        var totalW = label.length() * charW + (label.length() - 1) * spacing;
+        var x = cx - totalW / 2;
+
+        for (var i = 0; i < label.length(); i++) {
+            drawPixelChar(dc, x, y, label.substring(i, i+1).toCharArray()[0]);
+            x += charW + spacing;
+        }
     }
 
     function onUpdate(dc) {
@@ -82,22 +174,34 @@ class GaratchView extends WatchUi.WatchFace {
     }
 
     function drawTopBar(dc) {
+        // Top section geometry: y = 0 to 70, split vertically at centerX
+        var topY = 70;
         var centerX = _w / 2;
-        var centerY = 35; // Middle of top section (0-70)
+        var spacing = 4; // Gap between label and value
 
-        // --- LEFT: BATTERY ---
+        // Calculate vertical positions
+        var totalHeight = _hLabel + spacing + _hData;
+        var startY = (topY - totalHeight) / 2;
+        var labelY = startY;
+        var valueY = labelY + _hLabel + spacing;
+
+        // Center of left half (80) and right half (240)
+        var leftCenterX = centerX / 2;
+        var rightCenterX = centerX + (centerX / 2);
+
+        // --- LEFT HALF: BATTERY ---
         var stats = System.getSystemStats();
         var bat = stats.battery;
 
-        // Small Label
+        // Pixel-drawn label
         dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(10, 5, _fLabel, "BATT", Graphics.TEXT_JUSTIFY_LEFT);
+        drawPixelLabel(dc, leftCenterX, labelY, "BATT");
 
-        // Value - positioned tighter to left side
+        // Value
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(85, centerY, _fData, bat.format("%d") + "%", Graphics.TEXT_JUSTIFY_RIGHT | Graphics.TEXT_JUSTIFY_VCENTER);
+        dc.drawText(leftCenterX, valueY, _fData, bat.format("%d") + "%", Graphics.TEXT_JUSTIFY_CENTER);
 
-        // --- RIGHT: DATE ---
+        // --- RIGHT HALF: DATE ---
         var now = Time.now();
         var info = Gregorian.info(now, Time.FORMAT_SHORT);
         var dateStr = Lang.format("$1$ $2$.$3$", [
@@ -106,13 +210,13 @@ class GaratchView extends WatchUi.WatchFace {
             info.day.format("%02d")
         ]);
 
-        // Small Label
+        // Pixel-drawn label
         dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(_w - 10, 5, _fLabel, "DATE", Graphics.TEXT_JUSTIFY_RIGHT);
+        drawPixelLabel(dc, rightCenterX, labelY, "DATE");
 
-        // Value - positioned tighter to right side
+        // Value
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(235, centerY, _fData, dateStr, Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER);
+        dc.drawText(rightCenterX, valueY, _fData, dateStr, Graphics.TEXT_JUSTIFY_CENTER);
     }
 
     function drawTime(dc) {
@@ -127,31 +231,42 @@ class GaratchView extends WatchUi.WatchFace {
     }
 
     function drawStats(dc) {
+        // Bottom section geometry: y = 270 to _h (360), split vertically at centerX
         var topY = 270;
-        var centerY = topY + ((_h - topY) / 2); // Approx 315
-        var q1 = _w / 4;      // 80
-        var q3 = _w * 0.75;   // 240
+        var sectionHeight = _h - topY; // 90px
+        var centerX = _w / 2;
+        var spacing = 4; // Gap between label and value
+
+        // Calculate vertical positions
+        var totalHeight = _hLabel + spacing + _hData;
+        var startY = topY + (sectionHeight - totalHeight) / 2;
+        var labelY = startY;
+        var valueY = labelY + _hLabel + spacing;
+
+        // Center of left half (80) and right half (240)
+        var leftCenterX = centerX / 2;
+        var rightCenterX = centerX + (centerX / 2);
 
         var info = ActivityMonitor.getInfo();
-        
-        // --- STEPS (Left) ---
-        dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(q1, topY + 5, _fLabel, "STEPS", Graphics.TEXT_JUSTIFY_CENTER);
-        
-        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(q1, centerY + 5, _fData, info.steps.format("%d"), Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
 
-        // --- HR (Right) ---
+        // --- LEFT HALF: STEPS ---
+        dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
+        drawPixelLabel(dc, leftCenterX, labelY, "STEPS");
+
+        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(leftCenterX, valueY, _fData, info.steps.format("%d"), Graphics.TEXT_JUSTIFY_CENTER);
+
+        // --- RIGHT HALF: HR ---
         var hr = "--";
         if (info has :currentHeartRate && info.currentHeartRate != null) {
             hr = info.currentHeartRate.format("%d");
         }
 
         dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(q3, topY + 5, _fLabel, "HR", Graphics.TEXT_JUSTIFY_CENTER);
+        drawPixelLabel(dc, rightCenterX, labelY, "HR");
 
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(q3, centerY + 5, _fData, hr, Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
+        dc.drawText(rightCenterX, valueY, _fData, hr, Graphics.TEXT_JUSTIFY_CENTER);
     }
 
     function getDateName(dayVal) {
