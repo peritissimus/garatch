@@ -58,6 +58,7 @@ class GreenView extends WatchUi.WatchFace {
         drawHill(dc);
         drawGrass(dc);
         drawPath(dc);
+        drawTime(dc);
         drawTrees(dc);
     }
 
@@ -318,6 +319,129 @@ class GreenView extends WatchUi.WatchFace {
         // Highlight pixels
         px(dc, x, cy - 3, C_TREE_LIGHT);
         px(dc, x - 1, cy - 2, C_TREE_LIGHT);
+    }
+
+    // ========== TIME (8-bit pixel font in center) ==========
+    function drawTime(dc) {
+        var clockTime = System.getClockTime();
+        var h = clockTime.hour;
+        var m = clockTime.min;
+
+        // Center of screen
+        var startX = 14; // Starting X for HH:MM (5 chars, each ~6px wide + spacing)
+        var y = 40;      // Vertical center in pixel coords
+
+        // Draw HH:MM
+        draw8bitDigit(dc, startX, y, h / 10);      // H tens
+        draw8bitDigit(dc, startX + 7, y, h % 10);  // H ones
+        draw8bitColon(dc, startX + 14, y);          // :
+        draw8bitDigit(dc, startX + 18, y, m / 10); // M tens
+        draw8bitDigit(dc, startX + 25, y, m % 10); // M ones
+    }
+
+    // Draw colon for time
+    function draw8bitColon(dc, x, y) {
+        px(dc, x + 1, y + 2, C_CLOUD_WHITE);
+        px(dc, x + 1, y + 5, C_CLOUD_WHITE);
+        // Shadow
+        px(dc, x + 2, y + 3, C_BLACK);
+        px(dc, x + 2, y + 6, C_BLACK);
+    }
+
+    // Draw a single 8-bit style digit (5 wide x 7 tall pixels)
+    function draw8bitDigit(dc, x, y, digit) {
+        // Each digit defined as rows of pixels
+        // 1 = pixel on, 0 = pixel off
+
+        // Shadow first (offset by 1)
+        drawDigitPixels(dc, x + 1, y + 1, digit, C_BLACK);
+        // Main digit
+        drawDigitPixels(dc, x, y, digit, C_CLOUD_WHITE);
+    }
+
+    function drawDigitPixels(dc, x, y, digit, color) {
+        // 5x7 pixel font patterns
+        if (digit == 0) {
+            pxLine(dc, x + 1, y, 3, color);
+            pxLine(dc, x, y + 1, 1, color); pxLine(dc, x + 4, y + 1, 1, color);
+            pxLine(dc, x, y + 2, 1, color); pxLine(dc, x + 4, y + 2, 1, color);
+            pxLine(dc, x, y + 3, 1, color); pxLine(dc, x + 4, y + 3, 1, color);
+            pxLine(dc, x, y + 4, 1, color); pxLine(dc, x + 4, y + 4, 1, color);
+            pxLine(dc, x, y + 5, 1, color); pxLine(dc, x + 4, y + 5, 1, color);
+            pxLine(dc, x + 1, y + 6, 3, color);
+        } else if (digit == 1) {
+            pxLine(dc, x + 2, y, 1, color);
+            pxLine(dc, x + 1, y + 1, 2, color);
+            pxLine(dc, x + 2, y + 2, 1, color);
+            pxLine(dc, x + 2, y + 3, 1, color);
+            pxLine(dc, x + 2, y + 4, 1, color);
+            pxLine(dc, x + 2, y + 5, 1, color);
+            pxLine(dc, x + 1, y + 6, 3, color);
+        } else if (digit == 2) {
+            pxLine(dc, x + 1, y, 3, color);
+            pxLine(dc, x, y + 1, 1, color); pxLine(dc, x + 4, y + 1, 1, color);
+            pxLine(dc, x + 4, y + 2, 1, color);
+            pxLine(dc, x + 3, y + 3, 1, color);
+            pxLine(dc, x + 2, y + 4, 1, color);
+            pxLine(dc, x + 1, y + 5, 1, color);
+            pxLine(dc, x, y + 6, 5, color);
+        } else if (digit == 3) {
+            pxLine(dc, x + 1, y, 3, color);
+            pxLine(dc, x + 4, y + 1, 1, color);
+            pxLine(dc, x + 4, y + 2, 1, color);
+            pxLine(dc, x + 2, y + 3, 2, color);
+            pxLine(dc, x + 4, y + 4, 1, color);
+            pxLine(dc, x + 4, y + 5, 1, color);
+            pxLine(dc, x + 1, y + 6, 3, color);
+        } else if (digit == 4) {
+            pxLine(dc, x, y, 1, color); pxLine(dc, x + 4, y, 1, color);
+            pxLine(dc, x, y + 1, 1, color); pxLine(dc, x + 4, y + 1, 1, color);
+            pxLine(dc, x, y + 2, 1, color); pxLine(dc, x + 4, y + 2, 1, color);
+            pxLine(dc, x, y + 3, 5, color);
+            pxLine(dc, x + 4, y + 4, 1, color);
+            pxLine(dc, x + 4, y + 5, 1, color);
+            pxLine(dc, x + 4, y + 6, 1, color);
+        } else if (digit == 5) {
+            pxLine(dc, x, y, 5, color);
+            pxLine(dc, x, y + 1, 1, color);
+            pxLine(dc, x, y + 2, 4, color);
+            pxLine(dc, x + 4, y + 3, 1, color);
+            pxLine(dc, x + 4, y + 4, 1, color);
+            pxLine(dc, x, y + 5, 1, color); pxLine(dc, x + 4, y + 5, 1, color);
+            pxLine(dc, x + 1, y + 6, 3, color);
+        } else if (digit == 6) {
+            pxLine(dc, x + 1, y, 3, color);
+            pxLine(dc, x, y + 1, 1, color);
+            pxLine(dc, x, y + 2, 1, color);
+            pxLine(dc, x, y + 3, 4, color);
+            pxLine(dc, x, y + 4, 1, color); pxLine(dc, x + 4, y + 4, 1, color);
+            pxLine(dc, x, y + 5, 1, color); pxLine(dc, x + 4, y + 5, 1, color);
+            pxLine(dc, x + 1, y + 6, 3, color);
+        } else if (digit == 7) {
+            pxLine(dc, x, y, 5, color);
+            pxLine(dc, x + 4, y + 1, 1, color);
+            pxLine(dc, x + 3, y + 2, 1, color);
+            pxLine(dc, x + 3, y + 3, 1, color);
+            pxLine(dc, x + 2, y + 4, 1, color);
+            pxLine(dc, x + 2, y + 5, 1, color);
+            pxLine(dc, x + 2, y + 6, 1, color);
+        } else if (digit == 8) {
+            pxLine(dc, x + 1, y, 3, color);
+            pxLine(dc, x, y + 1, 1, color); pxLine(dc, x + 4, y + 1, 1, color);
+            pxLine(dc, x, y + 2, 1, color); pxLine(dc, x + 4, y + 2, 1, color);
+            pxLine(dc, x + 1, y + 3, 3, color);
+            pxLine(dc, x, y + 4, 1, color); pxLine(dc, x + 4, y + 4, 1, color);
+            pxLine(dc, x, y + 5, 1, color); pxLine(dc, x + 4, y + 5, 1, color);
+            pxLine(dc, x + 1, y + 6, 3, color);
+        } else if (digit == 9) {
+            pxLine(dc, x + 1, y, 3, color);
+            pxLine(dc, x, y + 1, 1, color); pxLine(dc, x + 4, y + 1, 1, color);
+            pxLine(dc, x, y + 2, 1, color); pxLine(dc, x + 4, y + 2, 1, color);
+            pxLine(dc, x + 1, y + 3, 4, color);
+            pxLine(dc, x + 4, y + 4, 1, color);
+            pxLine(dc, x + 4, y + 5, 1, color);
+            pxLine(dc, x + 1, y + 6, 3, color);
+        }
     }
 
     function onHide() {}
