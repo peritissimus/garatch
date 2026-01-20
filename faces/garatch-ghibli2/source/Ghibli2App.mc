@@ -1,7 +1,7 @@
 using Toybox.Application;
 using Toybox.WatchUi;
 
-class GreenApp extends Application.AppBase {
+class Ghibli2App extends Application.AppBase {
     function initialize() {
         AppBase.initialize();
     }
@@ -10,6 +10,6 @@ class GreenApp extends Application.AppBase {
     function onStop(state) {}
 
     function getInitialView() {
-        return [new GreenView()];
+        return [new Ghibli2View()];
     }
 }
