@@ -25,7 +25,7 @@ class Ghibli2View extends WatchUi.WatchFace {
         dc.drawBitmap(_offX, _offY, _bgImage);
 
         // Draw time
-        drawTime(dc, _cx - 64, _h - 128 );
+        drawTime(dc, _cx , _h - 100 );
     }
 
     function drawTime(dc, xOff, yOff) {
