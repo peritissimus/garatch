@@ -39,7 +39,7 @@ class Ghibli2View extends WatchUi.WatchFace {
         drawHeartRate(dc, 4, _h - 39);
 
         // Draw steps (bottom right)
-        drawSteps(dc, _w - 4, _h - 39);
+        drawSteps(dc, _w - 6, _h - 39);
     }
 
     function drawTime(dc, xOff, yOff) {
