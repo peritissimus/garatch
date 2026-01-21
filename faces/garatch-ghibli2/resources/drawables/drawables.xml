@@ -1,4 +1,4 @@
 <drawables>
     <bitmap id="LauncherIcon" filename="launcher_icon.png" />
-    <bitmap id="GhibliBg" filename="ghibli_bg.png" />
+    <bitmap id="GhibliBg" filename="ghibli_bg.png" compress="true" packingFormat="jpg"/>
 </drawables>

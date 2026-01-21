@@ -26,6 +26,9 @@ class Ghibli2View extends WatchUi.WatchFace {
 
         // Draw time
         drawTime(dc, _cx , _h - 100 );
+
+        // Draw battery
+        drawBattery(dc, 10, 10);
     }
 
     function drawTime(dc, xOff, yOff) {
@@ -45,6 +48,28 @@ class Ghibli2View extends WatchUi.WatchFace {
 
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
         PixelFont.drawLabelScaled(dc, timeX, timeY, timeStr, scale);
+    }
+
+    function drawBattery(dc, x, y) {
+        var battery = System.getSystemStats().battery.toNumber();
+        var w = 20;
+        var h = 10;
+        var fillW = (battery * (w - 2) / 100).toNumber();
+
+        // Battery outline
+        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+        dc.drawRectangle(x, y, w, h);
+        dc.fillRectangle(x + w, y + 3, 2, 4); // battery tip
+
+        // Battery fill
+        if (battery <= 20) {
+            dc.setColor(Graphics.COLOR_RED, Graphics.COLOR_TRANSPARENT);
+        } else if (battery <= 50) {
+            dc.setColor(Graphics.COLOR_YELLOW, Graphics.COLOR_TRANSPARENT);
+        } else {
+            dc.setColor(Graphics.COLOR_GREEN, Graphics.COLOR_TRANSPARENT);
+        }
+        dc.fillRectangle(x + 1, y + 1, fillW, h - 2);
     }
 
     function onHide() {}
