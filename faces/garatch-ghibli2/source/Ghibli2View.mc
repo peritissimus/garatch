@@ -86,7 +86,7 @@ class Ghibli2View extends WatchUi.WatchFace {
     function drawSteps(dc, x, y) {
         var steps = ActivityMonitor.getInfo().steps;
         if (steps == null) { steps = 1234; }
-        var stepsStr = "1234".toString();
+        var stepsStr = steps.toString();
 
 
         dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_TRANSPARENT);
@@ -97,7 +97,7 @@ class Ghibli2View extends WatchUi.WatchFace {
 
     function drawHeartRate(dc, x, y) {
         var hr = Activity.getActivityInfo().currentHeartRate;
-        if (hr == null) { hr = 34; }
+        if (hr == null) { hr = 0; }
         var hrStr = hr.toString();
 
         dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_TRANSPARENT);
