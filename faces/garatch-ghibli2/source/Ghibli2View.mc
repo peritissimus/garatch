@@ -2,6 +2,8 @@ using Toybox.Graphics;
 using Toybox.WatchUi;
 using Toybox.System;
 using Toybox.Time.Gregorian;
+using Toybox.ActivityMonitor;
+using Toybox.Activity;
 
 class Ghibli2View extends WatchUi.WatchFace {
     private var _bgImage;
@@ -24,11 +26,20 @@ class Ghibli2View extends WatchUi.WatchFace {
         // Draw background image with offset
         dc.drawBitmap(_offX, _offY, _bgImage);
 
-        // Draw time
+        // Draw battery (top left)
+        drawBattery(dc, 10, 10);
+
+        // Draw date/day (top right)
+        drawDate(dc, _cx + 4, _h - 60);
+
+        // Draw time (bottom center)
         drawTime(dc, _cx , _h - 100 );
 
-        // Draw battery
-        drawBattery(dc, 10, 10);
+        // Draw heart rate (bottom left)
+        drawHeartRate(dc, 4, _h - 39);
+
+        // Draw steps (bottom right)
+        drawSteps(dc, _w - 4, _h - 39);
     }
 
     function drawTime(dc, xOff, yOff) {
@@ -70,6 +81,50 @@ class Ghibli2View extends WatchUi.WatchFace {
             dc.setColor(Graphics.COLOR_GREEN, Graphics.COLOR_TRANSPARENT);
         }
         dc.fillRectangle(x + 1, y + 1, fillW, h - 2);
+    }
+
+    function drawSteps(dc, x, y) {
+        var steps = ActivityMonitor.getInfo().steps;
+        if (steps == null) { steps = 1234; }
+        var stepsStr = "1234".toString();
+
+
+        dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(x + 4, y + 4, Graphics.FONT_XTINY, stepsStr, Graphics.TEXT_JUSTIFY_RIGHT);
+        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(x, y, Graphics.FONT_XTINY, stepsStr, Graphics.TEXT_JUSTIFY_RIGHT);
+    }
+
+    function drawHeartRate(dc, x, y) {
+        var hr = Activity.getActivityInfo().currentHeartRate;
+        if (hr == null) { hr = 34; }
+        var hrStr = hr.toString();
+
+        dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(x + 4, y + 4, Graphics.FONT_XTINY, hrStr, Graphics.TEXT_JUSTIFY_LEFT);
+        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(x, y, Graphics.FONT_XTINY, hrStr, Graphics.TEXT_JUSTIFY_LEFT);
+    }
+
+    function drawDate(dc, x, y) {
+        var now = Gregorian.info(Time.now(), Time.FORMAT_SHORT);
+        var days = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+        var dayStr = days[now.day_of_week - 1];
+        var dateStr = dayStr + " " + now.day.format("%02d") + "/" + now.month.format("%02d");
+
+        var scale = 2;
+
+        // Draw day (e.g., "MON")
+        dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_TRANSPARENT);
+        PixelFont.drawLabelScaled(dc, x + 2, y + 2, dateStr, scale);
+        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+        PixelFont.drawLabelScaled(dc, x , y, dateStr, scale);
+
+        // // Draw date (e.g., "21/01")
+        // dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_TRANSPARENT);
+        // PixelFont.drawLabelScaled(dc, x - 30 + 1, y + 20 + 1, dateStr, scale);
+        // dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+        // PixelFont.drawLabelScaled(dc, x - 30, y + 20, dateStr, scale);
     }
 
     function onHide() {}

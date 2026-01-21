@@ -231,6 +231,77 @@ module PixelFont {
         } else if (ch == ':') {
             px(dc, x+1, y+2, s); px(dc, x+1, y+5, s);
             return 3;
+        } else if (ch == '/') {
+            px(dc, x+4, y, s); px(dc, x+4, y+1, s); px(dc, x+3, y+2, s); px(dc, x+3, y+3, s);
+            px(dc, x+2, y+4, s); px(dc, x+2, y+5, s); px(dc, x+1, y+6, s); px(dc, x+1, y+7, s);
+            return 5;
+        } else if (ch == 'S') {
+            for (var i = 1; i <= 4; i++) { px(dc, x+i, y, s); }
+            px(dc, x, y+1, s); px(dc, x, y+2, s);
+            for (var i = 1; i <= 4; i++) { px(dc, x+i, y+3, s); }
+            px(dc, x+5, y+4, s); px(dc, x+5, y+5, s); px(dc, x+5, y+6, s);
+            for (var i = 1; i <= 4; i++) { px(dc, x+i, y+7, s); }
+            return 6;
+        } else if (ch == 'U') {
+            for (var i = 0; i <= 6; i++) { px(dc, x, y+i, s); px(dc, x+5, y+i, s); }
+            for (var i = 1; i <= 4; i++) { px(dc, x+i, y+7, s); }
+            return 6;
+        } else if (ch == 'N') {
+            for (var i = 0; i <= 7; i++) { px(dc, x, y+i, s); px(dc, x+5, y+i, s); }
+            px(dc, x+1, y+1, s); px(dc, x+2, y+2, s); px(dc, x+3, y+3, s); px(dc, x+4, y+4, s);
+            return 6;
+        } else if (ch == 'M') {
+            for (var i = 0; i <= 7; i++) { px(dc, x, y+i, s); px(dc, x+5, y+i, s); }
+            px(dc, x+1, y+1, s); px(dc, x+2, y+2, s); px(dc, x+3, y+2, s); px(dc, x+4, y+1, s);
+            return 6;
+        } else if (ch == 'O') {
+            for (var i = 1; i <= 4; i++) { px(dc, x+i, y, s); px(dc, x+i, y+7, s); }
+            for (var i = 1; i <= 6; i++) { px(dc, x, y+i, s); px(dc, x+5, y+i, s); }
+            return 6;
+        } else if (ch == 'T') {
+            for (var i = 0; i <= 5; i++) { px(dc, x+i, y, s); }
+            for (var i = 1; i <= 7; i++) { px(dc, x+2, y+i, s); }
+            return 6;
+        } else if (ch == 'E') {
+            for (var i = 0; i <= 5; i++) { px(dc, x+i, y, s); px(dc, x+i, y+7, s); }
+            for (var i = 0; i <= 7; i++) { px(dc, x, y+i, s); }
+            for (var i = 1; i <= 3; i++) { px(dc, x+i, y+3, s); }
+            return 6;
+        } else if (ch == 'W') {
+            for (var i = 0; i <= 7; i++) { px(dc, x, y+i, s); px(dc, x+5, y+i, s); }
+            px(dc, x+1, y+6, s); px(dc, x+2, y+5, s); px(dc, x+3, y+5, s); px(dc, x+4, y+6, s);
+            return 6;
+        } else if (ch == 'D') {
+            for (var i = 0; i <= 7; i++) { px(dc, x, y+i, s); }
+            for (var i = 1; i <= 3; i++) { px(dc, x+i, y, s); px(dc, x+i, y+7, s); }
+            px(dc, x+4, y+1, s); px(dc, x+4, y+6, s);
+            for (var i = 2; i <= 5; i++) { px(dc, x+5, y+i, s); }
+            return 6;
+        } else if (ch == 'H') {
+            for (var i = 0; i <= 7; i++) { px(dc, x, y+i, s); px(dc, x+5, y+i, s); }
+            for (var i = 1; i <= 4; i++) { px(dc, x+i, y+3, s); }
+            return 6;
+        } else if (ch == 'F') {
+            for (var i = 0; i <= 5; i++) { px(dc, x+i, y, s); }
+            for (var i = 0; i <= 7; i++) { px(dc, x, y+i, s); }
+            for (var i = 1; i <= 3; i++) { px(dc, x+i, y+3, s); }
+            return 6;
+        } else if (ch == 'R') {
+            for (var i = 0; i <= 7; i++) { px(dc, x, y+i, s); }
+            for (var i = 1; i <= 4; i++) { px(dc, x+i, y, s); }
+            px(dc, x+5, y+1, s); px(dc, x+5, y+2, s);
+            for (var i = 1; i <= 4; i++) { px(dc, x+i, y+3, s); }
+            px(dc, x+3, y+4, s); px(dc, x+4, y+5, s); px(dc, x+5, y+6, s); px(dc, x+5, y+7, s);
+            return 6;
+        } else if (ch == 'I') {
+            for (var i = 0; i <= 4; i++) { px(dc, x+i, y, s); px(dc, x+i, y+7, s); }
+            for (var i = 1; i <= 6; i++) { px(dc, x+2, y+i, s); }
+            return 5;
+        } else if (ch == 'A') {
+            for (var i = 1; i <= 4; i++) { px(dc, x+i, y, s); }
+            for (var i = 1; i <= 7; i++) { px(dc, x, y+i, s); px(dc, x+5, y+i, s); }
+            for (var i = 1; i <= 4; i++) { px(dc, x+i, y+3, s); }
+            return 6;
         }
         return 0;
     }
