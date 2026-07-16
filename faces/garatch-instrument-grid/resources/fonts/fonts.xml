@@ -1,0 +1,8 @@
+<fonts>
+    <font id="InstrumentTime" filename="instrument_time.fnt" antialias="true" filter="0123456789:" />
+    <font id="InstrumentValue" filename="instrument_value.fnt" antialias="true" filter="0123456789,.-" />
+    <font id="InstrumentLabel" filename="instrument_label.fnt" antialias="true" filter="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789:% -" />
+    <font id="InstrumentHeader" filename="instrument_header.fnt" antialias="true" filter="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789:% -" />
+    <font id="InstrumentChart" filename="instrument_chart.fnt" antialias="true" filter="0123456789-" />
+    <font id="InstrumentRail" filename="instrument_rail.fnt" antialias="true" filter="0123456789-" />
+</fonts>

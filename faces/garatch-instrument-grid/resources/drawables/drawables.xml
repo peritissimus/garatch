@@ -1,0 +1,15 @@
+<drawables>
+    <bitmap id="LauncherIcon" filename="launcher_icon.png" />
+    <bitmap id="IconSun" filename="icon-sun.png" />
+    <bitmap id="IconBattery" filename="icon-battery-medium.png" />
+    <bitmap id="IconSteps" filename="icon-footprints.png" />
+    <bitmap id="IconHeart" filename="icon-heart.png" />
+    <bitmap id="IconBody" filename="icon-zap.png" />
+    <bitmap id="IconStress" filename="icon-activity.png" />
+    <bitmap id="IconOxygen" filename="icon-droplet.png" />
+    <bitmap id="IconCalories" filename="icon-flame.png" />
+    <bitmap id="IconDistance" filename="icon-map-pin.png" />
+    <bitmap id="IconActive" filename="icon-timer.png" />
+    <bitmap id="IconRespiration" filename="icon-wind.png" />
+    <bitmap id="IconRecovery" filename="icon-rotate-ccw.png" />
+</drawables>
