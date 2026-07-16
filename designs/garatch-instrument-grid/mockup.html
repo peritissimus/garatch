@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Garatch Instrument Grid — 320×360 Canvas Mockup</title>
+  <style>
+    @font-face {
+      font-family: "Barlow Condensed";
+      src: url("../../faces/garatch-telemetry/designer/fonts/BarlowCondensed-Regular.ttf") format("truetype");
+      font-weight: 400;
+      font-style: normal;
+    }
+
+    @font-face {
+      font-family: "Barlow Condensed";
+      src: url("../../faces/garatch-telemetry/designer/fonts/BarlowCondensed-Medium.ttf") format("truetype");
+      font-weight: 500;
+      font-style: normal;
+    }
+
+    :root {
+      color-scheme: dark;
+      font-family: "Barlow Condensed", sans-serif;
+      font-variant-numeric: tabular-nums;
+      -webkit-font-smoothing: antialiased;
+      --page: #10110f;
+      --panel: #171815;
+      --ink: #f3f0e6;
+      --muted: #8f8a80;
+      --amber: #e7a74e;
+      --mint: #72d6b2;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background:
+        radial-gradient(circle at 50% 16%, rgba(114, 214, 178, 0.07), transparent 34%),
+        var(--page);
+    }
+
+    main {
+      display: grid;
+      justify-items: center;
+      gap: 16px;
+    }
+
+    .meta {
+      width: 320px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 13px;
+    }
+
+    .meta strong {
+      color: var(--ink);
+      font-weight: 500;
+    }
+
+    .screen {
+      width: 320px;
+      height: 360px;
+      background: #000;
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.1),
+        0 18px 54px rgba(0, 0, 0, 0.5);
+    }
+
+    canvas {
+      display: block;
+      width: 320px;
+      height: 360px;
+    }
+
+    .actions {
+      width: 320px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    button {
+      min-height: 44px;
+      padding: 0 16px;
+      border: 0;
+      border-radius: 8px;
+      color: #10110f;
+      background: var(--mint);
+      font: 500 15px/1 "Barlow Condensed", sans-serif;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08);
+      transition-property: transform, filter;
+      transition-duration: 140ms;
+      transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    button:hover { filter: brightness(1.07); }
+    button:active { transform: scale(0.96); }
+    button:focus-visible { outline: 2px solid var(--amber); outline-offset: 3px; }
+
+    .source {
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 0.05em;
+    }
+
+    .source a { color: var(--ink); }
+
+    .error {
+      width: 320px;
+      color: #ff9b8c;
+      font: 14px/1.4 system-ui, sans-serif;
+      text-wrap: pretty;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="meta">
+      <strong>Instrument Grid</strong>
+      <span>320 × 360 canvas</span>
+    </div>
+
+    <div class="screen">
+      <canvas id="watch" width="320" height="360" aria-label="Data-dense Garmin Venu Sq 2 watch-face mockup"></canvas>
+    </div>
+
+    <div class="actions">
+      <button id="export" type="button">Export PNG</button>
+      <span class="source">Icons: <a href="https://lucide.dev/" target="_blank" rel="noreferrer">Lucide ISC</a></span>
+    </div>
+    <div id="error" class="error" role="status"></div>
+  </main>
+
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+  <script>
+    const canvas = document.getElementById("watch");
+    const ctx = canvas.getContext("2d", { alpha: false });
+    const error = document.getElementById("error");
+
+    const C = {
+      black: "#000000",
+      ink: "#F3F0E6",
+      muted: "#8F8A80",
+      amber: "#E7A74E",
+      mint: "#72D6B2",
+      cyan: "#67B7C5",
+      grid: "#34342F",
+      track: "#20231F"
+    };
+
+    const iconCache = new Map();
+
+    function font(size, weight = 500) {
+      return `${weight} ${size}px "Barlow Condensed", sans-serif`;
+    }
+
+    function text(value, x, y, size, color = C.ink, align = "left", weight = 500) {
+      ctx.font = font(size, weight);
+      ctx.fillStyle = color;
+      ctx.textAlign = align;
+      ctx.textBaseline = "middle";
+      ctx.fillText(value, x, y);
+    }
+
+    function rule(x1, y1, x2, y2, color = C.grid, width = 1) {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width;
+      ctx.beginPath();
+      ctx.moveTo(x1 + 0.5, y1 + 0.5);
+      ctx.lineTo(x2 + 0.5, y2 + 0.5);
+      ctx.stroke();
+    }
+
+    function ruler(y) {
+      rule(10, y, 310, y, C.muted);
+      for (let x = 10; x <= 310; x += 14) {
+        const tall = x === 10 || x === 150 || x === 304;
+        rule(x, y, x, y + (tall ? 5 : 3), C.muted);
+      }
+    }
+
+    function lucideImage(name, color) {
+      const key = `${name}:${color}`;
+      if (iconCache.has(key)) return iconCache.get(key);
+
+      const iconNode = lucide.icons[name];
+      if (!iconNode) throw new Error(`Lucide icon not found: ${name}`);
+      const svg = lucide.createElement(iconNode);
+      svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+      svg.setAttribute("width", "24");
+      svg.setAttribute("height", "24");
+      svg.setAttribute("fill", "none");
+      svg.setAttribute("stroke", color);
+      svg.setAttribute("stroke-width", "1.7");
+      svg.setAttribute("stroke-linecap", "round");
+      svg.setAttribute("stroke-linejoin", "round");
+
+      const markup = new XMLSerializer().serializeToString(svg).replaceAll("currentColor", color);
+      const image = new Image();
+      const ready = new Promise((resolve, reject) => {
+        image.onload = () => resolve(image);
+        image.onerror = reject;
+      });
+      image.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(markup)}`;
+      iconCache.set(key, ready);
+      return ready;
+    }
+
+    async function preloadIcons() {
+      const requests = [
+        ["Sun", C.amber], ["BatteryMedium", C.mint], ["Footprints", C.mint],
+        ["Heart", C.ink], ["Zap", C.cyan], ["Activity", C.amber],
+        ["Droplet", C.cyan], ["Flame", C.amber], ["MapPin", C.cyan],
+        ["Timer", C.cyan], ["Wind", C.cyan], ["RotateCcw", C.mint]
+      ];
+      await Promise.all(requests.map(([name, color]) => lucideImage(name, color)));
+    }
+
+    async function icon(name, x, y, size, color) {
+      const image = await lucideImage(name, color);
+      ctx.drawImage(image, x, y, size, size);
+    }
+
+    function segmentedBar(x, y, width, height, total, filled) {
+      const gap = 2;
+      const segment = (width - gap * (total - 1)) / total;
+      for (let i = 0; i < total; i++) {
+        ctx.fillStyle = i < filled ? C.mint : C.track;
+        ctx.fillRect(Math.round(x + i * (segment + gap)), y, Math.ceil(segment), height);
+      }
+      ctx.strokeStyle = C.mint;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(x + 0.5, y + 0.5, width - 1, height - 1);
+    }
+
+    async function metricCell(x, y, iconName, color, value, unit) {
+      await icon(iconName, x + 8, y + 10, 19, color);
+      rule(x + 34, y + 7, x + 34, y + 35, C.grid);
+      text(value, x + 44, y + 18, 26, C.ink);
+      if (unit) text(unit, x + 45, y + 34, 10, C.muted);
+    }
+
+    function drawChart() {
+      const points = [
+        0.24, 0.32, 0.22, 0.19, 0.27, 0.41, 0.31, 0.46, 0.52, 0.43,
+        0.55, 0.48, 0.67, 0.74, 0.45, 0.34, 0.40, 0.28, 0.36, 0.29,
+        0.23, 0.31, 0.18, 0.26, 0.20, 0.24, 0.15, 0.22
+      ];
+      const x = 20;
+      const y = 279;
+      const w = 207;
+      const h = 35;
+
+      ctx.setLineDash([4, 4]);
+      rule(x, y + 4, x + w, y + 4, C.muted);
+      rule(x, y + h - 3, x + w, y + h - 3, C.muted);
+      ctx.setLineDash([]);
+
+      ctx.strokeStyle = C.amber;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      points.forEach((point, index) => {
+        const px = x + (index / (points.length - 1)) * w;
+        const py = y + h - point * h;
+        if (index === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      });
+      ctx.stroke();
+
+      ctx.fillStyle = C.amber;
+      const last = points[points.length - 1];
+      ctx.beginPath();
+      ctx.arc(x + w, y + h - last * h, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    async function drawWatch() {
+      ctx.fillStyle = C.black;
+      ctx.fillRect(0, 0, 320, 360);
+
+      // Status rail
+      text("FRI 17 JUL", 12, 16, 14, C.ink);
+      rule(109, 7, 109, 27, C.grid);
+      await icon("Sun", 133, 7, 18, C.amber);
+      text("24°", 157, 16, 14, C.ink);
+      rule(206, 7, 206, 27, C.grid);
+      await icon("BatteryMedium", 227, 8, 18, C.mint);
+      text("82%", 252, 16, 14, C.ink);
+      ruler(32);
+
+      // Hero time
+      text("09:41", 38, 84, 92, C.ink, "left", 400);
+      text("36", 250, 55, 32, C.ink);
+      rule(250, 75, 279, 75, C.amber, 2);
+      rule(10, 137, 310, 137, C.amber, 2);
+
+      // Primary activity band
+      await icon("Footprints", 11, 144, 19, C.mint);
+      rule(35, 142, 35, 165, C.grid);
+      text("STEPS", 44, 153, 11, C.mint);
+      text("8,642", 86, 153, 25, C.ink);
+      rule(164, 142, 164, 165, C.grid);
+      text("10K", 178, 153, 15, C.muted);
+      rule(205, 142, 205, 165, C.grid);
+      segmentedBar(214, 148, 94, 10, 12, 10);
+
+      // Six-metric grid
+      rule(10, 168, 310, 168, C.grid);
+      rule(10, 210, 310, 210, C.grid);
+      rule(10, 252, 310, 252, C.grid);
+      rule(10, 168, 10, 252, C.grid);
+      rule(110, 168, 110, 252, C.grid);
+      rule(210, 168, 210, 252, C.grid);
+      rule(310, 168, 310, 252, C.grid);
+
+      await metricCell(10, 168, "Heart", C.ink, "72", "BPM");
+      await metricCell(110, 168, "Zap", C.cyan, "74", "BODY");
+      await metricCell(210, 168, "Activity", C.amber, "28", "STRESS");
+      await metricCell(10, 210, "Droplet", C.cyan, "97", "% SPO2");
+      await metricCell(110, 210, "Flame", C.amber, "486", "KCAL");
+      await metricCell(210, 210, "MapPin", C.cyan, "6.4", "KM");
+
+      // Trend band
+      text("HR 24H", 14, 263, 12, C.amber);
+      text("128", 15, 281, 10, C.muted);
+      text("54", 18, 310, 10, C.muted);
+      rule(238, 258, 238, 321, C.grid);
+      text("MIN", 250, 276, 10, C.muted);
+      text("54", 303, 276, 17, C.ink, "right");
+      rule(248, 288, 304, 288, C.grid);
+      text("MAX", 250, 305, 10, C.muted);
+      text("128", 303, 305, 17, C.ink, "right");
+      drawChart();
+
+      // Bottom status rail
+      rule(10, 323, 310, 323, C.grid);
+      rule(10, 357, 310, 357, C.grid);
+      rule(10, 323, 10, 357, C.grid);
+      rule(110, 323, 110, 357, C.grid);
+      rule(210, 323, 210, 357, C.grid);
+      rule(310, 323, 310, 357, C.grid);
+      await icon("Timer", 20, 331, 18, C.cyan);
+      text("42", 47, 341, 22, C.ink);
+      text("MIN", 76, 343, 10, C.muted);
+      await icon("Wind", 120, 331, 18, C.cyan);
+      text("14", 148, 341, 22, C.ink);
+      text("RPM", 176, 343, 10, C.muted);
+      await icon("RotateCcw", 220, 331, 18, C.mint);
+      text("6", 254, 341, 22, C.ink);
+      text("H", 275, 343, 10, C.muted);
+    }
+
+    async function init() {
+      try {
+        if (!window.lucide) throw new Error("Lucide did not load. Check the network connection and refresh.");
+        await document.fonts.ready;
+        await preloadIcons();
+        await drawWatch();
+      } catch (cause) {
+        error.textContent = cause.message;
+        console.error(cause);
+      }
+    }
+
+    document.getElementById("export").addEventListener("click", () => {
+      const link = document.createElement("a");
+      link.download = "garatch-instrument-grid-320x360.png";
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    });
+
+    init();
+  </script>
+</body>
+</html>
