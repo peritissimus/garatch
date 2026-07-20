@@ -1,0 +1,15 @@
+info face="BarlowCondensed-Regular" size=104 bold=0 italic=0 charset="" unicode=1 stretchH=100 smooth=1 aa=1 padding=0,0,0,0 spacing=0,0
+common lineHeight=125 base=104 scaleW=256 scaleH=256 pages=1 packed=0 alphaChnl=1 redChnl=0 greenChnl=0 blueChnl=0
+page id=0 file="orbit_hero.png"
+chars count=11
+char id=48 x=4 y=4 width=46 height=75 xoffset=0 yoffset=30 xadvance=46 page=0 chnl=15
+char id=49 x=54 y=4 width=27 height=73 xoffset=0 yoffset=31 xadvance=27 page=0 chnl=15
+char id=50 x=85 y=4 width=42 height=73 xoffset=0 yoffset=31 xadvance=42 page=0 chnl=15
+char id=51 x=131 y=4 width=42 height=74 xoffset=0 yoffset=31 xadvance=42 page=0 chnl=15
+char id=52 x=177 y=4 width=43 height=73 xoffset=0 yoffset=31 xadvance=43 page=0 chnl=15
+char id=53 x=4 y=83 width=43 height=74 xoffset=0 yoffset=31 xadvance=43 page=0 chnl=15
+char id=54 x=51 y=83 width=43 height=74 xoffset=0 yoffset=31 xadvance=43 page=0 chnl=15
+char id=55 x=98 y=83 width=38 height=73 xoffset=0 yoffset=31 xadvance=38 page=0 chnl=15
+char id=56 x=140 y=83 width=44 height=75 xoffset=0 yoffset=30 xadvance=44 page=0 chnl=15
+char id=57 x=188 y=83 width=42 height=74 xoffset=0 yoffset=31 xadvance=42 page=0 chnl=15
+char id=44 x=234 y=83 width=18 height=24 xoffset=0 yoffset=88 xadvance=18 page=0 chnl=15

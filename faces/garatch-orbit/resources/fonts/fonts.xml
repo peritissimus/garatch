@@ -1,0 +1,5 @@
+<fonts>
+    <font id="OrbitHero" filename="orbit_hero.fnt" antialias="true" filter="0123456789," />
+    <font id="OrbitValue" filename="orbit_value.fnt" antialias="true" filter="0123456789:- BPMKCAL" />
+    <font id="OrbitLabel" filename="orbit_label.fnt" antialias="true" filter="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789:' -" />
+</fonts>
