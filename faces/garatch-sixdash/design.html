@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Garatch SixDash — 320 × 360 Design Sheet</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap');
+    @font-face { font-family: 'Rajdhani Local'; src: url('./designer/fonts/Rajdhani-Medium.ttf') format('truetype'); font-weight: 500; font-style: normal; font-display: block; }
+    @font-face { font-family: 'Rajdhani Local'; src: url('./designer/fonts/Rajdhani-Medium.ttf') format('truetype'); font-weight: 600; font-style: normal; font-display: block; }
+
+    :root {
+      --ink: #f1f3e8; --warm: #c9cbae; --cyan: #49bbc2; --mint: #56d39b;
+      --dim: #36383a; --track: #202425; --black: #000; --paper: #f4f2eb;
+      --panel: #fffef9; --guide: #ff5d5d; --guide-soft: rgba(255,93,93,.18);
+    }
+    * { box-sizing: border-box; }
+    html { -webkit-font-smoothing: antialiased; }
+    body { margin: 0; background: var(--paper); color: #191a18; font-family: Geist, sans-serif; }
+    button { font: inherit; }
+    .page { min-height: 100vh; padding: 36px; }
+    .topbar { max-width: 1180px; margin: 0 auto 28px; display: flex; justify-content: space-between; align-items: end; gap: 24px; }
+    .eyebrow { margin: 0 0 8px; color: #72736e; font-size: 11px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; }
+    h1 { margin: 0; font-family: 'Rajdhani Local', sans-serif; font-size: clamp(32px, 5vw, 52px); line-height: .95; letter-spacing: -.025em; text-wrap: balance; }
+    .subtitle { margin: 11px 0 0; max-width: 610px; color: #696a65; font-size: 14px; line-height: 1.55; text-wrap: pretty; }
+    .toggle { min-width: 156px; min-height: 44px; padding: 0 16px; border: 0; border-radius: 22px; background: #1e201e; color: white; cursor: pointer; font-size: 13px; font-weight: 600; transition-property: transform, background-color; transition-duration: 180ms; }
+    .toggle:hover { background: #333632; } .toggle:active { transform: scale(.96); }
+
+    .workspace { max-width: 760px; margin: auto; display: grid; grid-template-columns: 336px 400px; gap: 24px; align-items: start; }
+    .stage, .specs { background: var(--panel); border-radius: 24px; box-shadow: 0 1px 2px rgba(20,20,16,.05), 0 16px 50px rgba(35,32,20,.08); }
+    .stage { width: 336px; height: 376px; display: grid; place-items: center; padding: 8px; overflow: hidden; }
+    .watch-wrap { position: relative; width: 320px; height: 360px; }
+    .watch { position: relative; width: 320px; height: 360px; overflow: hidden; background: #000; color: var(--ink); font-family: 'Rajdhani Local', sans-serif; font-variant-numeric: tabular-nums; box-shadow: inset 0 0 0 1px #41433f; }
+    .status { position: absolute; left: 8px; top: 8px; width: 304px; height: 33px; display: flex; align-items: start; font-size: 20px; font-weight: 600; line-height: 28px; color: var(--warm); }
+    .bolt { width: 14px; height: 18px; margin: 5px 5px 0 0; fill: var(--warm); }
+    .battery { line-height: 28px; }
+    .temp { margin-left: auto; line-height: 28px; }
+    .degree { display: inline-block; width: 5px; height: 5px; margin: 4px 3px 0 1px; border: 1.5px solid currentColor; border-radius: 50%; vertical-align: top; }
+    .bt { width: 18px; height: 24px; margin: 3px 0 0 10px; fill: none; stroke: var(--warm); stroke-width: 2.2; }
+    .rule { position: absolute; left: 8px; top: 40px; width: 304px; height: 3px; background: var(--track); }
+    .metric { position: absolute; left: 8px; width: 304px; height: 39px; }
+    .metric.steps { top: 48px; } .metric.active { top: 91px; } .metric.distance { top: 134px; }
+    .metric-icon { position: absolute; left: 0; top: 8px; width: 32px; height: 25px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .metric-value { position: absolute; left: 45px; top: -1px; height: 25px; font-size: 20px; font-weight: 600; line-height: 25px; }
+    .bar { position: absolute; left: 45px; top: 26px; width: 259px; height: 9px; display: flex; gap: 4px; }
+    .seg { flex: 1; height: 9px; background: currentColor; clip-path: polygon(4px 0,100% 0,calc(100% - 4px) 100%,0 100%); }
+    .seg.off { background: var(--track); }
+    .steps { color: var(--warm); } .active { color: var(--cyan); } .distance { color: var(--mint); }
+    .radials { position: absolute; left: 8px; top: 188px; width: 304px; height: 48px; display: grid; grid-template-columns: repeat(3, 94px); column-gap: 11px; }
+    .radial { position: relative; display: flex; align-items: center; }
+    .radial + .radial::before { content: ''; position: absolute; left: -5px; top: 7px; width: 1px; height: 40px; background: var(--track); }
+    .ring { width: 36px; height: 36px; transform: rotate(-90deg); overflow: visible; }
+    .ring circle { fill: none; stroke-width: 6; }
+    .ring .base { stroke: var(--dim); } .ring .fill { stroke: currentColor; stroke-linecap: round; stroke-dasharray: 75 100; }
+    .radial-copy { margin-left: 8px; }
+    .radial-icon { width: 18px; height: 18px; display: block; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .radial-value { margin-top: 0; font-size: 19px; font-weight: 600; line-height: 20px; }
+    .stress { color: var(--warm); } .body { color: var(--cyan); } .heart { color: var(--mint); }
+    .clock { position: absolute; left: 8px; top: 240px; width: 304px; height: 68px; display: flex; align-items: center; justify-content: space-between; font-size: 68px; font-weight: 500; line-height: 68px; letter-spacing: -3px; color: var(--warm); transform: scaleY(.84); transform-origin: top left; }
+    .clock .colon { color: var(--ink); transform: translateY(-3px); }
+    .clock .seconds { color: var(--dim); }
+    .date { position: absolute; left: 8px; top: 320px; color: var(--warm); font-size: 28px; font-weight: 500; line-height: 32px; }
+
+    .annotations { pointer-events: none; position: absolute; inset: 0; z-index: 20; opacity: 0; transition: opacity 180ms ease; }
+    body.guides .annotations { opacity: 1; }
+    .blueprint { display: block; width: 320px; height: 360px; }
+    .safe { position: absolute; left: 8px; top: 8px; width: 304px; height: 344px; border: 1px dashed var(--guide); }
+    .centerline { position: absolute; left: 159.5px; top: -20px; height: 400px; border-left: 1px dashed rgba(255,93,93,.55); }
+    .band { position: absolute; left: 0; width: 320px; border-top: 1px solid rgba(255,93,93,.65); background: var(--guide-soft); }
+    .b1 { top: 8px; height: 35px; } .b2 { top: 48px; height: 125px; } .b3 { top: 188px; height: 48px; } .b4 { top: 240px; height: 112px; }
+    .tag { position: absolute; left: 326px; height: 20px; padding: 3px 7px; border-radius: 4px; background: var(--guide); color: #fff; font: 600 10px/14px Geist, sans-serif; white-space: nowrap; }
+    .tag::before { content:''; position:absolute; right:100%; top:9px; width:8px; border-top:1px solid var(--guide); }
+    .t1 { top: 15px; } .t2 { top: 99px; } .t3 { top: 202px; } .t4 { top: 274px; }
+    .measure { position:absolute; color:var(--guide); font:600 9px Geist,sans-serif; }
+    .mw { left: 118px; top: -27px; } .mh { left: -42px; top: 172px; transform: rotate(-90deg); }
+    .font-tag { position: absolute; left: -82px; padding: 3px 6px; border-radius: 4px; background: #3478f6; color: white; font: 600 9px/14px Geist, sans-serif; white-space: nowrap; }
+    .font-tag::after { content: ''; position: absolute; left: 100%; top: 9px; width: 8px; border-top: 1px solid #3478f6; }
+    .ft-status { top: 14px; } .ft-metric { top: 99px; } .ft-radial { top: 204px; } .ft-time { top: 269px; } .ft-date { top: 329px; }
+
+    .specs { padding: 24px; }
+    .spec-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+    .spec-head h2 { margin:0; font-size:17px; } .badge { padding:6px 9px; border-radius:8px; background:#ecebe4; color:#62635e; font-size:11px; font-weight:600; }
+    .section { padding: 18px 0; border-top: 1px solid #e9e7de; }
+    .section h3 { margin:0 0 12px; color:#87877f; font-size:10px; letter-spacing:.14em; text-transform:uppercase; }
+    .kv { display:grid; grid-template-columns: 1fr auto; gap:9px 18px; font-size:12px; }
+    .kv span:nth-child(even) { color:#666761; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; }
+    .swatches { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
+    .swatch { display:flex; align-items:center; gap:8px; font-size:11px; }
+    .dot { width:18px; height:18px; border-radius:6px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); }
+    .note { margin:0; color:#686964; font-size:12px; line-height:1.55; }
+    .note strong { color:#20211f; }
+    .blueprint-controls { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; margin-top: 12px; }
+    .layer-button { min-height: 40px; border: 0; border-radius: 10px; background: #eeece5; color: #64655f; cursor: pointer; font-size: 11px; font-weight: 600; transition-property: transform, background-color, color; transition-duration: 160ms; }
+    .layer-button[aria-pressed="true"] { background: #1f211f; color: white; }
+    .layer-button:active { transform: scale(.96); }
+    .precision { margin-top: 10px; padding: 10px 12px; border-radius: 10px; background: #f0efe8; color: #585a55; font: 10px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace; }
+    @media (max-width: 820px) { .workspace { grid-template-columns:1fr; max-width:400px; } .stage { margin:auto; } .specs { width:100%; margin:auto; } }
+    @media (max-width: 620px) { .page { padding:20px 14px; } .topbar { display:block; } .toggle { margin-top:18px; } .watch-wrap { margin:auto; transform-origin:top left; } }
+  </style>
+</head>
+<body class="guides">
+  <main class="page">
+    <header class="topbar">
+      <div><p class="eyebrow">Garatch / Watch face system 01</p><h1>SixDash Telemetry</h1><p class="subtitle">A dense but calm AMOLED instrument panel, precisely composed on a 320 × 360 px reference canvas.</p></div>
+      <button class="toggle" type="button" aria-pressed="true">Hide measurements</button>
+    </header>
+    <div class="workspace">
+      <section class="stage" aria-label="Annotated watch face preview">
+        <div class="watch-wrap">
+          <div class="watch">
+            <div class="status"><svg class="bolt" viewBox="0 0 14 18"><path d="M8.4 0 2 10h4.4L5.6 18 12 7.2H7.8z"/></svg><span class="battery">83%</span><span class="temp">22<span class="degree"></span>C</span><svg class="bt" viewBox="0 0 18 24"><path d="m8 2 6 5-6 5 6 5-6 5V2ZM3 6l11 11M3 18 14 7"/></svg></div>
+            <div class="rule"></div>
+            <div class="metric steps"><svg class="metric-icon" viewBox="0 0 32 25"><path d="M12 3c2 5 2 9-1 12-2 2-6 3-8 1-2-2 0-5 3-7l6-6Zm10 8c2 4 3 8 1 11-2 2-5 2-7 0-2-2 0-5 2-7l4-4Z"/></svg><span class="metric-value">8,436</span><div class="bar"><i class="seg"></i><i class="seg"></i><i class="seg"></i><i class="seg"></i><i class="seg off"></i></div></div>
+            <div class="metric active"><svg class="metric-icon" viewBox="0 0 32 25"><circle cx="16" cy="13" r="10"/><path d="M16 7v7l5 3M12 1h8"/></svg><span class="metric-value">164 MIN</span><div class="bar"><i class="seg"></i><i class="seg"></i><i class="seg"></i><i class="seg off"></i><i class="seg off"></i></div></div>
+            <div class="metric distance"><svg class="metric-icon" viewBox="0 0 32 25"><path d="M5 4h22M8 4v16m16-16v16M8 18h16M14 4l-3 5 5 3-4 6M21 4l-2 6 4 4"/></svg><span class="metric-value">6.72 KM</span><div class="bar"><i class="seg"></i><i class="seg"></i><i class="seg"></i><i class="seg off"></i><i class="seg off"></i></div></div>
+            <div class="radials">
+              <div class="radial stress"><svg class="ring" viewBox="0 0 36 36"><circle class="base" cx="18" cy="18" r="15"/><circle class="fill" cx="18" cy="18" r="15"/></svg><div class="radial-copy"><svg class="radial-icon" viewBox="0 0 18 18"><path d="M9 2v14M3 5l12 8M15 5 3 13"/></svg><div class="radial-value">34</div></div></div>
+              <div class="radial body"><svg class="ring" viewBox="0 0 36 36"><circle class="base" cx="18" cy="18" r="15"/><circle class="fill" cx="18" cy="18" r="15" style="stroke-dasharray:62 100"/></svg><div class="radial-copy"><svg class="radial-icon" viewBox="0 0 18 18"><path d="M10 1 4 10h5l-1 7 6-10H9z"/></svg><div class="radial-value">62</div></div></div>
+              <div class="radial heart"><svg class="ring" viewBox="0 0 36 36"><circle class="base" cx="18" cy="18" r="15"/><circle class="fill" cx="18" cy="18" r="15" style="stroke-dasharray:82 100"/></svg><div class="radial-copy"><svg class="radial-icon" viewBox="0 0 18 18"><path d="M9 15S2 11 2 6.5C2 3 6 2 9 5c3-3 7-2 7 1.5C16 11 9 15 9 15Z"/></svg><div class="radial-value">78</div></div></div>
+            </div>
+            <div class="clock"><span>10</span><span class="colon">:</span><span>09</span><span class="colon">:</span><span class="seconds">42</span></div>
+            <div class="date">WED 15 · JUL</div>
+          </div>
+          <div class="annotations" aria-hidden="true"><canvas class="blueprint" width="640" height="720"></canvas></div>
+        </div>
+      </section>
+      <aside class="specs">
+        <div class="spec-head"><h2>Layout specification</h2><span class="badge">1:1 pixels</span></div>
+        <section class="section"><h3>Canvas & grid</h3><div class="kv"><span>Reference canvas</span><span>320 × 360 px</span><span>Safe field</span><span>x/y 8 px</span><span>Uniform margin</span><span>8 px</span><span>Bar gap</span><span>4 px</span><span>Radial centres</span><span>26 / 131 / 236</span></div></section>
+        <section class="section"><h3>Typography · size / optical height</h3><div class="kv"><span>Display</span><span>Rajdhani 68 / 57</span><span>Date</span><span>Rajdhani 28 / 32</span><span>Metrics</span><span>Rajdhani 20 / 25</span><span>Radial values</span><span>Rajdhani 19 / 20</span><span>Status</span><span>Rajdhani 20 / 28</span></div><div class="blueprint-controls"><button class="layer-button" data-layer="grid" aria-pressed="true">8 px grid</button><button class="layer-button" data-layer="bounds" aria-pressed="true">Text bounds</button><button class="layer-button" data-layer="baselines" aria-pressed="true">Baselines</button></div><div class="precision" id="pretext-readout">Loading precision measurements…</div></section>
+        <section class="section"><h3>AMOLED palette</h3><div class="swatches"><div class="swatch"><i class="dot" style="background:#f1f3e8"></i>Ink #F1F3E8</div><div class="swatch"><i class="dot" style="background:#c9cbae"></i>Warm #C9CBAE</div><div class="swatch"><i class="dot" style="background:#49bbc2"></i>Cyan #49BBC2</div><div class="swatch"><i class="dot" style="background:#56d39b"></i>Mint #56D39B</div><div class="swatch"><i class="dot" style="background:#36383a"></i>Dim #36383A</div><div class="swatch"><i class="dot" style="background:#202425"></i>Track #202425</div></div></section>
+        <section class="section"><h3>Device note</h3><p class="note"><strong>This sheet intentionally follows the requested 320 × 360 canvas.</strong> The current repo metadata identifies Venu Sq 2 as a 390 × 390 target, so implementation should either scale this reference by 1.083 horizontally / 1.083 vertically into a 346 × 390 centered field, or revise the target device profile before porting coordinates to Monkey C.</p></section>
+      </aside>
+    </div>
+  </main>
+  <script type="module">
+    import { prepareWithSegments, measureNaturalWidth } from '../../designer/node_modules/@chenglou/pretext/dist/layout.js';
+
+    await document.fonts.ready;
+    const canvas = document.querySelector('.blueprint');
+    const context = canvas.getContext('2d');
+    context.scale(2, 2);
+    const watch = document.querySelector('.watch');
+    const layers = { grid: true, bounds: true, baselines: true };
+    const textSelectors = ['.battery', '.temp', '.metric-value', '.radial-value', '.clock', '.date'];
+    const measured = [];
+
+    const pretextWidth = (element) => {
+      const style = getComputedStyle(element);
+      const text = element.textContent.trim();
+      const prepared = prepareWithSegments(text, `${style.fontWeight} ${style.fontSize} "Rajdhani Local"`, { letterSpacing: parseFloat(style.letterSpacing) || 0 });
+      return measureNaturalWidth(prepared);
+    };
+
+    const drawBlueprint = () => {
+      context.clearRect(0, 0, 320, 360);
+      if (layers.grid) {
+        context.strokeStyle = 'rgba(73,187,194,.22)'; context.lineWidth = .5;
+        for (let x = 8; x < 320; x += 8) { context.beginPath(); context.moveTo(x+.25,0); context.lineTo(x+.25,360); context.stroke(); }
+        for (let y = 8; y < 360; y += 8) { context.beginPath(); context.moveTo(0,y+.25); context.lineTo(320,y+.25); context.stroke(); }
+        context.strokeStyle = '#ff5d5d'; context.lineWidth = 1; context.setLineDash([3,3]); context.strokeRect(8.5,8.5,303,343); context.setLineDash([]);
+      }
+      measured.length = 0;
+      textSelectors.forEach((selector) => document.querySelectorAll(selector).forEach((element) => {
+        const rect = element.getBoundingClientRect(); const root = watch.getBoundingClientRect(); const style = getComputedStyle(element);
+        const x = rect.left-root.left, y = rect.top-root.top, width = rect.width, height = rect.height;
+        const advance = pretextWidth(element); measured.push(`${element.textContent.trim()} ${advance.toFixed(2)}px @ ${x.toFixed(1)},${y.toFixed(1)}`);
+        if (layers.bounds) { context.strokeStyle='rgba(255,93,93,.9)'; context.lineWidth=.75; context.strokeRect(x+.5,y+.5,width-1,height-1); }
+        if (layers.baselines) { const baseline=y+(parseFloat(style.lineHeight)||height)*.8; context.strokeStyle='rgba(86,211,155,.95)'; context.lineWidth=.75; context.beginPath(); context.moveTo(x,baseline); context.lineTo(x+Math.min(width,advance),baseline); context.stroke(); }
+      }));
+      document.querySelector('#pretext-readout').innerHTML = `<strong>PRETEXT GLYPH ADVANCES</strong><br>${measured.join('<br>')}`;
+    };
+
+    document.querySelectorAll('.layer-button').forEach((button) => button.addEventListener('click', () => {
+      const layer = button.dataset.layer; layers[layer] = !layers[layer]; button.setAttribute('aria-pressed', String(layers[layer])); drawBlueprint();
+    }));
+    drawBlueprint();
+
+    const button = document.querySelector('.toggle');
+    button.addEventListener('click', () => {
+      const visible = document.body.classList.toggle('guides');
+      button.textContent = visible ? 'Hide measurements' : 'Show measurements';
+      button.setAttribute('aria-pressed', String(visible));
+    });
+    const fit = () => {
+      const wrap = document.querySelector('.watch-wrap');
+      const width = Math.min(1, (window.innerWidth - 72) / 420);
+      if (window.innerWidth <= 620) { wrap.style.transform = `scale(${width})`; wrap.parentElement.style.height = `${360 * width + 120}px`; }
+      else { wrap.style.transform = ''; wrap.parentElement.style.height = ''; }
+    };
+    addEventListener('resize', fit); fit();
+  </script>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>SixDash Pixel Simulator</title>
+  <style>
+    :root { color-scheme: dark; --bg:#101110; --panel:#191b19; --line:#30332f; --text:#f1f3e8; --muted:#90958d; --cyan:#49bbc2; }
+    * { box-sizing:border-box; }
+    html { -webkit-font-smoothing:antialiased; }
+    body { margin:0; min-height:100vh; background:var(--bg); color:var(--text); font:13px/1.4 ui-sans-serif,system-ui,sans-serif; }
+    button,input { font:inherit; }
+    .app { min-height:100vh; display:grid; grid-template-columns:minmax(360px,1fr) 330px; }
+    .preview { display:grid; place-items:center; padding:24px; background:radial-gradient(circle at 50% 40%,#272a26 0,#131513 48%,#0d0e0d 100%); overflow:auto; }
+    .device { padding:8px; border-radius:8px; background:#242724; box-shadow:0 28px 80px rgba(0,0,0,.55),inset 0 0 0 1px #414640; }
+    canvas { display:block; width:320px; height:360px; background:#000; image-rendering:pixelated; }
+    .panel { padding:24px; background:var(--panel); border-left:1px solid var(--line); overflow:auto; }
+    h1 { margin:0; font-size:20px; letter-spacing:-.02em; } .sub { margin:6px 0 22px; color:var(--muted); font-size:12px; }
+    fieldset { margin:0 0 18px; padding:0; border:0; } legend { width:100%; padding:0 0 9px; margin-bottom:10px; border-bottom:1px solid var(--line); color:#bcc0b9; font-size:10px; font-weight:700; letter-spacing:.13em; text-transform:uppercase; }
+    .fields { display:grid; grid-template-columns:1fr 1fr; gap:10px; } label { display:grid; gap:5px; color:var(--muted); font-size:11px; }
+    input[type="number"],input[type="text"] { width:100%; height:38px; padding:0 10px; border:0; border-radius:9px; outline:1px solid var(--line); background:#111311; color:var(--text); font-variant-numeric:tabular-nums; }
+    input:focus { outline:2px solid var(--cyan); outline-offset:0; }
+    .toggles { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    button { min-height:42px; padding:0 12px; border:0; border-radius:10px; background:#2b2e2a; color:#aeb3aa; cursor:pointer; font-weight:650; transition-property:transform,background-color,color; transition-duration:160ms; }
+    button[aria-pressed="true"] { background:var(--cyan); color:#071011; } button:active { transform:scale(.96); }
+    .readout { padding:12px; border-radius:10px; background:#111311; color:#8f968d; font:10px/1.65 ui-monospace,SFMono-Regular,Menlo,monospace; white-space:pre-wrap; }
+    .status { display:flex; align-items:center; gap:7px; margin-top:16px; color:#858b83; font-size:11px; } .status i { width:7px; height:7px; border-radius:50%; background:#56d39b; box-shadow:0 0 12px #56d39b; }
+    @media (max-width:760px) { .app { grid-template-columns:1fr; } .panel { border-left:0; border-top:1px solid var(--line); } .preview { padding:16px; } }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="preview" aria-label="Garmin watch face preview"><div class="device"><canvas id="screen" width="640" height="720" aria-label="320 by 360 pixel watch screen"></canvas></div></section>
+    <aside class="panel">
+      <h1>SixDash Pixel Simulator</h1><p class="sub">Canvas replay of Garmin bitmap resources at integer coordinates.</p>
+      <fieldset><legend>Live data</legend><div class="fields">
+        <label>Battery %<input id="battery" type="number" min="0" max="100" value="83"></label>
+        <label>Temperature °C<input id="temperature" type="number" step="0.1" value="22.0"></label>
+        <label>Steps<input id="steps" type="number" min="0" value="8436"></label>
+        <label>Step goal<input id="stepGoal" type="number" min="1" value="10000"></label>
+        <label>Active minutes<input id="active" type="number" min="0" value="164"></label>
+        <label>Distance km<input id="distance" type="number" min="0" step="0.01" value="6.72"></label>
+        <label>Stress<input id="stress" type="number" min="0" max="100" value="34"></label>
+        <label>Body battery<input id="body" type="number" min="0" max="100" value="62"></label>
+        <label>Heart rate<input id="heart" type="number" min="0" max="220" value="78"></label>
+        <label>Date DD.MM.YY<input id="date" type="text" value="15.07.26" maxlength="8"></label>
+        <label>Time HH:MM:SS<input id="time" type="text" value="10:09:42" maxlength="8"></label>
+      </div></fieldset>
+      <fieldset><legend>Inspection layers</legend><div class="toggles">
+        <button data-toggle="grid" aria-pressed="true">8 px grid</button><button data-toggle="bounds" aria-pressed="false">Draw bounds</button>
+        <button data-toggle="aod" aria-pressed="false">Always-on</button><button data-toggle="pixel" aria-pressed="true">Pixel scaling</button>
+      </div></fieldset>
+      <fieldset><legend>Render log</legend><div class="readout" id="readout">Loading Garmin resources…</div></fieldset>
+      <div class="status"><i></i><span id="assetStatus">Loading assets</span></div>
+    </aside>
+  </main>
+  <script type="module">
+    const ROOT='resources/drawables/';
+    const names=[...Array.from({length:10},(_,i)=>`digit-warm-${i}`),...Array.from({length:10},(_,i)=>`digit-dim-${i}`),...Array.from({length:10},(_,i)=>`small-warm-${i}`),...Array.from({length:10},(_,i)=>`small-ink-${i}`),...Array.from({length:10},(_,i)=>`medium-ink-${i}`),'small-warm-dot','small-warm-percent','small-warm-dash','small-warm-f','small-warm-c','small-ink-dot','small-ink-percent','small-ink-dash','small-ink-f','small-ink-c','medium-ink-dot','medium-ink-dash','icon-bolt','icon-bluetooth','icon-bluetooth-dim','icon-shoe','icon-stopwatch','icon-pin','icon-stress','icon-body-battery','icon-heart','icon-segment-track','icon-segment-warm','icon-segment-cyan','icon-segment-mint'];
+    const assets={};
+    await Promise.all(names.map(name=>new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>{assets[name]=img;resolve()};img.onerror=reject;img.src=`${ROOT}${name}.png`})));
+    document.querySelector('#assetStatus').textContent=`${names.length} Garmin assets loaded`;
+
+    const canvas=document.querySelector('#screen'),ctx=canvas.getContext('2d'); ctx.scale(2,2); ctx.imageSmoothingEnabled=false;
+    const state={grid:true,bounds:false,aod:false,pixel:true}; const boxes=[];
+    const value=id=>document.querySelector(`#${id}`).value; const number=id=>Number(value(id))||0; const clamp=n=>Math.max(0,Math.min(1,n));
+    const bitmap=(name,x,y)=>{const img=assets[name];ctx.drawImage(img,Math.round(x),Math.round(y));boxes.push([name,Math.round(x),Math.round(y),img.width,img.height]);};
+    const smallAdvance=ch=>/\d/.test(ch)?11:ch==='.'?5:ch==='%'?18:ch==='-'?8:ch==='F'?10:ch==='C'?11:8;
+    const smallWidth=text=>[...text].reduce((n,ch)=>n+smallAdvance(ch),0);
+    function smallGlyph(ch,warm){let suffix=/\d/.test(ch)?ch:ch==='.'?'dot':ch==='%'?'percent':ch==='F'?'f':ch==='C'?'c':'dash';return `small-${warm?'warm':'ink'}-${suffix}`}
+    function drawSmall(text,x,y,warm=false,justify='left'){let cursor=x,width=smallWidth(text);if(justify==='right')cursor-=width;if(justify==='center')cursor-=width/2;for(const ch of text){bitmap(smallGlyph(ch,warm),cursor-4,y);cursor+=smallAdvance(ch)}}
+    function drawMedium(text,x,y,tracking=1){let cursor=x;[...text].forEach((ch,i)=>{let suffix=/\d/.test(ch)?ch:ch==='.'?'dot':'dash';bitmap(`medium-ink-${suffix}`,cursor-4,y);cursor+=(/\d/.test(ch)?12:ch==='.'?6:9)+(i<text.length-1?tracking:0)})}
+    function clockNumber(text,x,y,dim=false){[...text].forEach((ch,i)=>bitmap(`digit-${dim?'dim':'warm'}-${ch}`,x+i*37,y))}
+    function colon(x,y,color){ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,y+29,3,0,Math.PI*2);ctx.arc(x,y+47,3,0,Math.PI*2);ctx.fill();boxes.push(['colon',x-3,y+26,6,24])}
+    function ring(x,y,pct,color){ctx.lineWidth=6;ctx.strokeStyle='#36383a';ctx.beginPath();ctx.arc(x,y,15,0,Math.PI*2);ctx.stroke();if(pct>0){ctx.strokeStyle=color;ctx.beginPath();ctx.arc(x,y,15,-Math.PI/2,-Math.PI/2+Math.PI*2*clamp(pct));ctx.stroke()}ctx.lineWidth=1;boxes.push(['ring',x-18,y-18,36,36])}
+    function bar(y,pct,color){const fill=color==='warm'?'icon-segment-warm':color==='cyan'?'icon-segment-cyan':'icon-segment-mint';for(let i=0;i<5;i++)bitmap(pct>i/5?fill:'icon-segment-track',75+i*43,y)}
+    function render(){boxes.length=0;ctx.clearRect(0,0,320,360);ctx.fillStyle='#000';ctx.fillRect(0,0,320,360);
+      const t=value('time').padEnd(8,'0').split(':');
+      if(state.aod){clockNumber(t[0],76,145,true);colon(160,145,'#36383a');clockNumber(t[1],170,145,true);drawOverlay();return}
+      bitmap('icon-bolt',30,44);drawSmall(`${Math.round(number('battery'))}%`,48,39,true);const temp=number('temperature').toFixed(1),right=260,start=right-smallWidth(temp)-smallWidth('C')-7;drawSmall(temp,start,39,true);ctx.strokeStyle='#c9cbae';ctx.lineWidth=2;ctx.beginPath();ctx.arc(start+smallWidth(temp)+2,45,2,0,Math.PI*2);ctx.stroke();drawSmall('C',start+smallWidth(temp)+7,39,true);bitmap('icon-bluetooth',274,43);ctx.fillStyle='#202425';ctx.fillRect(31,69,258,3);
+      const steps=Math.round(number('steps'));bitmap('icon-shoe',30,87);drawSmall(String(steps),75,75);bar(101,steps/Math.max(1,number('stepGoal')),'warm');
+      bitmap('icon-stopwatch',30,117);drawSmall(String(Math.round(number('active'))),75,116);bar(140,number('active')/150,'cyan');
+      bitmap('icon-pin',32,153);drawSmall(number('distance').toFixed(2),75,153);bar(179,number('distance')/10,'mint');
+      ctx.strokeStyle='#36383a';ctx.beginPath();ctx.moveTo(111,204);ctx.lineTo(111,244);ctx.moveTo(201,204);ctx.lineTo(201,244);ctx.stroke();
+      ring(48,220,number('stress')/100,'#c9cbae');bitmap('icon-stress',74,197);drawSmall(String(Math.round(number('stress'))),71,215);
+      ring(138,220,number('body')/100,'#49bbc2');bitmap('icon-body-battery',166,198);drawSmall(String(Math.round(number('body'))),161,215);
+      ring(228,220,number('heart')/180,'#56d39b');bitmap('icon-heart',253,197);drawSmall(String(Math.round(number('heart'))),251,215);
+      clockNumber(t[0],24,237);colon(111,237,'#c9cbae');clockNumber(t[1],121,237);colon(208,237,'#36383a');clockNumber(t[2],218,237,true);drawMedium(value('date'),30,296,1);drawOverlay();
+    }
+    function drawOverlay(){if(state.grid){ctx.strokeStyle='rgba(73,187,194,.22)';ctx.lineWidth=.5;for(let n=8;n<320;n+=8){ctx.beginPath();ctx.moveTo(n+.25,0);ctx.lineTo(n+.25,360);ctx.stroke()}for(let n=8;n<360;n+=8){ctx.beginPath();ctx.moveTo(0,n+.25);ctx.lineTo(320,n+.25);ctx.stroke()}ctx.strokeStyle='#ff5d5d';ctx.setLineDash([3,3]);ctx.strokeRect(8.5,8.5,303,343);ctx.setLineDash([])}if(state.bounds){ctx.strokeStyle='rgba(255,93,93,.8)';ctx.lineWidth=.5;for(const[,x,y,w,h]of boxes)ctx.strokeRect(x+.25,y+.25,w-.5,h-.5)}document.querySelector('#readout').textContent=`canvas     320 × 360\nsafe inset 8 px\nassets     ${boxes.length} draw calls\nmode       ${state.aod?'always-on':'active'}\nscaling    ${state.pixel?'nearest-neighbor':'smoothed'}\nsource     SixDashView.mc coordinates`}
+    document.querySelectorAll('input').forEach(input=>input.addEventListener('input',render));document.querySelectorAll('[data-toggle]').forEach(button=>button.addEventListener('click',()=>{const key=button.dataset.toggle;state[key]=!state[key];button.setAttribute('aria-pressed',String(state[key]));if(key==='pixel'){canvas.style.imageRendering=state.pixel?'pixelated':'auto';ctx.imageSmoothingEnabled=!state.pixel}render()}));render();
+  </script>
+</body>
+</html>

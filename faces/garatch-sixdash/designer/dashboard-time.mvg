@@ -1,0 +1,20 @@
+push graphic-context
+viewbox 0 0 1024 128
+fill white
+stroke none
+font 'designer/fonts/Rajdhani-Medium.ttf'
+font-size 72
+text-antialias 1
+text-anchor middle
+text 19,65 '0'
+text 83,65 '1'
+text 147,65 '2'
+text 211,65 '3'
+text 275,65 '4'
+text 339,65 '5'
+text 403,65 '6'
+text 467,65 '7'
+text 531,65 '8'
+text 595,65 '9'
+text 659,65 ':'
+pop graphic-context

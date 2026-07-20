@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="1080" viewBox="0 0 320 360">
+  <defs>
+    <style>
+      .ui { font-family: "Rajdhani", "Arial Narrow", sans-serif; }
+      .spec { font-family: Menlo, Consolas, monospace; font-size: 5px; fill: #fff; paint-order: stroke; stroke: #000; stroke-width: 1.8px; stroke-linejoin: round; }
+      .tiny { font-family: Menlo, Consolas, monospace; font-size: 4px; fill: #fff; paint-order: stroke; stroke: #000; stroke-width: 1.5px; }
+      .box { fill: none; stroke: #ff4fc3; stroke-width: .7; stroke-dasharray: 2 2; }
+      .link { fill: none; stroke: #ff4fc3; stroke-width: .65; stroke-dasharray: 1.5 1.5; }
+      .guide { fill: none; stroke: #33d6ff; stroke-width: .45; stroke-dasharray: 1 2; opacity: .8; }
+      .measure { fill: none; stroke: #ffe55c; stroke-width: .55; marker-start: url(#arrow); marker-end: url(#arrow); }
+    </style>
+    <marker id="arrow" viewBox="0 0 6 6" refX="3" refY="3" markerWidth="3" markerHeight="3" orient="auto-start-reverse"><path d="M0 0L6 3L0 6z" fill="#ffe55c"/></marker>
+  </defs>
+
+  <!-- Exact logical device canvas: 320 × 360 -->
+  <rect width="320" height="360" fill="#000"/>
+  <rect x=".5" y=".5" width="319" height="359" fill="none" stroke="#33d6ff"/>
+  <path class="guide" d="M160 0V360M0 180H320M24 0V360M296 0V360"/>
+
+  <!-- Faithful layout underlay, intentionally subdued beneath the spec overlay -->
+  <g opacity=".58">
+    <image href="resources/drawables/icon-bolt.png" x="29" y="44" width="14" height="18"/>
+    <text class="ui" x="48" y="64" font-size="27" fill="#c9cbae">50%</text>
+    <text class="ui" x="203" y="64" font-size="27" fill="#c9cbae">46.4</text>
+    <circle cx="250" cy="46" r="2" fill="none" stroke="#c9cbae" stroke-width="2"/>
+    <text class="ui" x="255" y="64" font-size="27" fill="#c9cbae">F</text>
+    <image href="resources/drawables/icon-bluetooth.png" x="276" y="43" width="18" height="24"/>
+    <rect x="31" y="69" width="258" height="3" fill="#202425"/>
+
+    <image href="resources/drawables/icon-shoe.png" x="30" y="87" width="32" height="24"/>
+    <text class="ui" x="75" y="96" font-size="27" fill="#f1f3e8">677</text>
+    <image href="resources/drawables/icon-stopwatch.png" x="30" y="110" width="34" height="30"/>
+    <text class="ui" x="75" y="135" font-size="27" fill="#f1f3e8">0</text>
+    <image href="resources/drawables/icon-pin.png" x="32" y="153" width="24" height="30"/>
+    <text class="ui" x="75" y="174" font-size="27" fill="#f1f3e8">0.54</text>
+    <g>
+      <image href="resources/drawables/icon-segment-warm.png" x="75" y="101" width="39" height="9"/><image href="resources/drawables/icon-segment-track.png" x="118" y="101" width="39" height="9"/><image href="resources/drawables/icon-segment-track.png" x="161" y="101" width="39" height="9"/><image href="resources/drawables/icon-segment-track.png" x="204" y="101" width="39" height="9"/><image href="resources/drawables/icon-segment-track.png" x="247" y="101" width="39" height="9"/>
+      <image href="resources/drawables/icon-segment-cyan.png" x="75" y="140" width="39" height="9"/><image href="resources/drawables/icon-segment-track.png" x="118" y="140" width="39" height="9"/><image href="resources/drawables/icon-segment-track.png" x="161" y="140" width="39" height="9"/><image href="resources/drawables/icon-segment-track.png" x="204" y="140" width="39" height="9"/><image href="resources/drawables/icon-segment-track.png" x="247" y="140" width="39" height="9"/>
+      <image href="resources/drawables/icon-segment-mint.png" x="75" y="179" width="39" height="9"/><image href="resources/drawables/icon-segment-track.png" x="118" y="179" width="39" height="9"/><image href="resources/drawables/icon-segment-track.png" x="161" y="179" width="39" height="9"/><image href="resources/drawables/icon-segment-track.png" x="204" y="179" width="39" height="9"/><image href="resources/drawables/icon-segment-track.png" x="247" y="179" width="39" height="9"/>
+    </g>
+    <path d="M111 204V244M201 204V244" stroke="#36383a"/>
+    <g fill="none" stroke-width="6"><circle cx="48" cy="220" r="15" stroke="#c9cbae"/><circle cx="138" cy="220" r="15" stroke="#49bbc2"/><circle cx="228" cy="220" r="15" stroke="#56d39b"/></g>
+    <image href="resources/drawables/icon-stress.png" x="75" y="197" width="20" height="21"/><image href="resources/drawables/icon-body-battery.png" x="168" y="198" width="15" height="20"/><image href="resources/drawables/icon-heart.png" x="254" y="197" width="21" height="20"/>
+    <text class="ui" x="74" y="237" font-size="27" fill="#f1f3e8">35</text><text class="ui" x="164" y="237" font-size="27" fill="#f1f3e8">88</text><text class="ui" x="254" y="237" font-size="27" fill="#f1f3e8">--</text>
+    <text class="ui" x="24" y="293" font-size="72" fill="#c9cbae" letter-spacing="-2">05:49</text><text class="ui" x="222" y="293" font-size="72" fill="#36383a" letter-spacing="-2">:43</text>
+    <text class="ui" x="30" y="319" font-size="33" fill="#f1f3e8">15.07.26</text>
+  </g>
+
+  <!-- Bounds for every icon/asset family -->
+  <rect class="box" x="29" y="44" width="14" height="18"/><rect class="box" x="276" y="43" width="18" height="24"/>
+  <rect class="box" x="30" y="87" width="32" height="24"/><rect class="box" x="30" y="110" width="34" height="30"/><rect class="box" x="32" y="153" width="24" height="30"/>
+  <rect class="box" x="75" y="197" width="20" height="21"/><rect class="box" x="168" y="198" width="15" height="20"/><rect class="box" x="254" y="197" width="21" height="20"/>
+  <rect class="box" x="75" y="101" width="211" height="9"/><rect class="box" x="75" y="140" width="211" height="9"/><rect class="box" x="75" y="179" width="211" height="9"/>
+  <rect class="box" x="24" y="237" width="295" height="68"/>
+
+  <!-- Dotted callout links and terse exact labels -->
+  <path class="link" d="M29 44L9 29"/><text class="spec" x="3" y="23">BOLT</text><text class="tiny" x="3" y="29">14×18 @29,44</text>
+  <path class="link" d="M294 43L305 27"/><text class="spec" x="270" y="17">BT 18×24</text><text class="tiny" x="270" y="23">@276,43</text>
+  <path class="link" d="M31 70L12 75"/><text class="tiny" x="3" y="82">DIVIDER 258×3</text>
+  <path class="link" d="M30 91L8 101"/><text class="tiny" x="2" y="108">SHOE 32×24</text>
+  <path class="link" d="M30 119L7 123"/><text class="tiny" x="2" y="130">TIMER 34×30</text>
+  <path class="link" d="M32 163L8 153"/><text class="tiny" x="2" y="148">PIN 24×30</text>
+  <path class="link" d="M286 106L311 98"/><text class="tiny" x="248" y="91">BAR: 5×(39×9)</text><text class="tiny" x="268" y="97">gap 4</text>
+  <path class="link" d="M286 146L311 139"/><text class="tiny" x="270" y="133">x75→286</text>
+  <path class="link" d="M286 185L311 177"/><text class="tiny" x="270" y="171">rows +39y</text>
+  <path class="link" d="M48 205L13 198"/><text class="tiny" x="2" y="190">RINGS r15</text><text class="tiny" x="2" y="196">stroke 6</text>
+  <path class="link" d="M95 205L89 193"/><text class="tiny" x="60" y="189">STRESS 20×21</text>
+  <path class="link" d="M183 204L178 191"/><text class="tiny" x="143" y="187">BODY 15×20</text>
+  <path class="link" d="M275 204L296 191"/><text class="tiny" x="273" y="187">HEART</text><text class="tiny" x="273" y="193">21×20</text>
+  <path class="link" d="M111 244L108 255"/><text class="tiny" x="76" y="260">DIVIDERS 1px ×40</text>
+  <path class="link" d="M24 305L12 325"/><text class="tiny" x="3" y="332">CLOCK: 72px</text><text class="tiny" x="3" y="338">cells 64×68</text><text class="tiny" x="3" y="344">advance 37</text>
+  <path class="link" d="M90 319L109 338"/><text class="tiny" x="80" y="346">DATE: 33px</text>
+  <path class="link" d="M237 301L257 324"/><text class="tiny" x="244" y="332">COLON dots r3</text><text class="tiny" x="244" y="338">18px apart</text>
+
+  <!-- Logical coordinate dimensions -->
+  <path class="measure" d="M3 354H317"/><text class="spec" x="145" y="351">320 px</text>
+  <path class="measure" d="M314 3V357"/><text class="spec" x="294" y="182" transform="rotate(-90 294 182)">360 px</text>
+  <text class="tiny" x="4" y="355">(0,360)</text><text class="tiny" x="286" y="355">(320,360)</text>
+</svg>
