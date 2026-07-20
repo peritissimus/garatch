@@ -1,0 +1,86 @@
+// Starter watch-face template for the garatch monorepo.
+// Copy into faces/<name>/source/<Name>View.mc and rename the class.
+// Embodies the repo conventions: geometry cached in onLayout, draw-only onUpdate,
+// null-guarded data reads, and an always-on / low-power branch (see references/amoled-power.md).
+
+using Toybox.Graphics;
+using Toybox.WatchUi;
+using Toybox.System;
+using Toybox.Lang;
+using Toybox.Time;
+using Toybox.Time.Gregorian;
+using Toybox.ActivityMonitor;
+using Toybox.Activity;
+
+class StarterView extends WatchUi.WatchFace {
+    // --- cached geometry (set once in onLayout) ---
+    private var _w;
+    private var _h;
+    private var _m;            // margin
+    private var _fTime;
+    private var _fLabel;
+    private var _hTime;
+    private var _timeY;
+
+    // --- state ---
+    private var _lowPower = false;
+
+    function initialize() {
+        WatchFace.initialize();
+    }
+
+    // Compute all geometry ONCE. Never measure fonts per-frame.
+    function onLayout(dc) {
+        _w = dc.getWidth();
+        _h = dc.getHeight();
+        _m = 18;
+
+        _fTime  = Graphics.FONT_SYSTEM_NUMBER_HOT;
+        _fLabel = Graphics.FONT_TINY;
+        _hTime  = dc.getFontHeight(_fTime);
+
+        _timeY = (_h * 0.42).toNumber();
+    }
+
+    function onUpdate(dc) {
+        dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_BLACK);
+        dc.clear();
+
+        if (_lowPower) {
+            drawAlwaysOn(dc);   // dim + sparse: respects the ~10% pixel budget
+        } else {
+            drawFull(dc);
+        }
+    }
+
+    // ---- high-power layout ----
+    function drawFull(dc) {
+        drawTime(dc, Graphics.COLOR_WHITE);
+        // add rows here: steps, heart rate, battery… (see references/data-and-apis.md)
+    }
+
+    // ---- always-on layout: dim, thin, minimal ----
+    function drawAlwaysOn(dc) {
+        drawTime(dc, Graphics.COLOR_DK_GRAY);
+    }
+
+    function drawTime(dc, color) {
+        var t = System.getClockTime();
+        var hours = t.hour;
+        if (!System.getDeviceSettings().is24Hour) {
+            if (hours == 0) { hours = 12; }
+            else if (hours > 12) { hours -= 12; }
+        }
+        var str = Lang.format("$1$:$2$", [hours.format("%02d"), t.min.format("%02d")]);
+
+        dc.setColor(color, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(
+            _w / 2, _timeY, _fTime, str,
+            Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER
+        );
+    }
+
+    function onEnterSleep() { _lowPower = true;  WatchUi.requestUpdate(); }
+    function onExitSleep()  { _lowPower = false; WatchUi.requestUpdate(); }
+    function onHide() {}
+}
