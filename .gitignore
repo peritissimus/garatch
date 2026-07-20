@@ -35,6 +35,8 @@ external-mir/
 internal-mir/
 node_modules/
 vendor/
+designer/dist/
+designer/dist-electron/
 
 # Test outputs
 test-results/
