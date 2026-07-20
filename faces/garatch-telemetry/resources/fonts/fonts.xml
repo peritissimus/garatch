@@ -1,0 +1,5 @@
+<fonts>
+    <font id="TelemetryTime" filename="telemetry_time.fnt" antialias="true" filter="0123456789:" />
+    <font id="TelemetryValue" filename="telemetry_value.fnt" antialias="true" filter="0123456789,-" />
+    <font id="TelemetryLabel" filename="telemetry_label.fnt" antialias="true" filter="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789:% -" />
+</fonts>
