@@ -1,6 +1,7 @@
 import { layoutWithLines, prepareWithSegments } from "@chenglou/pretext";
 import { clone } from "./project.js";
 import {
+  familyForRole,
   fontFamilyDetails,
   normalizeFontHeights,
   normalizeLetterSpacing,
@@ -13,7 +14,7 @@ export function typographyFor(project, element) {
   const role = roleForElement(element);
   const heights = normalizeFontHeights(project.fontHeights);
   const spacing = normalizeLetterSpacing(project.letterSpacing);
-  const family = fontFamilyDetails(project.fontFamily);
+  const family = fontFamilyDetails(familyForRole(project, role));
   const fontWeight = role === "time" ? 400 : 500;
   const height = heights[role];
   const lineHeight = element.type === "label"
@@ -77,12 +78,13 @@ export function positionedWatchText(project, element, text) {
 
 export async function ensureProjectFonts(project) {
   if (!document.fonts) return;
-  const family = fontFamilyDetails(project.fontFamily);
+  const timeFamily = fontFamilyDetails(familyForRole(project, "time"));
+  const dataFamily = fontFamilyDetails(familyForRole(project, "value"));
   const heights = normalizeFontHeights(project.fontHeights);
   await Promise.all([
-    document.fonts.load(`400 ${heights.time}px "${family.cssFamily}"`),
-    document.fonts.load(`500 ${heights.value}px "${family.cssFamily}"`),
-    document.fonts.load(`500 ${heights.label}px "${family.cssFamily}"`),
+    document.fonts.load(`400 ${heights.time}px "${timeFamily.cssFamily}"`),
+    document.fonts.load(`500 ${heights.value}px "${dataFamily.cssFamily}"`),
+    document.fonts.load(`500 ${heights.label}px "${dataFamily.cssFamily}"`),
   ]);
 }
 

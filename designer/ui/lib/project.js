@@ -43,6 +43,7 @@ export function saveProject(project) {
 function migrateFontFamily(project) {
   const legacyFamily = project.elements.find((element) => element.type === "time")?.font;
   project.fontFamily = normalizeFontFamily(project.fontFamily ?? legacyFamily);
+  project.fontFamilySecondary = normalizeFontFamily(project.fontFamilySecondary ?? project.fontFamily);
   project.fontHeights = normalizeFontHeights(project.fontHeights);
   project.letterSpacing = normalizeLetterSpacing(project.letterSpacing);
   for (const element of project.elements) {

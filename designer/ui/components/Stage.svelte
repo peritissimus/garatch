@@ -213,11 +213,12 @@
 
   $effect(() => {
     const family = project.fontFamily;
+    const familySecondary = project.fontFamilySecondary ?? project.fontFamily;
     const heights = { ...project.fontHeights };
     let cancelled = false;
     Promise.all([
-      loadWatchFonts(family, heights),
-      ensureProjectFonts({ fontFamily: family, fontHeights: heights }),
+      loadWatchFonts(family, familySecondary, heights),
+      ensureProjectFonts({ fontFamily: family, fontFamilySecondary: familySecondary, fontHeights: heights }),
     ]).then(([loaded]) => {
       if (cancelled) return;
       fonts = loaded;

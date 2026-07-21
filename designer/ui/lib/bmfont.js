@@ -59,6 +59,14 @@ export function normalizeFontFamily(font) {
   return FONT_FAMILIES.some((family) => family.id === font) ? font : DEFAULT_FONT_FAMILY;
 }
 
+// The time role uses the primary family; value + label use the secondary
+// family, which falls back to the primary when unset.
+export function familyForRole(project, role) {
+  return role === "time"
+    ? normalizeFontFamily(project.fontFamily)
+    : normalizeFontFamily(project.fontFamilySecondary ?? project.fontFamily);
+}
+
 export function fontForElement(fonts, element) {
   return fonts[roleForElement(element)];
 }
@@ -81,14 +89,17 @@ export function normalizeLetterSpacing(spacing = {}) {
   ]));
 }
 
-export function loadWatchFonts(family, heights) {
-  const normalizedFamily = normalizeFontFamily(family);
+// Loads the bitmap fonts for a face: time from the primary family, value and
+// label from the secondary family (both fall back to the primary when unset).
+export function loadWatchFonts(primaryFamily, secondaryFamily, heights) {
+  const primary = normalizeFontFamily(primaryFamily);
+  const secondary = normalizeFontFamily(secondaryFamily ?? primaryFamily);
   const normalizedHeights = normalizeFontHeights(heights);
-  const key = `${normalizedFamily}:${normalizedHeights.time}:${normalizedHeights.value}:${normalizedHeights.label}`;
+  const key = `${primary}|${secondary}:${normalizedHeights.time}:${normalizedHeights.value}:${normalizedHeights.label}`;
   if (!fontCache.has(key)) {
-    const prefix = FONT_FILES[normalizedFamily];
+    const roleFamily = { time: primary, value: secondary, label: secondary };
     const promise = Promise.all(["time", "value", "label"].map(async (role) => {
-      const stem = `${prefix}_${role}_${normalizedHeights[role]}`;
+      const stem = `${FONT_FILES[roleFamily[role]]}_${role}_${normalizedHeights[role]}`;
       return [role, await loadFont({
         descriptor: FONT_URLS[`../assets/fonts/${stem}.fnt`],
         atlas: FONT_URLS[`../assets/fonts/${stem}.png`],

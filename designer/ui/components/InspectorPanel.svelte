@@ -7,8 +7,9 @@
   import { tactile } from "../lib/motion.js";
   import { isShapeElement } from "../lib/project.js";
 
-  let { element, fontFamily, fontHeights, letterSpacing, onfontfamily, onfontheight, onletterspacing, onupdate, onduplicate, ondelete, onmove, onalign } = $props();
-  let selectedFamily = $derived(FONT_FAMILIES.find((family) => family.id === normalizeFontFamily(fontFamily)) ?? FONT_FAMILIES[0]);
+  let { element, fontFamily, fontFamilySecondary, fontHeights, letterSpacing, onfontfamily, onfontfamilysecondary, onfontheight, onletterspacing, onupdate, onduplicate, ondelete, onmove, onalign } = $props();
+  let primaryFamily = $derived(FONT_FAMILIES.find((family) => family.id === normalizeFontFamily(fontFamily)) ?? FONT_FAMILIES[0]);
+  let secondaryFamily = $derived(FONT_FAMILIES.find((family) => family.id === normalizeFontFamily(fontFamilySecondary ?? fontFamily)) ?? FONT_FAMILIES[0]);
   let selectedRole = $derived(element && !isShapeElement(element) ? roleForElement(element) : null);
 
   function update(property, value, commit = false) {
@@ -38,19 +39,30 @@
   {#if !element || !isShapeElement(element)}
     <section class="inspector-group face-typeface-group">
       <div class="group-heading">
-        <h3>Face typeface</h3>
-        <p>One font for every text layer, in preview and export.</p>
+        <h3>Face typefaces</h3>
+        <p>Primary drives the time. Secondary drives values and labels.</p>
       </div>
       <div class="typeface-current">
-        <span class="typeface-sample" style={`font-family: "${selectedFamily.cssFamily}", sans-serif`}>12:34</span>
-        <span class="typeface-copy"><strong>{selectedFamily.name}</strong><small>{selectedFamily.tone}</small></span>
+        <span class="typeface-sample" style={`font-family: "${primaryFamily.cssFamily}", sans-serif`}>12:34</span>
+        <span class="typeface-copy"><strong>{primaryFamily.name}</strong><small>Primary · {primaryFamily.tone}</small></span>
         <span class="typeface-indicator" aria-hidden="true"></span>
       </div>
       <Field
-        label="Choose font"
+        label="Primary font"
         value={normalizeFontFamily(fontFamily)}
         options={FONT_FAMILIES.map((family) => [family.id, family.name])}
         oninput={(value) => onfontfamily(value)}
+      />
+      <div class="typeface-current">
+        <span class="typeface-sample" style={`font-family: "${secondaryFamily.cssFamily}", sans-serif`}>82%</span>
+        <span class="typeface-copy"><strong>{secondaryFamily.name}</strong><small>Secondary · {secondaryFamily.tone}</small></span>
+        <span class="typeface-indicator" aria-hidden="true"></span>
+      </div>
+      <Field
+        label="Secondary font"
+        value={normalizeFontFamily(fontFamilySecondary ?? fontFamily)}
+        options={FONT_FAMILIES.map((family) => [family.id, family.name])}
+        oninput={(value) => onfontfamilysecondary(value)}
       />
     </section>
   {/if}

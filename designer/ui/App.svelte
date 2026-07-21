@@ -288,9 +288,11 @@
       <InspectorPanel
         element={selected}
         fontFamily={project.fontFamily}
+        fontFamilySecondary={project.fontFamilySecondary ?? project.fontFamily}
         fontHeights={project.fontHeights}
         letterSpacing={project.letterSpacing}
         onfontfamily={(fontFamily) => { project.fontFamily = fontFamily; }}
+        onfontfamilysecondary={(fontFamilySecondary) => { project.fontFamilySecondary = fontFamilySecondary; }}
         onfontheight={(role, height) => { project.fontHeights[role] = height; }}
         onletterspacing={(role, spacing) => { project.letterSpacing[role] = spacing; }}
         onupdate={updateSelected}
