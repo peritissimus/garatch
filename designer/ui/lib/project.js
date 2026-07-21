@@ -9,6 +9,14 @@ export function isShapeElement(element) {
   return ["rectangle", "ellipse", "line", "icon"].includes(element?.type);
 }
 
+// Deep clone that also handles Svelte 5 reactive ($state) proxies, which
+// structuredClone rejects with "could not be cloned". The project model is
+// fully JSON-serializable (it round-trips through localStorage), so a JSON
+// clone is safe and additionally strips any non-serializable stragglers.
+export function clone(value) {
+  return JSON.parse(JSON.stringify(value));
+}
+
 function createId(type) {
   return `${type}-${crypto.randomUUID().replaceAll("-", "").slice(0, 8)}`;
 }
@@ -110,7 +118,7 @@ export function elementFactory(type) {
 }
 
 export function duplicateElement(element) {
-  const copy = structuredClone(element);
+  const copy = clone(element);
   copy.id = createId(element.type);
   const position = clampPosition(copy, copy.x + 12, copy.y + 12);
   if (copy.type === "line") {

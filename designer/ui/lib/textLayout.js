@@ -1,4 +1,5 @@
 import { layoutWithLines, prepareWithSegments } from "@chenglou/pretext";
+import { clone } from "./project.js";
 import {
   fontFamilyDetails,
   normalizeFontHeights,
@@ -87,7 +88,7 @@ export async function ensureProjectFonts(project) {
 
 export async function prepareProjectForExport(project) {
   await ensureProjectFonts(project);
-  const prepared = structuredClone(project);
+  const prepared = clone(project);
   for (const element of prepared.elements) {
     if (element.type !== "label") continue;
     element.renderedLines = layoutWatchText(prepared, element, element.text).lines.map((line) => line.text);
