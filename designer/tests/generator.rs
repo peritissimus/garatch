@@ -172,6 +172,65 @@ fn exports_pretext_lines_and_letter_spacing() {
 }
 
 #[test]
+fn exports_activity_metrics_and_shape_primitives() {
+    let mut project: serde_json::Value = serde_json::from_str(&sample_json()).unwrap();
+    project["elements"].as_array_mut().unwrap().extend([
+        serde_json::json!({
+            "type": "calories",
+            "id": "calories",
+            "x": 80,
+            "y": 300,
+            "color": "#E5AD59",
+            "align": "center"
+        }),
+        serde_json::json!({
+            "type": "distance",
+            "id": "distance",
+            "x": 240,
+            "y": 300,
+            "color": "#78A6D6",
+            "align": "center",
+            "unit": "miles"
+        }),
+        serde_json::json!({
+            "type": "ellipse",
+            "id": "ellipse",
+            "x": 160,
+            "y": 180,
+            "radiusX": 40,
+            "radiusY": 24,
+            "fillColor": "#27312D"
+        }),
+        serde_json::json!({
+            "type": "line",
+            "id": "line",
+            "x": 40,
+            "y": 250,
+            "endX": 280,
+            "endY": 250,
+            "color": "#72D6B2",
+            "thickness": 2
+        }),
+    ]);
+
+    let generated = generate_project(&parse_spec(&project.to_string()).unwrap()).unwrap();
+    let view = generated
+        .files
+        .iter()
+        .find(|file| file.path.ends_with("View.mc"))
+        .map(|file| String::from_utf8(file.bytes.clone()).unwrap())
+        .unwrap();
+
+    assert!(view.contains("activity3.calories.format(\"%d\")"));
+    assert!(view.contains("activity4.distance / 160934.4"));
+    assert!(view.contains("distanceNumber4.format(\"%.1f\")"));
+    assert!(view.contains("dc.fillEllipse(160, 180, 40, 24)"));
+    assert!(view.contains("dc.setPenWidth(2)"));
+    assert!(view.contains("dc.drawLine(40, 250, 280, 250)"));
+    assert!(view.contains("dc.setPenWidth(1)"));
+}
+
+#[test]
 fn reports_invalid_ids_colors_and_missing_time() {
     let json = serde_json::json!({
         "name": "Broken",

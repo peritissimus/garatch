@@ -3,7 +3,7 @@
   import Icon from "./Icon.svelte";
   import { TYPE_NAMES } from "../lib/catalog.js";
   import { drawBitmapText, fontForElement, loadWatchFonts } from "../lib/bmfont.js";
-  import { WATCH_HEIGHT, WATCH_WIDTH, clampPosition } from "../lib/project.js";
+  import { WATCH_HEIGHT, WATCH_WIDTH, clampPosition, isShapeElement } from "../lib/project.js";
   import { ensureProjectFonts, positionedWatchText } from "../lib/textLayout.js";
   import { tactile } from "../lib/motion.js";
 
@@ -20,6 +20,8 @@
     if (element.type === "steps") return "8421";
     if (element.type === "heart-rate") return "72";
     if (element.type === "battery") return "83%";
+    if (element.type === "calories") return "356";
+    if (element.type === "distance") return element.unit === "miles" ? "2.6" : "4.2";
     if (element.type === "time") {
       const hour24 = now.getHours();
       const hour = element.format === "hour12" ? hour24 % 12 || 12 : hour24;
@@ -74,17 +76,44 @@
   }
 
   function drawElement(element) {
-    if (element.type !== "rectangle") return drawText(element);
+    if (!isShapeElement(element)) return drawText(element);
     context.save();
-    context.fillStyle = element.fillColor;
-    context.beginPath();
-    context.roundRect(element.x, element.y, element.width, element.height, Math.min(element.cornerRadius, element.width / 2, element.height / 2));
-    context.fill();
+    if (element.type === "rectangle") {
+      context.fillStyle = element.fillColor;
+      context.beginPath();
+      context.roundRect(element.x, element.y, element.width, element.height, Math.min(element.cornerRadius, element.width / 2, element.height / 2));
+      context.fill();
+    } else if (element.type === "ellipse") {
+      context.fillStyle = element.fillColor;
+      context.beginPath();
+      context.ellipse(element.x, element.y, element.radiusX, element.radiusY, 0, 0, Math.PI * 2);
+      context.fill();
+    } else {
+      context.strokeStyle = element.color;
+      context.lineWidth = element.thickness;
+      context.lineCap = "butt";
+      context.beginPath();
+      context.moveTo(element.x, element.y);
+      context.lineTo(element.endX, element.endY);
+      context.stroke();
+    }
     context.restore();
   }
 
   function elementBounds(element) {
     if (element.type === "rectangle") return { x: element.x, y: element.y, width: element.width, height: element.height };
+    if (element.type === "ellipse") return { x: element.x - element.radiusX, y: element.y - element.radiusY, width: element.radiusX * 2, height: element.radiusY * 2 };
+    if (element.type === "line") {
+      const half = element.thickness / 2;
+      const left = Math.min(element.x, element.endX) - half;
+      const top = Math.min(element.y, element.endY) - half;
+      return {
+        x: left,
+        y: top,
+        width: Math.max(element.thickness, Math.abs(element.endX - element.x) + element.thickness),
+        height: Math.max(element.thickness, Math.abs(element.endY - element.y) + element.thickness),
+      };
+    }
     if (!fonts) return { x: element.x - 8, y: element.y - 8, width: 16, height: 16 };
     const layout = positionedWatchText(project, element, previewText(element));
     return { x: layout.x, y: layout.y, width: layout.width, height: layout.height };
@@ -130,7 +159,7 @@
     for (let index = project.elements.length - 1; index >= 0; index -= 1) {
       const element = project.elements[index];
       const bounds = elementBounds(element);
-      const padding = element.type === "rectangle" ? 4 : 7;
+      const padding = isShapeElement(element) ? 4 : 7;
       if (x >= bounds.x - padding && x <= bounds.x + bounds.width + padding && y >= bounds.y - padding && y <= bounds.y + bounds.height + padding) return element;
     }
     return null;

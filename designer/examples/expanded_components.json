@@ -1,0 +1,92 @@
+{
+  "name": "Expanded Components",
+  "appId": "fedcba9876543210fedcba9876543210",
+  "backgroundColor": "#000000",
+  "fontFamily": "oxanium",
+  "fontHeights": { "time": 88, "value": 30, "label": 18 },
+  "letterSpacing": { "time": 0, "value": 0, "label": 1 },
+  "elements": [
+    {
+      "type": "ellipse",
+      "id": "time-halo",
+      "x": 160,
+      "y": 137,
+      "radiusX": 94,
+      "radiusY": 62,
+      "fillColor": "#101A18"
+    },
+    {
+      "type": "label",
+      "id": "daily-label",
+      "x": 160,
+      "y": 56,
+      "text": "DAILY SIGNAL",
+      "color": "#72D6B2",
+      "align": "center",
+      "maxWidth": 260,
+      "lineHeight": 22,
+      "renderedLines": ["DAILY SIGNAL"]
+    },
+    {
+      "type": "time",
+      "id": "main-time",
+      "x": 160,
+      "y": 137,
+      "color": "#FFFFFF",
+      "align": "center",
+      "format": "device",
+      "showSeconds": false
+    },
+    {
+      "type": "line",
+      "id": "metric-rule",
+      "x": 52,
+      "y": 222,
+      "endX": 268,
+      "endY": 222,
+      "color": "#27312D",
+      "thickness": 2
+    },
+    {
+      "type": "calories",
+      "id": "calories",
+      "x": 82,
+      "y": 278,
+      "color": "#E5AD59",
+      "align": "center"
+    },
+    {
+      "type": "distance",
+      "id": "distance",
+      "x": 238,
+      "y": 278,
+      "color": "#78A6D6",
+      "align": "center",
+      "unit": "kilometers"
+    },
+    {
+      "type": "label",
+      "id": "calories-unit",
+      "x": 82,
+      "y": 312,
+      "text": "KCAL",
+      "color": "#8D949D",
+      "align": "center",
+      "maxWidth": 100,
+      "lineHeight": 22,
+      "renderedLines": ["KCAL"]
+    },
+    {
+      "type": "label",
+      "id": "distance-unit",
+      "x": 238,
+      "y": 312,
+      "text": "KM",
+      "color": "#8D949D",
+      "align": "center",
+      "maxWidth": 100,
+      "lineHeight": 22,
+      "renderedLines": ["KM"]
+    }
+  ]
+}

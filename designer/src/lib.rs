@@ -7,7 +7,8 @@ pub use generator::{
     generate_project, parse_spec, validate_spec,
 };
 pub use model::{
-    Alignment, Element, Font, FontFamily, FontHeights, LetterSpacing, ProjectSpec, TimeFormat,
+    Alignment, DistanceUnit, Element, Font, FontFamily, FontHeights, LetterSpacing, ProjectSpec,
+    TimeFormat,
 };
 
 pub fn validate_project_json(json: &str) -> String {

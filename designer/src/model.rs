@@ -83,6 +83,30 @@ pub enum Element {
         #[serde(default)]
         align: Alignment,
     },
+    Calories {
+        id: String,
+        x: i32,
+        y: i32,
+        #[serde(default = "default_foreground")]
+        color: String,
+        #[serde(default)]
+        font: Font,
+        #[serde(default)]
+        align: Alignment,
+    },
+    Distance {
+        id: String,
+        x: i32,
+        y: i32,
+        #[serde(default = "default_foreground")]
+        color: String,
+        #[serde(default)]
+        font: Font,
+        #[serde(default)]
+        align: Alignment,
+        #[serde(default)]
+        unit: DistanceUnit,
+    },
     Label {
         id: String,
         x: i32,
@@ -111,6 +135,26 @@ pub enum Element {
         fill_color: String,
         #[serde(default)]
         corner_radius: u32,
+    },
+    Ellipse {
+        id: String,
+        x: i32,
+        y: i32,
+        radius_x: u32,
+        radius_y: u32,
+        #[serde(default = "default_foreground")]
+        fill_color: String,
+    },
+    Line {
+        id: String,
+        x: i32,
+        y: i32,
+        end_x: i32,
+        end_y: i32,
+        #[serde(default = "default_foreground")]
+        color: String,
+        #[serde(default = "default_line_thickness")]
+        thickness: u32,
     },
 }
 
@@ -187,6 +231,14 @@ pub enum TimeFormat {
     Hour24,
 }
 
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Default)]
+#[serde(rename_all = "kebab-case")]
+pub enum DistanceUnit {
+    #[default]
+    Kilometers,
+    Miles,
+}
+
 impl Element {
     pub fn id(&self) -> &str {
         match self {
@@ -195,8 +247,12 @@ impl Element {
             | Self::Steps { id, .. }
             | Self::HeartRate { id, .. }
             | Self::Battery { id, .. }
+            | Self::Calories { id, .. }
+            | Self::Distance { id, .. }
             | Self::Label { id, .. }
-            | Self::Rectangle { id, .. } => id,
+            | Self::Rectangle { id, .. }
+            | Self::Ellipse { id, .. }
+            | Self::Line { id, .. } => id,
         }
     }
 
@@ -207,8 +263,12 @@ impl Element {
             | Self::Steps { x, y, .. }
             | Self::HeartRate { x, y, .. }
             | Self::Battery { x, y, .. }
+            | Self::Calories { x, y, .. }
+            | Self::Distance { x, y, .. }
             | Self::Label { x, y, .. }
-            | Self::Rectangle { x, y, .. } => (*x, *y),
+            | Self::Rectangle { x, y, .. }
+            | Self::Ellipse { x, y, .. }
+            | Self::Line { x, y, .. } => (*x, *y),
         }
     }
 
@@ -219,8 +279,11 @@ impl Element {
             | Self::Steps { color, .. }
             | Self::HeartRate { color, .. }
             | Self::Battery { color, .. }
-            | Self::Label { color, .. } => color,
-            Self::Rectangle { fill_color, .. } => fill_color,
+            | Self::Calories { color, .. }
+            | Self::Distance { color, .. }
+            | Self::Label { color, .. }
+            | Self::Line { color, .. } => color,
+            Self::Rectangle { fill_color, .. } | Self::Ellipse { fill_color, .. } => fill_color,
         }
     }
 }
@@ -243,4 +306,8 @@ fn default_label_width() -> u32 {
 
 fn default_label_line_height() -> u32 {
     22
+}
+
+fn default_line_thickness() -> u32 {
+    1
 }

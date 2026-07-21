@@ -4,10 +4,11 @@
   import { ALIGN_OPTIONS, TYPE_NAMES } from "../lib/catalog.js";
   import { FONT_FAMILIES, FONT_HEIGHT_OPTIONS, FONT_ROLE_DETAILS, normalizeFontFamily, roleForElement } from "../lib/bmfont.js";
   import { tactile } from "../lib/motion.js";
+  import { isShapeElement } from "../lib/project.js";
 
   let { element, fontFamily, fontHeights, letterSpacing, onfontfamily, onfontheight, onletterspacing, onupdate, onduplicate, ondelete, onmove } = $props();
   let selectedFamily = $derived(FONT_FAMILIES.find((family) => family.id === normalizeFontFamily(fontFamily)) ?? FONT_FAMILIES[0]);
-  let selectedRole = $derived(element && element.type !== "rectangle" ? roleForElement(element) : null);
+  let selectedRole = $derived(element && !isShapeElement(element) ? roleForElement(element) : null);
 
   function update(property, value, commit = false) {
     onupdate(property, value, commit);
@@ -75,6 +76,25 @@
           <Field label="Fill" type="color" value={element.fillColor} oninput={(value) => update("fillColor", value.toUpperCase())} onchange={(value) => update("fillColor", value.toUpperCase(), true)} />
         </div>
       </section>
+    {:else if element.type === "ellipse"}
+      <section class="inspector-group">
+        <h3>Geometry</h3>
+        <div class="field-grid two">
+          <Field label="Horizontal radius" type="number" value={element.radiusX} min={1} max={159} oninput={(value) => update("radiusX", value)} onchange={(value) => update("radiusX", value, true)} />
+          <Field label="Vertical radius" type="number" value={element.radiusY} min={1} max={179} oninput={(value) => update("radiusY", value)} onchange={(value) => update("radiusY", value, true)} />
+          <Field label="Fill" type="color" value={element.fillColor} oninput={(value) => update("fillColor", value.toUpperCase())} onchange={(value) => update("fillColor", value.toUpperCase(), true)} />
+        </div>
+      </section>
+    {:else if element.type === "line"}
+      <section class="inspector-group">
+        <h3>Line</h3>
+        <div class="field-grid two">
+          <Field label="End X" type="number" value={element.endX} min={0} max={319} oninput={(value) => update("endX", value)} onchange={(value) => update("endX", value, true)} />
+          <Field label="End Y" type="number" value={element.endY} min={0} max={359} oninput={(value) => update("endY", value)} onchange={(value) => update("endY", value, true)} />
+          <Field label="Thickness" type="number" value={element.thickness} min={1} max={12} oninput={(value) => update("thickness", value)} onchange={(value) => update("thickness", value, true)} />
+          <Field label="Color" type="color" value={element.color} oninput={(value) => update("color", value.toUpperCase())} onchange={(value) => update("color", value.toUpperCase(), true)} />
+        </div>
+      </section>
     {:else}
       {#if element.type === "label"}
         <section class="inspector-group">
@@ -126,6 +146,12 @@
             <input type="checkbox" checked={element.showSeconds} onchange={(event) => update("showSeconds", event.currentTarget.checked, true)} />
             <span class="switch-track"></span>
           </label>
+        </section>
+      {/if}
+      {#if element.type === "distance"}
+        <section class="inspector-group">
+          <h3>Distance</h3>
+          <Field label="Unit" value={element.unit} options={[["kilometers", "Kilometers"], ["miles", "Miles"]]} oninput={(value) => update("unit", value, true)} />
         </section>
       {/if}
     {/if}

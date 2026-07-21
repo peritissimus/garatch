@@ -8,7 +8,7 @@
   import Stage from "./components/Stage.svelte";
   import Icon from "./components/Icon.svelte";
   import { TYPE_NAMES } from "./lib/catalog.js";
-  import { clampPosition, createSampleProject, duplicateElement, elementFactory, loadProject, saveProject, slugify } from "./lib/project.js";
+  import { WATCH_HEIGHT, WATCH_WIDTH, clampPosition, createSampleProject, duplicateElement, elementFactory, loadProject, saveProject, slugify } from "./lib/project.js";
   import { loadGaratchCore } from "./lib/wasm.js";
   import { prepareProjectForExport } from "./lib/textLayout.js";
   import { tactile } from "./lib/motion.js";
@@ -88,6 +88,10 @@
     if (!selected || !property || (typeof value === "number" && Number.isNaN(value))) return;
     if (property === "x" || property === "y") {
       const next = clampPosition(selected, property === "x" ? value : selected.x, property === "y" ? value : selected.y);
+      if (selected.type === "line") {
+        selected.endX += next.x - selected.x;
+        selected.endY += next.y - selected.y;
+      }
       selected.x = next.x;
       selected.y = next.y;
       return;
@@ -101,11 +105,27 @@
       selected.x = next.x;
       selected.y = next.y;
     }
+    if (selected.type === "ellipse") {
+      selected.radiusX = Math.max(1, Math.min(Math.floor((WATCH_WIDTH - 1) / 2), selected.radiusX));
+      selected.radiusY = Math.max(1, Math.min(Math.floor((WATCH_HEIGHT - 1) / 2), selected.radiusY));
+      const next = clampPosition(selected, selected.x, selected.y);
+      selected.x = next.x;
+      selected.y = next.y;
+    }
+    if (selected.type === "line") {
+      selected.endX = Math.max(0, Math.min(WATCH_WIDTH - 1, selected.endX));
+      selected.endY = Math.max(0, Math.min(WATCH_HEIGHT - 1, selected.endY));
+      selected.thickness = Math.max(1, Math.min(12, selected.thickness));
+    }
   }
 
   function updatePosition(id, x, y) {
     const element = project.elements.find((item) => item.id === id);
     if (!element) return;
+    if (element.type === "line") {
+      element.endX += x - element.x;
+      element.endY += y - element.y;
+    }
     element.x = x;
     element.y = y;
   }

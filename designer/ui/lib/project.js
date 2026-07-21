@@ -11,6 +11,10 @@ export const WATCH_WIDTH = 320;
 export const WATCH_HEIGHT = 360;
 export const STORAGE_KEY = "garatch-studio-project-v1";
 
+export function isShapeElement(element) {
+  return ["rectangle", "ellipse", "line"].includes(element?.type);
+}
+
 function createId(type) {
   return `${type}-${crypto.randomUUID().replaceAll("-", "").slice(0, 8)}`;
 }
@@ -77,6 +81,23 @@ export function clampPosition(element, x, y) {
       y: Math.round(Math.max(0, Math.min(WATCH_HEIGHT - element.height, y))),
     };
   }
+  if (element.type === "ellipse") {
+    return {
+      x: Math.round(Math.max(element.radiusX, Math.min(WATCH_WIDTH - 1 - element.radiusX, x))),
+      y: Math.round(Math.max(element.radiusY, Math.min(WATCH_HEIGHT - 1 - element.radiusY, y))),
+    };
+  }
+  if (element.type === "line") {
+    const requestedX = Math.round(x);
+    const requestedY = Math.round(y);
+    const minX = Math.min(element.x, element.endX);
+    const maxX = Math.max(element.x, element.endX);
+    const minY = Math.min(element.y, element.endY);
+    const maxY = Math.max(element.y, element.endY);
+    const dx = Math.max(-minX, Math.min(WATCH_WIDTH - 1 - maxX, requestedX - element.x));
+    const dy = Math.max(-minY, Math.min(WATCH_HEIGHT - 1 - maxY, requestedY - element.y));
+    return { x: element.x + dx, y: element.y + dy };
+  }
   return {
     x: Math.round(Math.max(0, Math.min(WATCH_WIDTH - 1, x))),
     y: Math.round(Math.max(0, Math.min(WATCH_HEIGHT - 1, y))),
@@ -88,12 +109,20 @@ export function elementFactory(type) {
   if (type === "rectangle") {
     return { ...common, type, x: 90, y: 170, width: 140, height: 20, fillColor: "#72D6B2", cornerRadius: 8 };
   }
+  if (type === "ellipse") {
+    return { ...common, type, radiusX: 54, radiusY: 36, fillColor: "#27312D" };
+  }
+  if (type === "line") {
+    return { ...common, type, x: 60, endX: 260, endY: 180, color: "#72D6B2", thickness: 1 };
+  }
   const base = { ...common, type, color: "#FFFFFF", align: "center" };
   if (type === "time") return { ...base, y: 132, format: "device", showSeconds: false };
   if (type === "date") return { ...base, y: 210 };
   if (type === "steps") return { ...base, y: 260, color: "#72D6B2" };
   if (type === "heart-rate") return { ...base, y: 290, color: "#EF7E74" };
   if (type === "battery") return { ...base, y: 320 };
+  if (type === "calories") return { ...base, y: 290, color: "#E5AD59" };
+  if (type === "distance") return { ...base, y: 290, color: "#78A6D6", unit: "kilometers" };
   return { ...base, type: "label", y: 80, text: "YOUR LABEL", maxWidth: 280, lineHeight: 22 };
 }
 
@@ -101,6 +130,10 @@ export function duplicateElement(element) {
   const copy = structuredClone(element);
   copy.id = createId(element.type);
   const position = clampPosition(copy, copy.x + 12, copy.y + 12);
+  if (copy.type === "line") {
+    copy.endX += position.x - copy.x;
+    copy.endY += position.y - copy.y;
+  }
   copy.x = position.x;
   copy.y = position.y;
   return copy;

@@ -3,6 +3,11 @@
   import { TYPE_GLYPHS, TYPE_NAMES } from "../lib/catalog.js";
   import { tactile } from "../lib/motion.js";
   let { elements, selectedId, onselect } = $props();
+
+  function glyphFor(element) {
+    if (element.type === "distance") return element.unit === "miles" ? "MI" : "KM";
+    return TYPE_GLYPHS[element.type];
+  }
 </script>
 
 <section class="rail-section layers-section">
@@ -21,7 +26,7 @@
         onclick={() => onselect(element.id)}
         use:tactile={{ hoverY: 0, pressScale: 0.98 }}
       >
-        <span class="layer-glyph">{TYPE_GLYPHS[element.type]}</span>
+        <span class="layer-glyph">{glyphFor(element)}</span>
         <span class="layer-name">{element.type === "label" && element.text ? element.text : TYPE_NAMES[element.type]}</span>
         <span class="layer-position">{element.x}, {element.y}</span>
       </button>

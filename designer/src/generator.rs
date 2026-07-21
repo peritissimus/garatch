@@ -4,7 +4,8 @@ use std::fmt::{self, Write};
 use serde::{Deserialize, Serialize};
 
 use crate::model::{
-    Alignment, Element, FontFamily, FontHeights, LetterSpacing, ProjectSpec, TimeFormat,
+    Alignment, DistanceUnit, Element, FontFamily, FontHeights, LetterSpacing, ProjectSpec,
+    TimeFormat,
 };
 
 const WATCH_WIDTH: i32 = 320;
@@ -367,6 +368,49 @@ pub fn validate_spec(spec: &ProjectSpec) -> ValidationReport {
                     );
                 }
             }
+            Element::Ellipse {
+                radius_x, radius_y, ..
+            } => {
+                if *radius_x == 0 || *radius_y == 0 {
+                    issue(
+                        &mut issues,
+                        format!("{field}.radius"),
+                        "both radii must be greater than zero",
+                    );
+                }
+                if i64::from(x) - i64::from(*radius_x) < 0
+                    || i64::from(y) - i64::from(*radius_y) < 0
+                    || i64::from(x) + i64::from(*radius_x) >= i64::from(WATCH_WIDTH)
+                    || i64::from(y) + i64::from(*radius_y) >= i64::from(WATCH_HEIGHT)
+                {
+                    issue(
+                        &mut issues,
+                        format!("{field}.radius"),
+                        "ellipse must fit inside the 320×360 canvas",
+                    );
+                }
+            }
+            Element::Line {
+                end_x,
+                end_y,
+                thickness,
+                ..
+            } => {
+                if !(0..WATCH_WIDTH).contains(end_x) || !(0..WATCH_HEIGHT).contains(end_y) {
+                    issue(
+                        &mut issues,
+                        format!("{field}.end"),
+                        "line endpoint must be within the 320×360 canvas",
+                    );
+                }
+                if !(1..=12).contains(thickness) {
+                    issue(
+                        &mut issues,
+                        format!("{field}.thickness"),
+                        "must be between 1 and 12 pixels",
+                    );
+                }
+            }
             _ => {}
         }
     }
@@ -525,10 +569,12 @@ fn view_source(spec: &ProjectSpec, class_name: &str) -> String {
         .elements
         .iter()
         .any(|element| matches!(element, Element::Date { .. }));
-    let has_steps = spec
-        .elements
-        .iter()
-        .any(|element| matches!(element, Element::Steps { .. }));
+    let has_activity_monitor = spec.elements.iter().any(|element| {
+        matches!(
+            element,
+            Element::Steps { .. } | Element::Calories { .. } | Element::Distance { .. }
+        )
+    });
     let has_heart_rate = spec
         .elements
         .iter()
@@ -538,7 +584,7 @@ fn view_source(spec: &ProjectSpec, class_name: &str) -> String {
     if has_heart_rate {
         source.push_str("using Toybox.Activity;\n");
     }
-    if has_steps {
+    if has_activity_monitor {
         source.push_str("using Toybox.ActivityMonitor;\n");
     }
     source.push_str("using Toybox.Graphics;\nusing Toybox.System;\n");
@@ -734,6 +780,58 @@ fn render_element(element: &Element, index: usize, indent: &str, spacing: Letter
                 indent
             )
         ),
+        Element::Calories {
+            x, y, color, align, ..
+        } => format!(
+            "{indent}var activity{index} = ActivityMonitor.getInfo();\n\
+{indent}var caloriesValue{index} = \"--\";\n\
+{indent}if (activity{index} != null && activity{index}.calories != null) {{\n\
+{indent}    caloriesValue{index} = activity{index}.calories.format(\"%d\");\n\
+{indent}}}\n\
+{}",
+            draw_text(
+                *x,
+                *y,
+                color,
+                font_resource(FontRole::Value),
+                *align,
+                &format!("caloriesValue{index}"),
+                spacing.value,
+                indent
+            )
+        ),
+        Element::Distance {
+            x,
+            y,
+            color,
+            align,
+            unit,
+            ..
+        } => {
+            let divisor = match unit {
+                DistanceUnit::Kilometers => "100000.0",
+                DistanceUnit::Miles => "160934.4",
+            };
+            format!(
+                "{indent}var activity{index} = ActivityMonitor.getInfo();\n\
+{indent}var distanceValue{index} = \"--\";\n\
+{indent}if (activity{index} != null && activity{index}.distance != null) {{\n\
+{indent}    var distanceNumber{index} = activity{index}.distance / {divisor};\n\
+{indent}    distanceValue{index} = distanceNumber{index}.format(\"%.1f\");\n\
+{indent}}}\n\
+{}",
+                draw_text(
+                    *x,
+                    *y,
+                    color,
+                    font_resource(FontRole::Value),
+                    *align,
+                    &format!("distanceValue{index}"),
+                    spacing.value,
+                    indent
+                )
+            )
+        }
         Element::Label {
             x,
             y,
@@ -777,6 +875,33 @@ fn render_element(element: &Element, index: usize, indent: &str, spacing: Letter
                 )
             }
         }
+        Element::Ellipse {
+            x,
+            y,
+            radius_x,
+            radius_y,
+            fill_color,
+            ..
+        } => format!(
+            "{indent}dc.setColor({}, Graphics.COLOR_TRANSPARENT);\n\
+{indent}dc.fillEllipse({x}, {y}, {radius_x}, {radius_y});\n",
+            color_code(fill_color)
+        ),
+        Element::Line {
+            x,
+            y,
+            end_x,
+            end_y,
+            color,
+            thickness,
+            ..
+        } => format!(
+            "{indent}dc.setColor({}, Graphics.COLOR_TRANSPARENT);\n\
+{indent}dc.setPenWidth({thickness});\n\
+{indent}dc.drawLine({x}, {y}, {end_x}, {end_y});\n\
+{indent}dc.setPenWidth(1);\n",
+            color_code(color)
+        ),
     }
 }
 
