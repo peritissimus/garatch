@@ -1,0 +1,71 @@
+import { layoutWithLines, prepareWithSegments } from "@chenglou/pretext";
+import {
+  fontFamilyDetails,
+  normalizeFontHeights,
+  normalizeLetterSpacing,
+  roleForElement,
+} from "./bmfont.js";
+
+const preparedCache = new Map();
+
+export function typographyFor(project, element) {
+  const role = roleForElement(element);
+  const heights = normalizeFontHeights(project.fontHeights);
+  const spacing = normalizeLetterSpacing(project.letterSpacing);
+  const family = fontFamilyDetails(project.fontFamily);
+  const fontWeight = role === "time" ? 400 : 500;
+  const height = heights[role];
+  const lineHeight = element.type === "label"
+    ? Math.max(8, Math.min(80, Number(element.lineHeight) || Math.round(height * 1.22)))
+    : height;
+  return {
+    role,
+    height,
+    lineHeight,
+    letterSpacing: spacing[role],
+    cssFamily: family.cssFamily,
+    font: `${fontWeight} ${height}px "${family.cssFamily}"`,
+    maxWidth: element.type === "label" ? Math.max(20, Math.min(320, Number(element.maxWidth) || 280)) : 4096,
+  };
+}
+
+export function layoutWatchText(project, element, text) {
+  const typography = typographyFor(project, element);
+  const key = `${text}\u0000${typography.font}\u0000${typography.letterSpacing}`;
+  let prepared = preparedCache.get(key);
+  if (!prepared) {
+    prepared = prepareWithSegments(text, typography.font, {
+      whiteSpace: "normal",
+      wordBreak: "keep-all",
+      letterSpacing: typography.letterSpacing,
+    });
+    preparedCache.set(key, prepared);
+  }
+  const result = layoutWithLines(prepared, typography.maxWidth, typography.lineHeight);
+  return {
+    ...typography,
+    height: result.height,
+    lines: result.lines.length ? result.lines : [{ text: "", width: 0 }],
+  };
+}
+
+export async function ensureProjectFonts(project) {
+  if (!document.fonts) return;
+  const family = fontFamilyDetails(project.fontFamily);
+  const heights = normalizeFontHeights(project.fontHeights);
+  await Promise.all([
+    document.fonts.load(`400 ${heights.time}px "${family.cssFamily}"`),
+    document.fonts.load(`500 ${heights.value}px "${family.cssFamily}"`),
+    document.fonts.load(`500 ${heights.label}px "${family.cssFamily}"`),
+  ]);
+}
+
+export async function prepareProjectForExport(project) {
+  await ensureProjectFonts(project);
+  const prepared = structuredClone(project);
+  for (const element of prepared.elements) {
+    if (element.type !== "label") continue;
+    element.renderedLines = layoutWatchText(prepared, element, element.text).lines.map((line) => line.text);
+  }
+  return prepared;
+}
