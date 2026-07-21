@@ -2,7 +2,7 @@
   import Icon from "./Icon.svelte";
   import { tactile } from "../lib/motion.js";
 
-  let { projectName, coreState, downloadState, onname, ondownload } = $props();
+  let { projectName, coreState, downloadState, onname, ontemplates, ondownload } = $props();
 </script>
 
 <header class="topbar">
@@ -30,6 +30,9 @@
       <span class="status-dot"></span>
       <span>{coreState.label}</span>
     </div>
+    <button class="button secondary templates-button" type="button" onclick={ontemplates} use:tactile>
+      <Icon name="templates" size={16} /><span>Templates</span>
+    </button>
     <button
       class="button primary download-button"
       data-state={downloadState}

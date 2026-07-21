@@ -6,6 +6,7 @@
   import { WATCH_HEIGHT, WATCH_WIDTH, clampPosition, isShapeElement } from "../lib/project.js";
   import { ensureProjectFonts, positionedWatchText } from "../lib/textLayout.js";
   import { tactile } from "../lib/motion.js";
+  import { drawCanvasIcon } from "../lib/iconDrawing.js";
 
   let { project, selectedId, showGrid, aod, onselect, onposition, ongrid, onaod } = $props();
   let canvas;
@@ -88,7 +89,7 @@
       context.beginPath();
       context.ellipse(element.x, element.y, element.radiusX, element.radiusY, 0, 0, Math.PI * 2);
       context.fill();
-    } else {
+    } else if (element.type === "line") {
       context.strokeStyle = element.color;
       context.lineWidth = element.thickness;
       context.lineCap = "butt";
@@ -96,6 +97,8 @@
       context.moveTo(element.x, element.y);
       context.lineTo(element.endX, element.endY);
       context.stroke();
+    } else {
+      drawCanvasIcon(context, element);
     }
     context.restore();
   }
@@ -114,6 +117,7 @@
         height: Math.max(element.thickness, Math.abs(element.endY - element.y) + element.thickness),
       };
     }
+    if (element.type === "icon") return { x: element.x - element.size / 2, y: element.y - element.size / 2, width: element.size, height: element.size };
     if (!fonts) return { x: element.x - 8, y: element.y - 8, width: 16, height: 16 };
     const layout = positionedWatchText(project, element, previewText(element));
     return { x: layout.x, y: layout.y, width: layout.width, height: layout.height };

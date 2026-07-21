@@ -5,8 +5,9 @@
   import { FONT_FAMILIES, FONT_HEIGHT_OPTIONS, FONT_ROLE_DETAILS, normalizeFontFamily, roleForElement } from "../lib/bmfont.js";
   import { tactile } from "../lib/motion.js";
   import { isShapeElement } from "../lib/project.js";
+  import { ICON_OPTIONS } from "../lib/iconDrawing.js";
 
-  let { element, fontFamily, fontHeights, letterSpacing, onfontfamily, onfontheight, onletterspacing, onupdate, onduplicate, ondelete, onmove } = $props();
+  let { element, fontFamily, fontHeights, letterSpacing, onfontfamily, onfontheight, onletterspacing, onupdate, onduplicate, ondelete, onmove, onalign } = $props();
   let selectedFamily = $derived(FONT_FAMILIES.find((family) => family.id === normalizeFontFamily(fontFamily)) ?? FONT_FAMILIES[0]);
   let selectedRole = $derived(element && !isShapeElement(element) ? roleForElement(element) : null);
 
@@ -64,6 +65,11 @@
         <Field label="X" type="number" value={element.x} min={0} max={319} oninput={(value) => update("x", value)} onchange={(value) => update("x", value, true)} />
         <Field label="Y" type="number" value={element.y} min={0} max={359} oninput={(value) => update("y", value)} onchange={(value) => update("y", value, true)} />
       </div>
+      <div class="align-controls" aria-label="Align selected layer to canvas">
+        {#each [["left", "align-left", "Left"], ["center-x", "align-center", "Center"], ["right", "align-right", "Right"], ["top", "align-top", "Top"], ["center-y", "align-middle", "Middle"], ["bottom", "align-bottom", "Bottom"]] as [direction, icon, label]}
+          <button type="button" title={`Align ${label.toLowerCase()} to canvas`} aria-label={`Align ${label.toLowerCase()} to canvas`} onclick={() => onalign(direction)} use:tactile><Icon name={icon} size={15} /><span>{label}</span></button>
+        {/each}
+      </div>
     </section>
 
     {#if element.type === "rectangle"}
@@ -92,6 +98,15 @@
           <Field label="End X" type="number" value={element.endX} min={0} max={319} oninput={(value) => update("endX", value)} onchange={(value) => update("endX", value, true)} />
           <Field label="End Y" type="number" value={element.endY} min={0} max={359} oninput={(value) => update("endY", value)} onchange={(value) => update("endY", value, true)} />
           <Field label="Thickness" type="number" value={element.thickness} min={1} max={12} oninput={(value) => update("thickness", value)} onchange={(value) => update("thickness", value, true)} />
+          <Field label="Color" type="color" value={element.color} oninput={(value) => update("color", value.toUpperCase())} onchange={(value) => update("color", value.toUpperCase(), true)} />
+        </div>
+      </section>
+    {:else if element.type === "icon"}
+      <section class="inspector-group">
+        <h3>Icon</h3>
+        <div class="field-grid two">
+          <Field label="Symbol" value={element.icon} options={ICON_OPTIONS} oninput={(value) => update("icon", value, true)} />
+          <Field label="Size" type="number" value={element.size} min={12} max={96} oninput={(value) => update("size", value)} onchange={(value) => update("size", value, true)} />
           <Field label="Color" type="color" value={element.color} oninput={(value) => update("color", value.toUpperCase())} onchange={(value) => update("color", value.toUpperCase(), true)} />
         </div>
       </section>

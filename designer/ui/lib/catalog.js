@@ -10,6 +10,7 @@ export const ELEMENT_CATALOG = [
   { type: "rectangle", glyph: "▭", name: "Rectangle", description: "Block + divider", tone: "neutral" },
   { type: "ellipse", glyph: "○", name: "Ellipse", description: "Circle + oval", tone: "neutral" },
   { type: "line", glyph: "╱", name: "Line", description: "Rules + accents", tone: "neutral" },
+  { type: "icon", glyph: "♥", name: "Icon", description: "Visual symbol", tone: "coral" },
 ];
 
 export const TYPE_NAMES = Object.fromEntries(ELEMENT_CATALOG.map(({ type, name }) => [type, name]));
@@ -26,6 +27,7 @@ export const TYPE_GLYPHS = {
   rectangle: "▭",
   ellipse: "○",
   line: "╱",
+  icon: "♥",
 };
 
 export const ALIGN_OPTIONS = [

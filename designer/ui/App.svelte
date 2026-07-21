@@ -7,11 +7,14 @@
   import ProjectHealth from "./components/ProjectHealth.svelte";
   import Stage from "./components/Stage.svelte";
   import Icon from "./components/Icon.svelte";
+  import TemplateGallery from "./components/TemplateGallery.svelte";
   import { TYPE_NAMES } from "./lib/catalog.js";
   import { WATCH_HEIGHT, WATCH_WIDTH, clampPosition, createSampleProject, duplicateElement, elementFactory, loadProject, saveProject, slugify } from "./lib/project.js";
   import { loadGaratchCore } from "./lib/wasm.js";
   import { prepareProjectForExport } from "./lib/textLayout.js";
   import { tactile } from "./lib/motion.js";
+  import { roleForElement } from "./lib/bmfont.js";
+  import { createProjectFromTemplate } from "./lib/templates.js";
 
   const initialProject = loadProject();
   let project = $state(initialProject);
@@ -23,6 +26,7 @@
   let aod = $state(false);
   let validationOpen = $state(false);
   let downloadState = $state("idle");
+  let templatesOpen = $state(false);
   let toast = $state(null);
   let validationTimer;
   let toastTimer;
@@ -117,6 +121,47 @@
       selected.endY = Math.max(0, Math.min(WATCH_HEIGHT - 1, selected.endY));
       selected.thickness = Math.max(1, Math.min(12, selected.thickness));
     }
+    if (selected.type === "icon") {
+      selected.size = Math.max(12, Math.min(96, selected.size));
+      const next = clampPosition(selected, selected.x, selected.y);
+      selected.x = next.x;
+      selected.y = next.y;
+    }
+  }
+
+  function alignSelected(direction) {
+    if (!selected) return;
+    const horizontal = ["left", "center-x", "right"].includes(direction);
+    if (!["rectangle", "ellipse", "line", "icon"].includes(selected.type)) {
+      if (horizontal) {
+        selected.align = direction === "center-x" ? "center" : direction;
+        selected.x = direction === "left" ? 0 : direction === "right" ? WATCH_WIDTH - 1 : WATCH_WIDTH / 2;
+      } else {
+        const role = roleForElement(selected);
+        const height = selected.type === "label" ? Math.max(project.fontHeights[role], selected.lineHeight) : project.fontHeights[role];
+        selected.y = direction === "top" ? Math.ceil(height / 2) : direction === "bottom" ? WATCH_HEIGHT - 1 - Math.ceil(height / 2) : WATCH_HEIGHT / 2;
+      }
+      notify("Layer aligned to canvas");
+      return;
+    }
+    let bounds;
+    if (selected.type === "rectangle") bounds = { left: selected.x, right: selected.x + selected.width, top: selected.y, bottom: selected.y + selected.height };
+    else if (selected.type === "ellipse") bounds = { left: selected.x - selected.radiusX, right: selected.x + selected.radiusX, top: selected.y - selected.radiusY, bottom: selected.y + selected.radiusY };
+    else if (selected.type === "icon") bounds = { left: selected.x - selected.size / 2, right: selected.x + selected.size / 2, top: selected.y - selected.size / 2, bottom: selected.y + selected.size / 2 };
+    else bounds = { left: Math.min(selected.x, selected.endX), right: Math.max(selected.x, selected.endX), top: Math.min(selected.y, selected.endY), bottom: Math.max(selected.y, selected.endY) };
+    const dx = direction === "left" ? -bounds.left : direction === "right" ? WATCH_WIDTH - 1 - bounds.right : direction === "center-x" ? WATCH_WIDTH / 2 - (bounds.left + bounds.right) / 2 : 0;
+    const dy = direction === "top" ? -bounds.top : direction === "bottom" ? WATCH_HEIGHT - 1 - bounds.bottom : direction === "center-y" ? WATCH_HEIGHT / 2 - (bounds.top + bounds.bottom) / 2 : 0;
+    selected.x = Math.round(selected.x + dx); selected.y = Math.round(selected.y + dy);
+    if (selected.type === "line") { selected.endX = Math.round(selected.endX + dx); selected.endY = Math.round(selected.endY + dy); }
+    notify("Layer aligned to canvas");
+  }
+
+  function applyTemplate(templateId) {
+    if (!window.confirm("Replace the current canvas with this watch face?")) return;
+    project = createProjectFromTemplate(templateId);
+    selectedId = project.elements.find((element) => element.type === "time")?.id ?? null;
+    templatesOpen = false;
+    notify("Watch face template applied");
   }
 
   function updatePosition(id, x, y) {
@@ -183,6 +228,7 @@
     const distance = event.shiftKey ? 10 : 1;
     const [dx, dy] = deltas[event.key];
     const next = clampPosition(selected, selected.x + dx * distance, selected.y + dy * distance);
+    if (selected.type === "line") { selected.endX += next.x - selected.x; selected.endY += next.y - selected.y; }
     selected.x = next.x; selected.y = next.y;
   }
 
@@ -216,6 +262,7 @@
     {coreState}
     {downloadState}
     onname={(name) => { project.name = name; }}
+    ontemplates={() => { templatesOpen = true; }}
     ondownload={downloadProject}
   />
 
@@ -250,6 +297,7 @@
         onduplicate={duplicateSelected}
         ondelete={deleteSelected}
         onmove={moveLayer}
+        onalign={alignSelected}
       />
       <div class="rail-divider"></div>
       <ProjectHealth
@@ -281,6 +329,10 @@
       <button class="button secondary full-width" type="button" onclick={() => { validationOpen = false; }} use:tactile>Return to editor</button>
     </div>
   </div>
+{/if}
+
+{#if templatesOpen}
+  <TemplateGallery onclose={() => { templatesOpen = false; }} onapply={applyTemplate} />
 {/if}
 
 {#if toast}

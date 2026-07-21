@@ -44,5 +44,21 @@
   {:else if name === "command"}
     <path d="M9 6v12M15 6v12M6 9h12M6 15h12" />
     <path d="M6 3a3 3 0 0 0 0 6h3V6a3 3 0 0 0-3-3ZM18 3a3 3 0 0 1 0 6h-3V6a3 3 0 0 1 3-3ZM6 21a3 3 0 0 1 0-6h3v3a3 3 0 0 1-3 3ZM18 21a3 3 0 0 0 0-6h-3v3a3 3 0 0 0 3 3Z" />
+  {:else if name === "close"}
+    <path d="m6 6 12 12M18 6 6 18" />
+  {:else if name === "templates"}
+    <path d="M4 5h7v6H4zM14 5h6v6h-6zM4 14h7v5H4zM14 14h6v5h-6z" />
+  {:else if name === "align-left"}
+    <path d="M4 4v16M7 7h11M7 17h8" />
+  {:else if name === "align-center"}
+    <path d="M12 4v16M6 7h12M8 17h8" />
+  {:else if name === "align-right"}
+    <path d="M20 4v16M6 7h11M9 17h8" />
+  {:else if name === "align-top"}
+    <path d="M4 4h16M7 7v11M17 7v8" />
+  {:else if name === "align-middle"}
+    <path d="M4 12h16M7 6v12M17 8v8" />
+  {:else if name === "align-bottom"}
+    <path d="M4 20h16M7 6v11M17 9v8" />
   {/if}
 </svg>

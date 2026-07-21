@@ -1,46 +1,20 @@
-import {
-  DEFAULT_FONT_FAMILY,
-  DEFAULT_FONT_HEIGHTS,
-  DEFAULT_LETTER_SPACING,
-  normalizeFontFamily,
-  normalizeFontHeights,
-  normalizeLetterSpacing,
-} from "./bmfont.js";
+import { normalizeFontFamily, normalizeFontHeights, normalizeLetterSpacing } from "./bmfont.js";
+import { createProjectFromTemplate } from "./templates.js";
 
 export const WATCH_WIDTH = 320;
 export const WATCH_HEIGHT = 360;
 export const STORAGE_KEY = "garatch-studio-project-v1";
 
 export function isShapeElement(element) {
-  return ["rectangle", "ellipse", "line"].includes(element?.type);
+  return ["rectangle", "ellipse", "line", "icon"].includes(element?.type);
 }
 
 function createId(type) {
   return `${type}-${crypto.randomUUID().replaceAll("-", "").slice(0, 8)}`;
 }
 
-function createAppId() {
-  return crypto.randomUUID().replaceAll("-", "");
-}
-
 export function createSampleProject() {
-  return {
-    name: "Night Signal",
-    appId: createAppId(),
-    backgroundColor: "#000000",
-    fontFamily: DEFAULT_FONT_FAMILY,
-    fontHeights: { ...DEFAULT_FONT_HEIGHTS },
-    letterSpacing: { ...DEFAULT_LETTER_SPACING },
-    elements: [
-      { type: "rectangle", id: createId("accent"), x: 46, y: 278, width: 228, height: 1, fillColor: "#27312D", cornerRadius: 0 },
-      { type: "label", id: createId("label"), x: 160, y: 70, text: "TUE 21 JUL", color: "#72D6B2", align: "center", maxWidth: 280, lineHeight: 22 },
-      { type: "time", id: createId("time"), x: 160, y: 136, color: "#FFFFFF", align: "center", format: "device", showSeconds: false },
-      { type: "date", id: createId("date"), x: 160, y: 188, color: "#8D949D", align: "center" },
-      { type: "steps", id: createId("steps"), x: 76, y: 310, color: "#FFFFFF", align: "center" },
-      { type: "heart-rate", id: createId("heart"), x: 160, y: 310, color: "#EF7E74", align: "center" },
-      { type: "battery", id: createId("battery"), x: 244, y: 310, color: "#FFFFFF", align: "center" },
-    ],
-  };
+  return createProjectFromTemplate();
 }
 
 export function loadProject() {
@@ -98,6 +72,13 @@ export function clampPosition(element, x, y) {
     const dy = Math.max(-minY, Math.min(WATCH_HEIGHT - 1 - maxY, requestedY - element.y));
     return { x: element.x + dx, y: element.y + dy };
   }
+  if (element.type === "icon") {
+    const half = element.size / 2;
+    return {
+      x: Math.round(Math.max(half, Math.min(WATCH_WIDTH - 1 - half, x))),
+      y: Math.round(Math.max(half, Math.min(WATCH_HEIGHT - 1 - half, y))),
+    };
+  }
   return {
     x: Math.round(Math.max(0, Math.min(WATCH_WIDTH - 1, x))),
     y: Math.round(Math.max(0, Math.min(WATCH_HEIGHT - 1, y))),
@@ -115,6 +96,7 @@ export function elementFactory(type) {
   if (type === "line") {
     return { ...common, type, x: 60, endX: 260, endY: 180, color: "#72D6B2", thickness: 1 };
   }
+  if (type === "icon") return { ...common, type, icon: "heart", size: 32, color: "#EF7E74" };
   const base = { ...common, type, color: "#FFFFFF", align: "center" };
   if (type === "time") return { ...base, y: 132, format: "device", showSeconds: false };
   if (type === "date") return { ...base, y: 210 };
