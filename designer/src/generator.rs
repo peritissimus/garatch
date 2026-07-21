@@ -544,7 +544,24 @@ pub fn generate_project(spec: &ProjectSpec) -> Result<GeneratedProject, Generate
     let folder_name = folder_name(&spec.name);
     let class_name = class_name(&spec.name);
     let app_id = normalize_app_id(&spec.app_id).expect("validated app id");
-    let fonts = selected_font_assets(spec.font_family, spec.font_heights);
+    // Time uses the primary family; value + label use the secondary family
+    // (which falls back to the primary when unset).
+    let primary_fonts = selected_font_assets(spec.font_family, spec.font_heights);
+    let secondary_family = spec.font_family_secondary.unwrap_or(spec.font_family);
+    let secondary_fonts = selected_font_assets(secondary_family, spec.font_heights);
+    let fonts = FontAssets {
+        time_file: primary_fonts.time_file,
+        time_descriptor: primary_fonts.time_descriptor,
+        time_atlas: primary_fonts.time_atlas,
+        value_file: secondary_fonts.value_file,
+        value_descriptor: secondary_fonts.value_descriptor,
+        value_atlas: secondary_fonts.value_atlas,
+        label_file: secondary_fonts.label_file,
+        label_descriptor: secondary_fonts.label_descriptor,
+        label_atlas: secondary_fonts.label_atlas,
+        license_file: primary_fonts.license_file,
+        license: primary_fonts.license,
+    };
     let icon_assets = selected_icon_assets(spec);
     let mut files = vec![
         text_file("manifest.xml", manifest_xml(&class_name, &app_id)),
@@ -603,6 +620,13 @@ pub fn generate_project(spec: &ProjectSpec) -> Result<GeneratedProject, Generate
         ),
         binary_file(format!("LICENSES/{}", fonts.license_file), fonts.license),
     ];
+
+    if secondary_fonts.license_file != fonts.license_file {
+        files.push(binary_file(
+            format!("LICENSES/{}", secondary_fonts.license_file),
+            secondary_fonts.license,
+        ));
+    }
 
     if !icon_assets.is_empty() {
         files.push(binary_file("LICENSES/Phosphor-MIT.txt", PHOSPHOR_LICENSE));

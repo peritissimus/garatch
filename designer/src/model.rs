@@ -9,6 +9,10 @@ pub struct ProjectSpec {
     pub background_color: String,
     #[serde(default)]
     pub font_family: FontFamily,
+    /// Secondary family for value + label roles. Falls back to `font_family`
+    /// when absent so single-font projects keep exporting identically.
+    #[serde(default)]
+    pub font_family_secondary: Option<FontFamily>,
     #[serde(default)]
     pub font_heights: FontHeights,
     #[serde(default)]
