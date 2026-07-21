@@ -68,6 +68,8 @@ export orchestration. The surrounding composites have focused contracts:
 - `LayersPanel.svelte` renders and selects the layer stack
 - `Stage.svelte` owns canvas rendering, hit testing, and direct manipulation
 - `InspectorPanel.svelte` composes property fields and layer actions
+- `IconPicker.svelte` provides visual symbol and appearance selection using the
+  same primitive renderer as the watch canvas
 - `ProjectHealth.svelte` presents WASM validation and project-level controls
 - `TemplateGallery.svelte` presents complete face designs without flattening them
 

@@ -1,11 +1,11 @@
 <script>
   import Field from "./Field.svelte";
   import Icon from "./Icon.svelte";
+  import IconPicker from "./IconPicker.svelte";
   import { ALIGN_OPTIONS, TYPE_NAMES } from "../lib/catalog.js";
   import { FONT_FAMILIES, FONT_HEIGHT_OPTIONS, FONT_ROLE_DETAILS, normalizeFontFamily, roleForElement } from "../lib/bmfont.js";
   import { tactile } from "../lib/motion.js";
   import { isShapeElement } from "../lib/project.js";
-  import { ICON_OPTIONS, ICON_STYLE_OPTIONS } from "../lib/iconDrawing.js";
 
   let { element, fontFamily, fontHeights, letterSpacing, onfontfamily, onfontheight, onletterspacing, onupdate, onduplicate, ondelete, onmove, onalign } = $props();
   let selectedFamily = $derived(FONT_FAMILIES.find((family) => family.id === normalizeFontFamily(fontFamily)) ?? FONT_FAMILIES[0]);
@@ -35,29 +35,48 @@
     {/if}
   </header>
 
-  <section class="inspector-group face-typeface-group">
-    <div class="group-heading">
-      <h3>Face typeface</h3>
-      <p>One font for every text layer, in preview and export.</p>
-    </div>
-    <div class="typeface-current">
-      <span class="typeface-sample" style={`font-family: "${selectedFamily.cssFamily}", sans-serif`}>12:34</span>
-      <span class="typeface-copy"><strong>{selectedFamily.name}</strong><small>{selectedFamily.tone}</small></span>
-      <span class="typeface-indicator" aria-hidden="true"></span>
-    </div>
-    <Field
-      label="Choose font"
-      value={normalizeFontFamily(fontFamily)}
-      options={FONT_FAMILIES.map((family) => [family.id, family.name])}
-      oninput={(value) => onfontfamily(value)}
-    />
-  </section>
+  {#if !element || !isShapeElement(element)}
+    <section class="inspector-group face-typeface-group">
+      <div class="group-heading">
+        <h3>Face typeface</h3>
+        <p>One font for every text layer, in preview and export.</p>
+      </div>
+      <div class="typeface-current">
+        <span class="typeface-sample" style={`font-family: "${selectedFamily.cssFamily}", sans-serif`}>12:34</span>
+        <span class="typeface-copy"><strong>{selectedFamily.name}</strong><small>{selectedFamily.tone}</small></span>
+        <span class="typeface-indicator" aria-hidden="true"></span>
+      </div>
+      <Field
+        label="Choose font"
+        value={normalizeFontFamily(fontFamily)}
+        options={FONT_FAMILIES.map((family) => [family.id, family.name])}
+        oninput={(value) => onfontfamily(value)}
+      />
+    </section>
+  {/if}
 
   {#if element}
     <div class="selection-chip">
       <span class="selection-glyph">{TYPE_NAMES[element.type].slice(0, 1)}</span>
       <div><strong>{TYPE_NAMES[element.type]}</strong><span>Selected layer</span></div>
     </div>
+
+    {#if element.type === "icon"}
+      <section class="inspector-group icon-visual-group">
+        <h3>Icon</h3>
+        <IconPicker
+          icon={element.icon}
+          style={element.style ?? "filled"}
+          color={element.color}
+          onicon={(value) => update("icon", value, true)}
+          onstyle={(value) => update("style", value, true)}
+        />
+        <div class="field-grid two icon-tuning-fields">
+          <Field label="Size" type="number" value={element.size} min={12} max={96} oninput={(value) => update("size", value)} onchange={(value) => update("size", value, true)} />
+          <Field label="Color" type="color" value={element.color} oninput={(value) => update("color", value.toUpperCase())} onchange={(value) => update("color", value.toUpperCase(), true)} />
+        </div>
+      </section>
+    {/if}
 
     <section class="inspector-group">
       <h3>Position</h3>
@@ -101,17 +120,7 @@
           <Field label="Color" type="color" value={element.color} oninput={(value) => update("color", value.toUpperCase())} onchange={(value) => update("color", value.toUpperCase(), true)} />
         </div>
       </section>
-    {:else if element.type === "icon"}
-      <section class="inspector-group">
-        <h3>Icon</h3>
-        <div class="field-grid two">
-          <Field label="Symbol" value={element.icon} options={ICON_OPTIONS} oninput={(value) => update("icon", value, true)} />
-          <Field label="Appearance" value={element.style ?? "filled"} options={ICON_STYLE_OPTIONS} oninput={(value) => update("style", value, true)} />
-          <Field label="Size" type="number" value={element.size} min={12} max={96} oninput={(value) => update("size", value)} onchange={(value) => update("size", value, true)} />
-          <Field label="Color" type="color" value={element.color} oninput={(value) => update("color", value.toUpperCase())} onchange={(value) => update("color", value.toUpperCase(), true)} />
-        </div>
-      </section>
-    {:else}
+    {:else if !isShapeElement(element)}
       {#if element.type === "label"}
         <section class="inspector-group">
           <h3>Content</h3>

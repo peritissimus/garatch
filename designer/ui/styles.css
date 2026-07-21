@@ -501,6 +501,29 @@ kbd { display: inline-grid; min-width: 17px; height: 17px; place-items: center; 
 .typeface-copy small { color: var(--muted); font-size: 8px; }
 .typeface-indicator { width: 7px; height: 7px; background: var(--mint); border-radius: 50%; box-shadow: 0 0 0 3px rgba(114, 214, 178, 0.1), 0 0 10px rgba(114, 214, 178, 0.28); }
 .font-role-note { color: var(--muted); font-size: 7px; line-height: 1.45; }
+.visual-picker { display: grid; gap: 8px; }
+.visual-picker-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.visual-picker-heading > span { color: var(--muted-strong); font-size: 8px; font-weight: 670; }
+.visual-picker-heading small { color: var(--muted); font-size: 7px; }
+.appearance-heading { margin-top: 3px; }
+.icon-choice-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px; }
+.icon-choice-grid button { position: relative; display: grid; min-width: 0; min-height: 68px; place-items: center; align-content: center; gap: 4px; padding: 6px 3px 5px; color: var(--muted); background: rgba(255, 255, 255, 0.018); border-radius: 10px; box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.065), inset 0 1px 0 rgba(255, 255, 255, 0.018); font-size: 7px; font-weight: 620; transition-property: color, background-color, box-shadow; transition-duration: 150ms; transition-timing-function: ease-out; }
+.icon-choice-grid button::after, .appearance-choice-grid button::after { position: absolute; top: 7px; right: 7px; width: 5px; height: 5px; content: ""; background: var(--mint); border-radius: 50%; box-shadow: 0 0 0 3px rgba(114, 214, 178, 0.1); opacity: 0; transform: scale(0.25); filter: blur(4px); transition-property: opacity, transform, filter; transition-duration: 200ms; transition-timing-function: cubic-bezier(0.2, 0, 0, 1); }
+.icon-choice-grid button:hover { color: var(--ink); background: rgba(255, 255, 255, 0.032); box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.105), inset 0 1px 0 rgba(255, 255, 255, 0.025); }
+.icon-choice-grid button.selected { color: var(--mint); background: rgba(114, 214, 178, 0.065); box-shadow: 0 0 0 1px rgba(114, 214, 178, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.035), 0 5px 15px rgba(0, 0, 0, 0.12); }
+.icon-choice-grid button.selected::after, .appearance-choice-grid button.selected::after { opacity: 1; transform: scale(1); filter: blur(0); }
+.icon-choice-preview { display: grid; width: 36px; height: 36px; place-items: center; }
+.icon-choice-preview canvas { display: block; width: 36px; height: 36px; }
+.appearance-choice-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.appearance-choice-grid button { position: relative; display: grid; grid-template-columns: 43px minmax(0, 1fr); min-width: 0; min-height: 62px; align-items: center; gap: 7px; padding: 6px 8px 6px 6px; color: var(--muted); background: rgba(255, 255, 255, 0.018); border-radius: 11px; box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.065), inset 0 1px 0 rgba(255, 255, 255, 0.018); text-align: left; transition-property: color, background-color, box-shadow; transition-duration: 150ms; transition-timing-function: ease-out; }
+.appearance-choice-grid button:hover { color: var(--ink); background: rgba(255, 255, 255, 0.032); box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.105), inset 0 1px 0 rgba(255, 255, 255, 0.025); }
+.appearance-choice-grid button.selected { color: var(--mint); background: rgba(114, 214, 178, 0.055); box-shadow: 0 0 0 1px rgba(114, 214, 178, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.035); }
+.appearance-preview { display: grid; width: 43px; height: 50px; place-items: center; color: inherit; background: rgba(0, 0, 0, 0.18); border-radius: 7px; }
+.appearance-preview canvas { display: block; width: 38px; height: 38px; }
+.appearance-choice-grid button > span:last-child { display: grid; gap: 2px; min-width: 0; }
+.appearance-choice-grid strong { font-size: 8px; font-weight: 680; }
+.appearance-choice-grid small { overflow: hidden; color: var(--muted); font-size: 6px; text-overflow: ellipsis; white-space: nowrap; }
+.icon-tuning-fields { margin-top: 10px; }
 .field { display: grid; gap: 5px; min-width: 0; }
 .field > span { color: var(--muted); font-size: 8px; font-weight: 630; }
 .field input, .field select {
