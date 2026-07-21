@@ -530,7 +530,7 @@ kbd { display: inline-grid; min-width: 17px; height: 17px; place-items: center; 
 .inspector-header { margin-bottom: 13px; }
 .header-actions { display: flex; gap: 2px; }
 .header-actions .icon-button { width: 36px; height: 36px; }
-.selection-chip { display: flex; align-items: center; gap: 9px; padding: 9px; margin-bottom: 15px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+.selection-chip { display: flex; align-items: center; gap: 9px; padding: 9px; margin: 13px 0 0; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
 .selection-glyph { display: grid; width: 30px; height: 30px; flex: 0 0 auto; place-items: center; color: var(--accent-ink); background: var(--accent); border-radius: 8px; font-size: 11px; font-weight: 750; }
 .selection-chip > div { display: grid; gap: 1px; }
 .selection-chip strong { font-size: 10px; font-weight: 680; }
