@@ -17,8 +17,11 @@ ZIP. Users compile the downloaded project locally with Garmin's official
 - Digital time, date, steps, current heart rate, battery, calories, distance,
   and static labels
 - Dynamic components are separated from static design layers in the palette
-- Digital and stacked time/date representations, plus value, icon-value, and
-  progress-bar representations for activity metrics
+- Six clock representations: digital, stacked, split, analog, analog + digital,
+  and a live seconds ring
+- Seven date representations: numeric, stacked, weekday, month + day, full
+  date, date + year, and a compact calendar tile
+- Value, icon-value, and progress-bar representations for activity metrics
 - Editable progress goals or scale maxima for steps, heart rate, calories, and
   distance; battery progress is fixed to its natural 100% scale
 - Rectangle, ellipse, adjustable line, and Phosphor watch icons
