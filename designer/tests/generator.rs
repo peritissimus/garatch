@@ -231,7 +231,7 @@ fn exports_activity_metrics_and_shape_primitives() {
 }
 
 #[test]
-fn exports_editable_icon_primitives() {
+fn exports_phosphor_icon_resources_and_draw_calls() {
     let mut project: serde_json::Value = serde_json::from_str(&sample_json()).unwrap();
     for (index, icon) in ["heart", "steps", "battery", "flame", "pin", "sun", "bolt"]
         .iter()
@@ -273,14 +273,31 @@ fn exports_editable_icon_primitives() {
         .find(|file| file.path.ends_with("View.mc"))
         .map(|file| String::from_utf8(file.bytes.clone()).unwrap())
         .unwrap();
-    assert!(view.contains("dc.fillCircle"));
-    assert!(view.contains("dc.drawCircle"));
-    assert!(view.contains("dc.fillPolygon"));
-    assert!(view.contains("dc.drawLine"));
-    assert!(!view.contains("dc.drawPolygon"));
-    assert!(view.contains("dc.drawRectangle"));
-    assert!(view.contains("dc.fillEllipse"));
-    assert!(view.contains("dc.drawEllipse"));
+    let paths: Vec<&str> = generated
+        .files
+        .iter()
+        .map(|file| file.path.as_str())
+        .collect();
+    let drawables = generated
+        .files
+        .iter()
+        .find(|file| file.path == "resources/drawables/drawables.xml")
+        .map(|file| String::from_utf8(file.bytes.clone()).unwrap())
+        .unwrap();
+
+    assert!(view.contains("new Graphics.AffineTransform()"));
+    assert!(view.contains(".scale(0.250000, 0.250000)"));
+    assert!(view.contains("dc.drawBitmap2"));
+    assert!(view.contains(":tintColor => 0x72D6B2"));
+    assert!(view.contains(":filterMode => Graphics.FILTER_MODE_BILINEAR"));
+    assert!(view.contains("Rez.Drawables.IconHeartFilled"));
+    assert!(view.contains("Rez.Drawables.IconStepsOutline"));
+    assert!(drawables.contains("id=\"IconHeartFilled\" filename=\"heart_filled.png\""));
+    assert!(drawables.contains("id=\"IconStepsOutline\" filename=\"steps_outline.png\""));
+    assert!(paths.contains(&"resources/drawables/heart_filled.png"));
+    assert!(paths.contains(&"resources/drawables/steps_outline.png"));
+    assert!(paths.contains(&"LICENSES/Phosphor-MIT.txt"));
+    assert!(!paths.contains(&"resources/drawables/heart_outline.png"));
 }
 
 #[test]

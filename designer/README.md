@@ -16,7 +16,7 @@ ZIP. Users compile the downloaded project locally with Garmin's official
 - Fixed 320×360 canvas
 - Digital time, date, steps, current heart rate, battery, calories, distance,
   and static labels
-- Rectangle, ellipse, adjustable line, and Garmin-safe icon primitives
+- Rectangle, ellipse, adjustable line, and Phosphor watch icons
 - Six complete editable watch-face templates for fast starting points
 - Seven built-in icons with filled and outline appearances: heart, steps,
   battery, flame, location, sun, and bolt
@@ -69,7 +69,7 @@ export orchestration. The surrounding composites have focused contracts:
 - `Stage.svelte` owns canvas rendering, hit testing, and direct manipulation
 - `InspectorPanel.svelte` composes property fields and layer actions
 - `IconPicker.svelte` provides visual symbol and appearance selection using the
-  same primitive renderer as the watch canvas
+  same generated Phosphor paths as the watch canvas and template previews
 - `ProjectHealth.svelte` presents WASM validation and project-level controls
 - `TemplateGallery.svelte` presents complete face designs without flattening them
 
@@ -86,8 +86,10 @@ visually aligned.
 
 Templates are ordinary project specs. Applying one creates fresh layer and app
 IDs, after which every item remains editable and exports through the same Rust
-generator. Icons use matching canvas and Monkey C primitives, adding no image
-assets or third-party runtime dependency to downloaded faces.
+generator. `npm run build:icons` derives both browser paths and monochrome Garmin
+bitmap resources from `phosphor-svelte`. Downloaded faces include only the icon
+variants they use plus the Phosphor MIT license, then scale and tint those
+matching resources in Monkey C.
 
 For live UI tuning with DialKit:
 

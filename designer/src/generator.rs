@@ -11,6 +11,71 @@ use crate::model::{
 const WATCH_WIDTH: i32 = 320;
 const WATCH_HEIGHT: i32 = 360;
 const LAUNCHER_ICON: &[u8] = include_bytes!("../assets/launcher_icon.png");
+const PHOSPHOR_LICENSE: &[u8] = include_bytes!("../assets/icons/Phosphor-MIT.txt");
+
+struct IconAsset {
+    kind: IconKind,
+    style: IconStyle,
+    resource_id: &'static str,
+    file_name: &'static str,
+    bytes: &'static [u8],
+}
+
+macro_rules! icon_asset {
+    ($kind:ident, $style:ident, $id:literal, $file:literal) => {
+        IconAsset {
+            kind: IconKind::$kind,
+            style: IconStyle::$style,
+            resource_id: $id,
+            file_name: $file,
+            bytes: include_bytes!(concat!("../assets/icons/", $file)),
+        }
+    };
+}
+
+const ICON_ASSETS: &[IconAsset] = &[
+    icon_asset!(Heart, Filled, "IconHeartFilled", "heart_filled.png"),
+    icon_asset!(Heart, Outline, "IconHeartOutline", "heart_outline.png"),
+    icon_asset!(Steps, Filled, "IconStepsFilled", "steps_filled.png"),
+    icon_asset!(Steps, Outline, "IconStepsOutline", "steps_outline.png"),
+    icon_asset!(Battery, Filled, "IconBatteryFilled", "battery_filled.png"),
+    icon_asset!(
+        Battery,
+        Outline,
+        "IconBatteryOutline",
+        "battery_outline.png"
+    ),
+    icon_asset!(Flame, Filled, "IconFlameFilled", "flame_filled.png"),
+    icon_asset!(Flame, Outline, "IconFlameOutline", "flame_outline.png"),
+    icon_asset!(Pin, Filled, "IconPinFilled", "pin_filled.png"),
+    icon_asset!(Pin, Outline, "IconPinOutline", "pin_outline.png"),
+    icon_asset!(Sun, Filled, "IconSunFilled", "sun_filled.png"),
+    icon_asset!(Sun, Outline, "IconSunOutline", "sun_outline.png"),
+    icon_asset!(Bolt, Filled, "IconBoltFilled", "bolt_filled.png"),
+    icon_asset!(Bolt, Outline, "IconBoltOutline", "bolt_outline.png"),
+];
+
+fn selected_icon_asset(kind: IconKind, style: IconStyle) -> &'static IconAsset {
+    ICON_ASSETS
+        .iter()
+        .find(|asset| asset.kind == kind && asset.style == style)
+        .expect("all icon variants are embedded")
+}
+
+fn selected_icon_assets(spec: &ProjectSpec) -> Vec<&'static IconAsset> {
+    ICON_ASSETS
+        .iter()
+        .filter(|asset| {
+            spec.elements.iter().any(|element| {
+                matches!(
+                    element,
+                    Element::Icon { icon, style, .. }
+                        if *icon == asset.kind && *style == asset.style
+                )
+            })
+        })
+        .collect()
+}
 
 struct FontAssets {
     time_file: &'static str,
@@ -480,7 +545,8 @@ pub fn generate_project(spec: &ProjectSpec) -> Result<GeneratedProject, Generate
     let class_name = class_name(&spec.name);
     let app_id = normalize_app_id(&spec.app_id).expect("validated app id");
     let fonts = selected_font_assets(spec.font_family, spec.font_heights);
-    let files = vec![
+    let icon_assets = selected_icon_assets(spec);
+    let mut files = vec![
         text_file("manifest.xml", manifest_xml(&class_name, &app_id)),
         text_file("monkey.jungle", jungle()),
         text_file(
@@ -491,7 +557,10 @@ pub fn generate_project(spec: &ProjectSpec) -> Result<GeneratedProject, Generate
             format!("source/{class_name}View.mc"),
             view_source(spec, &class_name),
         ),
-        text_file("resources/drawables/drawables.xml", drawables_xml()),
+        text_file(
+            "resources/drawables/drawables.xml",
+            drawables_xml(&icon_assets),
+        ),
         GeneratedFile {
             path: "resources/drawables/launcher_icon.png".to_owned(),
             bytes: LAUNCHER_ICON.to_vec(),
@@ -534,6 +603,16 @@ pub fn generate_project(spec: &ProjectSpec) -> Result<GeneratedProject, Generate
         ),
         binary_file(format!("LICENSES/{}", fonts.license_file), fonts.license),
     ];
+
+    if !icon_assets.is_empty() {
+        files.push(binary_file("LICENSES/Phosphor-MIT.txt", PHOSPHOR_LICENSE));
+    }
+    for asset in icon_assets {
+        files.push(binary_file(
+            format!("resources/drawables/{}", asset.file_name),
+            asset.bytes,
+        ));
+    }
 
     Ok(GeneratedProject { folder_name, files })
 }
@@ -931,11 +1010,13 @@ fn render_element(element: &Element, index: usize, indent: &str, spacing: Letter
             size,
             color,
             ..
-        } => render_icon(*x, *y, *size, color, *icon, *style, indent),
+        } => render_icon(index, *x, *y, *size, color, *icon, *style, indent),
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn render_icon(
+    index: usize,
     x: i32,
     y: i32,
     size: u32,
@@ -944,177 +1025,23 @@ fn render_icon(
     style: IconStyle,
     indent: &str,
 ) -> String {
-    let half = i32::try_from(size / 2).unwrap_or(0);
-    let quarter = i32::try_from(size / 4).unwrap_or(0);
-    let fifth = i32::try_from(size / 5).unwrap_or(0);
-    let eighth = i32::try_from(size / 8).unwrap_or(0);
+    let asset = selected_icon_asset(icon, style);
+    let half = i32::try_from(size / 2).expect("validated icon size");
+    let scale = f64::from(size) / 96.0;
     let color = color_code(color);
-    let circle = if style == IconStyle::Filled {
-        "fillCircle"
-    } else {
-        "drawCircle"
-    };
-    let ellipse = if style == IconStyle::Filled {
-        "fillEllipse"
-    } else {
-        "drawEllipse"
-    };
-    match icon {
-        IconKind::Heart => {
-            let triangle = render_icon_polygon(
-                &[
-                    (x - half, y - eighth),
-                    (x + half, y - eighth),
-                    (x, y + half),
-                ],
-                style,
-                indent,
-            );
-            format!(
-                "{indent}dc.setColor({color}, Graphics.COLOR_TRANSPARENT);\n\
-{indent}dc.setPenWidth(2);\n\
-{indent}dc.{circle}({}, {}, {quarter});\n\
-{indent}dc.{circle}({}, {}, {quarter});\n\
-{triangle}\
-{indent}dc.setPenWidth(1);\n",
-                x - fifth,
-                y - eighth,
-                x + fifth,
-                y - eighth,
-            )
-        }
-        IconKind::Steps => format!(
-            "{indent}dc.setColor({color}, Graphics.COLOR_TRANSPARENT);\n\
-{indent}dc.setPenWidth(2);\n\
-{indent}dc.{ellipse}({}, {}, {}, {});\n\
-{indent}dc.{ellipse}({}, {}, {}, {});\n\
-{indent}dc.setPenWidth(1);\n",
-            x - quarter,
-            y - quarter,
-            eighth,
-            quarter,
-            x + quarter,
-            y + eighth,
-            eighth,
-            quarter
-        ),
-        IconKind::Battery => {
-            let body = if style == IconStyle::Filled {
-                "fillRectangle"
-            } else {
-                "drawRectangle"
-            };
-            format!(
-                "{indent}dc.setColor({color}, Graphics.COLOR_TRANSPARENT);\n\
-{indent}dc.setPenWidth(2);\n\
-{indent}dc.{body}({}, {}, {}, {});\n\
-{indent}dc.fillRectangle({}, {}, {}, {});\n\
-{indent}dc.setPenWidth(1);\n",
-                x - half,
-                y - quarter,
-                size - 3,
-                size / 2,
-                x + half - 2,
-                y - eighth,
-                3,
-                size / 4
-            )
-        }
-        IconKind::Flame => {
-            let shape = render_icon_polygon(
-                &[
-                    (x, y - half),
-                    (x + half, y + eighth),
-                    (x + quarter, y + half),
-                    (x - quarter, y + half),
-                    (x - half, y),
-                ],
-                style,
-                indent,
-            );
-            format!(
-                "{indent}dc.setColor({color}, Graphics.COLOR_TRANSPARENT);\n\
-{indent}dc.setPenWidth(2);\n\
-{shape}\
-{indent}dc.setPenWidth(1);\n",
-            )
-        }
-        IconKind::Pin => {
-            let triangle = render_icon_polygon(
-                &[
-                    (x - quarter, y - eighth),
-                    (x + quarter, y - eighth),
-                    (x, y + half),
-                ],
-                style,
-                indent,
-            );
-            format!(
-                "{indent}dc.setColor({color}, Graphics.COLOR_TRANSPARENT);\n\
-{indent}dc.setPenWidth(2);\n\
-{indent}dc.{circle}({x}, {}, {quarter});\n\
-{triangle}\
-{indent}dc.setPenWidth(1);\n",
-                y - quarter,
-            )
-        }
-        IconKind::Sun => format!(
-            "{indent}dc.setColor({color}, Graphics.COLOR_TRANSPARENT);\n\
-{indent}dc.setPenWidth(2);\n\
-{indent}dc.{circle}({x}, {y}, {quarter});\n\
-{indent}dc.drawLine({x}, {}, {x}, {});\n\
-{indent}dc.drawLine({x}, {}, {x}, {});\n\
-{indent}dc.drawLine({}, {y}, {}, {y});\n\
-{indent}dc.drawLine({}, {y}, {}, {y});\n\
-{indent}dc.setPenWidth(1);\n",
-            y - half,
-            y - quarter - 2,
-            y + quarter + 2,
-            y + half,
-            x - half,
-            x - quarter - 2,
-            x + quarter + 2,
-            x + half
-        ),
-        IconKind::Bolt => {
-            let shape = render_icon_polygon(
-                &[
-                    (x + eighth, y - half),
-                    (x - half, y + eighth),
-                    (x - eighth, y),
-                    (x - quarter, y),
-                    (x - eighth, y + half),
-                    (x + half, y - eighth),
-                ],
-                style,
-                indent,
-            );
-            format!(
-                "{indent}dc.setColor({color}, Graphics.COLOR_TRANSPARENT);\n\
-{indent}dc.setPenWidth(2);\n\
-{shape}\
-{indent}dc.setPenWidth(1);\n",
-            )
-        }
-    }
-}
-
-fn render_icon_polygon(points: &[(i32, i32)], style: IconStyle, indent: &str) -> String {
-    if style == IconStyle::Filled {
-        let points = points
-            .iter()
-            .map(|(x, y)| format!("[{x}, {y}]"))
-            .collect::<Vec<_>>()
-            .join(", ");
-        return format!("{indent}dc.fillPolygon([{points}]);\n");
-    }
-    let mut output = String::new();
-    for index in 0..points.len() {
-        let (x1, y1) = points[index];
-        let (x2, y2) = points[(index + 1) % points.len()];
-        writeln!(output, "{indent}dc.drawLine({x1}, {y1}, {x2}, {y2});").unwrap();
-    }
-    output
+    format!(
+        "{indent}var iconTransform{index} = new Graphics.AffineTransform();\n\
+{indent}iconTransform{index}.scale({scale:.6}, {scale:.6});\n\
+{indent}var iconBitmap{index} = WatchUi.loadResource(Rez.Drawables.{});\n\
+{indent}dc.drawBitmap2({}, {}, iconBitmap{index}, {{\n\
+{indent}    :transform => iconTransform{index},\n\
+{indent}    :tintColor => {color},\n\
+{indent}    :filterMode => Graphics.FILTER_MODE_BILINEAR\n\
+{indent}}});\n",
+        asset.resource_id,
+        x - half,
+        y - half,
+    )
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -1269,12 +1196,21 @@ fn render_label(
     output
 }
 
-fn drawables_xml() -> String {
-    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\
+fn drawables_xml(icon_assets: &[&IconAsset]) -> String {
+    let mut output = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\
 <drawables>\n\
-  <bitmap id=\"LauncherIcon\" filename=\"launcher_icon.png\"/>\n\
-</drawables>\n"
-        .to_owned()
+  <bitmap id=\"LauncherIcon\" filename=\"launcher_icon.png\"/>\n"
+        .to_owned();
+    for asset in icon_assets {
+        writeln!(
+            output,
+            "  <bitmap id=\"{}\" filename=\"{}\"/>",
+            asset.resource_id, asset.file_name
+        )
+        .unwrap();
+    }
+    output.push_str("</drawables>\n");
+    output
 }
 
 fn fonts_xml(fonts: &FontAssets) -> String {
