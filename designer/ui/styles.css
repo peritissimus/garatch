@@ -425,8 +425,9 @@ button { border: 0; }
 .layers-section { padding-top: 13px; }
 .layer-list { display: grid; gap: 3px; }
 .layer-row {
+  position: relative;
   display: grid;
-  grid-template-columns: 26px minmax(0, 1fr) auto;
+  grid-template-columns: 14px 25px minmax(0, 1fr) auto;
   min-height: var(--row-height);
   align-items: center;
   gap: 7px;
@@ -437,12 +438,27 @@ button { border: 0; }
   background: transparent;
   border: 1px solid transparent;
   border-radius: 9px;
-  cursor: pointer;
-  transition-property: color, background-color, border-color;
+  cursor: grab;
+  transition-property: color, background-color, border-color, opacity;
   transition-duration: 140ms;
 }
 .layer-row:hover { color: var(--ink); background: var(--surface); }
 .layer-row.selected { color: var(--ink); background: var(--accent-surface); border-color: var(--accent-line); }
+.layer-row.dragging { opacity: 0.4; cursor: grabbing; }
+.layer-row.drop-before::after, .layer-row.drop-after::after {
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  height: 2px;
+  content: "";
+  background: var(--accent);
+  border-radius: 2px;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.12);
+}
+.layer-row.drop-before::after { top: -3px; }
+.layer-row.drop-after::after { bottom: -3px; }
+.layer-grip { display: grid; place-items: center; color: var(--faint); cursor: grab; transition: color 140ms; }
+.layer-row:hover .layer-grip { color: var(--muted); }
 .layer-glyph { display: grid; width: 25px; height: 25px; place-items: center; color: var(--muted); background: var(--surface); border-radius: 7px; font-size: 8px; font-weight: 730; }
 .layer-row.selected .layer-glyph { color: var(--accent-ink); background: var(--accent); }
 .layer-name { overflow: hidden; font-size: 10px; font-weight: 610; text-overflow: ellipsis; white-space: nowrap; }

@@ -10,6 +10,7 @@
   import CheckIcon from "phosphor-svelte/lib/CheckIcon";
   import CommandIcon from "phosphor-svelte/lib/CommandIcon";
   import CopyIcon from "phosphor-svelte/lib/CopyIcon";
+  import DotsSixVerticalIcon from "phosphor-svelte/lib/DotsSixVerticalIcon";
   import DownloadSimpleIcon from "phosphor-svelte/lib/DownloadSimpleIcon";
   import GridFourIcon from "phosphor-svelte/lib/GridFourIcon";
   import MoonIcon from "phosphor-svelte/lib/MoonIcon";
@@ -28,6 +29,7 @@
     download: DownloadSimpleIcon,
     check: CheckIcon,
     grid: GridFourIcon,
+    grip: DotsSixVerticalIcon,
     moon: MoonIcon,
     trash: TrashIcon,
     copy: CopyIcon,

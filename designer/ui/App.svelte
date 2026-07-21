@@ -270,7 +270,15 @@
     <aside class="left-rail" aria-label="Components and layers">
       <ComponentPalette onadd={addElement} />
       <div class="rail-divider"></div>
-      <LayersPanel elements={project.elements} {selectedId} onselect={(id) => { selectedId = id; }} />
+      <LayersPanel
+        elements={project.elements}
+        {selectedId}
+        onselect={(id) => { selectedId = id; }}
+        onreorder={(orderedIds) => {
+          const byId = new Map(project.elements.map((el) => [el.id, el]));
+          project.elements = orderedIds.slice().reverse().map((id) => byId.get(id));
+        }}
+      />
     </aside>
 
     <Stage
