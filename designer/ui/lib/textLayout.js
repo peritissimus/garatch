@@ -42,10 +42,35 @@ export function layoutWatchText(project, element, text) {
     preparedCache.set(key, prepared);
   }
   const result = layoutWithLines(prepared, typography.maxWidth, typography.lineHeight);
+  const lines = result.lines.length ? result.lines : [{ text: "", width: 0 }];
+  const measuredWidth = Math.max(0, ...lines.map((line) => line.width));
+  const width = Math.max(1, measuredWidth);
+  const height = Math.max(typography.lineHeight, lines.length * typography.lineHeight);
   return {
     ...typography,
-    height: result.height,
-    lines: result.lines.length ? result.lines : [{ text: "", width: 0 }],
+    width,
+    height,
+    measuredWidth,
+    lines,
+  };
+}
+
+export function positionedWatchText(project, element, text) {
+  const layout = layoutWatchText(project, element, text);
+  const x = element.align === "left"
+    ? element.x
+    : element.align === "right"
+      ? element.x - layout.width
+      : element.x - layout.width / 2;
+  const y = element.y - layout.height / 2;
+  return {
+    ...layout,
+    x,
+    y,
+    lines: layout.lines.map((line, index) => ({
+      ...line,
+      centerY: y + layout.lineHeight / 2 + index * layout.lineHeight,
+    })),
   };
 }
 

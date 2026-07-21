@@ -2,9 +2,9 @@
   import { onMount } from "svelte";
   import Icon from "./Icon.svelte";
   import { TYPE_NAMES } from "../lib/catalog.js";
-  import { bitmapTextBounds, drawBitmapText, fontForElement, loadWatchFonts } from "../lib/bmfont.js";
+  import { drawBitmapText, fontForElement, loadWatchFonts } from "../lib/bmfont.js";
   import { WATCH_HEIGHT, WATCH_WIDTH, clampPosition } from "../lib/project.js";
-  import { ensureProjectFonts, layoutWatchText } from "../lib/textLayout.js";
+  import { ensureProjectFonts, positionedWatchText } from "../lib/textLayout.js";
   import { tactile } from "../lib/motion.js";
 
   let { project, selectedId, showGrid, aod, onselect, onposition, ongrid, onaod } = $props();
@@ -58,15 +58,14 @@
   function drawText(element, colorOverride = null) {
     if (!fonts) return;
     const font = fontForElement(fonts, element);
-    const layout = layoutWatchText(project, element, previewText(element));
-    const startY = element.y - ((layout.lines.length - 1) * layout.lineHeight) / 2;
-    layout.lines.forEach((line, index) => {
+    const layout = positionedWatchText(project, element, previewText(element));
+    layout.lines.forEach((line) => {
       drawBitmapText(
         context,
         font,
         line.text,
         element.x,
-        startY + index * layout.lineHeight,
+        line.centerY,
         element.align,
         colorOverride ?? element.color,
         layout.letterSpacing,
@@ -87,34 +86,24 @@
   function elementBounds(element) {
     if (element.type === "rectangle") return { x: element.x, y: element.y, width: element.width, height: element.height };
     if (!fonts) return { x: element.x - 8, y: element.y - 8, width: 16, height: 16 };
-    const font = fontForElement(fonts, element);
-    const layout = layoutWatchText(project, element, previewText(element));
-    const startY = element.y - ((layout.lines.length - 1) * layout.lineHeight) / 2;
-    const bounds = layout.lines.map((line, index) => bitmapTextBounds(
-      font,
-      line.text,
-      element.x,
-      startY + index * layout.lineHeight,
-      element.align,
-      layout.letterSpacing,
-    ));
-    const left = Math.min(...bounds.map((item) => item.x));
-    const top = Math.min(...bounds.map((item) => item.y));
-    const right = Math.max(...bounds.map((item) => item.x + item.width));
-    const bottom = Math.max(...bounds.map((item) => item.y + item.height));
-    return { x: left, y: top, width: right - left, height: bottom - top };
+    const layout = positionedWatchText(project, element, previewText(element));
+    return { x: layout.x, y: layout.y, width: layout.width, height: layout.height };
   }
 
   function drawSelection(element) {
     const bounds = elementBounds(element);
+    const left = Math.round(bounds.x) + 0.5;
+    const top = Math.round(bounds.y) + 0.5;
+    const right = Math.round(bounds.x + bounds.width) + 0.5;
+    const bottom = Math.round(bounds.y + bounds.height) + 0.5;
     context.save();
     context.strokeStyle = "#72D6B2";
     context.lineWidth = 1;
     context.setLineDash([4, 3]);
-    context.strokeRect(Math.round(bounds.x) - 4.5, Math.round(bounds.y) - 4.5, Math.round(bounds.width) + 9, Math.round(bounds.height) + 9);
+    context.strokeRect(left, top, Math.max(1, right - left), Math.max(1, bottom - top));
     context.setLineDash([]);
     context.fillStyle = "#72D6B2";
-    for (const [x, y] of [[bounds.x - 4, bounds.y - 4], [bounds.x + bounds.width + 4, bounds.y - 4], [bounds.x - 4, bounds.y + bounds.height + 4], [bounds.x + bounds.width + 4, bounds.y + bounds.height + 4]]) {
+    for (const [x, y] of [[left, top], [right, top], [left, bottom], [right, bottom]]) {
       context.fillRect(Math.round(x) - 2, Math.round(y) - 2, 5, 5);
     }
     context.restore();
