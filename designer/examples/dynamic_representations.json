@@ -1,0 +1,77 @@
+{
+  "name": "Dynamic Representations",
+  "appId": "13579bdf2468ace013579bdf2468ace0",
+  "backgroundColor": "#000000",
+  "fontFamily": "barlow-condensed",
+  "fontFamilySecondary": "rajdhani",
+  "fontHeights": { "time": 72, "value": 24, "label": 14 },
+  "letterSpacing": { "time": 0, "value": 0, "label": 1 },
+  "elements": [
+    {
+      "type": "time",
+      "id": "time-stacked",
+      "x": 92,
+      "y": 116,
+      "color": "#FFFFFF",
+      "align": "center",
+      "format": "device",
+      "showSeconds": false,
+      "representation": "stacked"
+    },
+    {
+      "type": "date",
+      "id": "date-stacked",
+      "x": 236,
+      "y": 86,
+      "color": "#78A6D6",
+      "align": "center",
+      "representation": "stacked"
+    },
+    {
+      "type": "steps",
+      "id": "steps-icon",
+      "x": 236,
+      "y": 136,
+      "color": "#72D6B2",
+      "align": "center",
+      "representation": "icon-value"
+    },
+    {
+      "type": "heart-rate",
+      "id": "heart-progress",
+      "x": 236,
+      "y": 190,
+      "color": "#EF7E74",
+      "align": "center",
+      "representation": "progress-bar"
+    },
+    {
+      "type": "battery",
+      "id": "battery-icon",
+      "x": 76,
+      "y": 264,
+      "color": "#B6A0E8",
+      "align": "center",
+      "representation": "icon-value"
+    },
+    {
+      "type": "calories",
+      "id": "calories-progress",
+      "x": 160,
+      "y": 320,
+      "color": "#E5AD59",
+      "align": "center",
+      "representation": "progress-bar"
+    },
+    {
+      "type": "distance",
+      "id": "distance-icon",
+      "x": 244,
+      "y": 264,
+      "color": "#78A6D6",
+      "align": "center",
+      "unit": "kilometers",
+      "representation": "icon-value"
+    }
+  ]
+}

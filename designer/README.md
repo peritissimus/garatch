@@ -16,6 +16,9 @@ ZIP. Users compile the downloaded project locally with Garmin's official
 - Fixed 320×360 canvas
 - Digital time, date, steps, current heart rate, battery, calories, distance,
   and static labels
+- Dynamic components are separated from static design layers in the palette
+- Digital and stacked time/date representations, plus value, icon-value, and
+  progress-bar representations for activity metrics
 - Rectangle, ellipse, adjustable line, and Phosphor watch icons
 - Six complete editable watch-face templates for fast starting points
 - Seven built-in icons with filled and outline appearances: heart, steps,
@@ -68,6 +71,8 @@ export orchestration. The surrounding composites have focused contracts:
 - `LayersPanel.svelte` renders and selects the layer stack
 - `Stage.svelte` owns canvas rendering, hit testing, and direct manipulation
 - `InspectorPanel.svelte` composes property fields and layer actions
+- `RepresentationPicker.svelte` provides visual representation choices for
+  dynamic layers and writes the same typed option consumed by the Rust exporter
 - `IconPicker.svelte` provides visual symbol and appearance selection using the
   same generated Phosphor paths as the watch canvas and template previews
 - `ProjectHealth.svelte` presents WASM validation and project-level controls
