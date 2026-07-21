@@ -207,6 +207,15 @@ pub enum Representation {
     IconValue,
     ProgressBar,
     Stacked,
+    Split,
+    Analog,
+    AnalogDigital,
+    SecondsRing,
+    Weekday,
+    MonthDay,
+    FullDate,
+    DateYear,
+    Calendar,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Default)]

@@ -6,7 +6,7 @@
   let options = $derived(REPRESENTATION_OPTIONS[type] ?? []);
 </script>
 
-<div class="representation-grid" role="radiogroup" aria-label="Visual representation">
+<div class="representation-grid" class:format-grid={type === "time" || type === "date"} role="radiogroup" aria-label="Visual representation">
   {#each options as option (option.id)}
     <button
       class="representation-card"

@@ -355,6 +355,40 @@ fn exports_dynamic_component_representations() {
 }
 
 #[test]
+fn exports_extended_time_and_date_representations() {
+    let mut project: serde_json::Value = serde_json::from_str(&sample_json()).unwrap();
+    project["elements"][0]["representation"] = "analog-digital".into();
+    project["elements"][0]["showSeconds"] = true.into();
+    project["elements"].as_array_mut().unwrap().extend([
+        serde_json::json!({
+            "type": "date", "id": "date-full", "x": 160, "y": 210,
+            "color": "#FFFFFF", "align": "center", "representation": "full-date"
+        }),
+        serde_json::json!({
+            "type": "date", "id": "date-calendar", "x": 250, "y": 250,
+            "color": "#78A6D6", "align": "center", "representation": "calendar"
+        }),
+    ]);
+
+    let spec = parse_spec(&project.to_string()).unwrap();
+    assert!(validate_spec(&spec).valid);
+    let generated = generate_project(&spec).unwrap();
+    let view = generated
+        .files
+        .iter()
+        .find(|file| file.path.ends_with("View.mc"))
+        .map(|file| String::from_utf8(file.bytes.clone()).unwrap())
+        .unwrap();
+
+    assert!(view.contains("using Toybox.Math;"));
+    assert!(view.contains("var hourAngle0 = Math.toRadians"));
+    assert!(view.contains("var secondAngle0 = Math.toRadians"));
+    assert!(view.contains("var fullDateValue3 = weekdayValue3"));
+    assert!(view.contains("dc.drawRoundedRectangle(219, 218, 62, 64, 8)"));
+    assert!(view.contains("date4.day.format(\"%02d\")"));
+}
+
+#[test]
 fn rejects_representation_that_does_not_fit_the_dynamic_type() {
     let mut project: serde_json::Value = serde_json::from_str(&sample_json()).unwrap();
     project["elements"][0]["representation"] = "icon-value".into();

@@ -382,15 +382,38 @@ pub fn validate_spec(spec: &ProjectSpec) -> ValidationReport {
         }
 
         match element {
-            Element::Time { representation, .. } | Element::Date { representation, .. } => {
+            Element::Time { representation, .. } => {
                 if !matches!(
                     representation,
-                    Representation::Value | Representation::Stacked
+                    Representation::Value
+                        | Representation::Stacked
+                        | Representation::Split
+                        | Representation::Analog
+                        | Representation::AnalogDigital
+                        | Representation::SecondsRing
                 ) {
                     issue(
                         &mut issues,
                         format!("{field}.representation"),
-                        "must be value or stacked for time and date",
+                        "is not a supported time representation",
+                    );
+                }
+            }
+            Element::Date { representation, .. } => {
+                if !matches!(
+                    representation,
+                    Representation::Value
+                        | Representation::Stacked
+                        | Representation::Weekday
+                        | Representation::MonthDay
+                        | Representation::FullDate
+                        | Representation::DateYear
+                        | Representation::Calendar
+                ) {
+                    issue(
+                        &mut issues,
+                        format!("{field}.representation"),
+                        "is not a supported date representation",
                     );
                 }
             }
@@ -787,7 +810,7 @@ fn view_source(spec: &ProjectSpec, class_name: &str) -> String {
     if has_activity_monitor {
         source.push_str("using Toybox.ActivityMonitor;\n");
     }
-    source.push_str("using Toybox.Graphics;\nusing Toybox.System;\n");
+    source.push_str("using Toybox.Graphics;\nusing Toybox.Math;\nusing Toybox.System;\n");
     if has_date {
         source.push_str("using Toybox.Time;\nusing Toybox.Time.Gregorian;\n");
     }
@@ -912,49 +935,16 @@ fn render_element(element: &Element, index: usize, indent: &str, spacing: Letter
             align,
             representation,
             ..
-        } => {
-            let display = if *representation == Representation::Stacked {
-                format!(
-                    "{}{}",
-                    draw_text(
-                        *x,
-                        *y - 10,
-                        color,
-                        font_resource(FontRole::Label),
-                        *align,
-                        &format!("date{index}.day.format(\"%02d\")"),
-                        spacing.label,
-                        indent
-                    ),
-                    draw_text(
-                        *x,
-                        *y + 10,
-                        color,
-                        font_resource(FontRole::Label),
-                        *align,
-                        &format!("date{index}.month.format(\"%02d\")"),
-                        spacing.label,
-                        indent
-                    )
-                )
-            } else {
-                draw_text(
-                    *x,
-                    *y,
-                    color,
-                    font_resource(FontRole::Label),
-                    *align,
-                    &format!("dateValue{index}"),
-                    spacing.label,
-                    indent,
-                )
-            };
-            format!(
-                "{indent}var date{index} = Gregorian.info(Time.now(), Time.FORMAT_SHORT);\n\
-{indent}var dateValue{index} = date{index}.day.format(\"%02d\") + \"/\" + date{index}.month.format(\"%02d\");\n\
-{display}"
-            )
-        }
+        } => render_date(
+            index,
+            *x,
+            *y,
+            color,
+            *align,
+            *representation,
+            spacing.label,
+            indent,
+        ),
         Element::Steps {
             x,
             y,
@@ -1331,6 +1321,155 @@ fn render_metric_display(
 }
 
 #[allow(clippy::too_many_arguments)]
+fn render_date(
+    index: usize,
+    x: i32,
+    y: i32,
+    color: &str,
+    align: Alignment,
+    representation: Representation,
+    spacing: i32,
+    indent: &str,
+) -> String {
+    let mut output = format!(
+        "{indent}var date{index} = Gregorian.info(Time.now(), Time.FORMAT_SHORT);\n\
+{indent}var dateDays{index} = [\"SUN\", \"MON\", \"TUE\", \"WED\", \"THU\", \"FRI\", \"SAT\"];\n\
+{indent}var dateMonths{index} = [\"JAN\", \"FEB\", \"MAR\", \"APR\", \"MAY\", \"JUN\", \"JUL\", \"AUG\", \"SEP\", \"OCT\", \"NOV\", \"DEC\"];\n\
+{indent}var weekdayValue{index} = dateDays{index}[date{index}.day_of_week - 1];\n\
+{indent}var monthValue{index} = dateMonths{index}[date{index}.month - 1];\n\
+{indent}var dateValue{index} = date{index}.day.format(\"%02d\") + \"/\" + date{index}.month.format(\"%02d\");\n"
+    );
+    match representation {
+        Representation::Stacked => {
+            output.push_str(&draw_text(
+                x,
+                y - 10,
+                color,
+                font_resource(FontRole::Label),
+                align,
+                &format!("date{index}.day.format(\"%02d\")"),
+                spacing,
+                indent,
+            ));
+            output.push_str(&draw_text(
+                x,
+                y + 10,
+                color,
+                font_resource(FontRole::Label),
+                align,
+                &format!("date{index}.month.format(\"%02d\")"),
+                spacing,
+                indent,
+            ));
+        }
+        Representation::Weekday => output.push_str(&draw_text(
+            x,
+            y,
+            color,
+            font_resource(FontRole::Label),
+            align,
+            &format!("weekdayValue{index}"),
+            spacing,
+            indent,
+        )),
+        Representation::MonthDay => {
+            writeln!(output, "{indent}var monthDayValue{index} = monthValue{index} + \" \" + date{index}.day.format(\"%02d\");").unwrap();
+            output.push_str(&draw_text(
+                x,
+                y,
+                color,
+                font_resource(FontRole::Label),
+                align,
+                &format!("monthDayValue{index}"),
+                spacing,
+                indent,
+            ));
+        }
+        Representation::FullDate => {
+            writeln!(output, "{indent}var fullDateValue{index} = weekdayValue{index} + \", \" + monthValue{index} + \" \" + date{index}.day.format(\"%02d\");").unwrap();
+            output.push_str(&draw_text(
+                x,
+                y,
+                color,
+                font_resource(FontRole::Label),
+                align,
+                &format!("fullDateValue{index}"),
+                spacing,
+                indent,
+            ));
+        }
+        Representation::DateYear => {
+            writeln!(output, "{indent}var dateYearValue{index} = date{index}.day.format(\"%02d\") + \" \" + monthValue{index} + \" \" + date{index}.year.format(\"%04d\");").unwrap();
+            output.push_str(&draw_text(
+                x,
+                y,
+                color,
+                font_resource(FontRole::Label),
+                align,
+                &format!("dateYearValue{index}"),
+                spacing,
+                indent,
+            ));
+        }
+        Representation::Calendar => {
+            writeln!(
+                output,
+                "{indent}dc.setColor({}, Graphics.COLOR_TRANSPARENT);",
+                color_code(color)
+            )
+            .unwrap();
+            writeln!(
+                output,
+                "{indent}dc.drawRoundedRectangle({}, {}, 62, 64, 8);",
+                x - 31,
+                y - 32
+            )
+            .unwrap();
+            writeln!(
+                output,
+                "{indent}dc.drawLine({}, {}, {}, {});",
+                x - 31,
+                y - 10,
+                x + 31,
+                y - 10
+            )
+            .unwrap();
+            output.push_str(&draw_text(
+                x,
+                y - 21,
+                color,
+                font_resource(FontRole::Label),
+                Alignment::Center,
+                &format!("monthValue{index}"),
+                spacing,
+                indent,
+            ));
+            output.push_str(&draw_text(
+                x,
+                y + 11,
+                color,
+                font_resource(FontRole::Label),
+                Alignment::Center,
+                &format!("date{index}.day.format(\"%02d\")"),
+                spacing,
+                indent,
+            ));
+        }
+        _ => output.push_str(&draw_text(
+            x,
+            y,
+            color,
+            font_resource(FontRole::Label),
+            align,
+            &format!("dateValue{index}"),
+            spacing,
+            indent,
+        )),
+    }
+    output
+}
+
+#[allow(clippy::too_many_arguments)]
 fn render_time(
     index: usize,
     x: i32,
@@ -1369,43 +1508,114 @@ fn render_time(
         write!(output, " + \":\" + clock{index}.sec.format(\"%02d\")").unwrap();
     }
     output.push_str(";\n");
-    if representation == Representation::Stacked {
-        writeln!(
-            output,
-            "{indent}var hourValue{index} = hour{index}.format(\"%02d\");"
-        )
-        .unwrap();
-        write!(
-            output,
-            "{indent}var minuteValue{index} = clock{index}.min.format(\"%02d\")"
-        )
-        .unwrap();
-        if show_seconds {
-            write!(output, " + \":\" + clock{index}.sec.format(\"%02d\")").unwrap();
+    writeln!(
+        output,
+        "{indent}var hourValue{index} = hour{index}.format(\"%02d\");"
+    )
+    .unwrap();
+    write!(
+        output,
+        "{indent}var minuteValue{index} = clock{index}.min.format(\"%02d\")"
+    )
+    .unwrap();
+    if show_seconds {
+        write!(output, " + \":\" + clock{index}.sec.format(\"%02d\")").unwrap();
+    }
+    output.push_str(";\n");
+    match representation {
+        Representation::Stacked => {
+            output.push_str(&draw_text(
+                x,
+                y - 52,
+                color,
+                font_resource(FontRole::Time),
+                align,
+                &format!("hourValue{index}"),
+                spacing,
+                indent,
+            ));
+            output.push_str(&draw_text(
+                x,
+                y + 52,
+                color,
+                font_resource(FontRole::Time),
+                align,
+                &format!("minuteValue{index}"),
+                spacing,
+                indent,
+            ));
         }
-        output.push_str(";\n");
-        output.push_str(&draw_text(
-            x,
-            y - 52,
-            color,
-            font_resource(FontRole::Time),
-            align,
-            &format!("hourValue{index}"),
-            spacing,
-            indent,
-        ));
-        output.push_str(&draw_text(
-            x,
-            y + 52,
-            color,
-            font_resource(FontRole::Time),
-            align,
-            &format!("minuteValue{index}"),
-            spacing,
-            indent,
-        ));
-    } else {
-        output.push_str(&draw_text(
+        Representation::Split => {
+            output.push_str(&draw_text(
+                x - 48,
+                y,
+                color,
+                font_resource(FontRole::Time),
+                Alignment::Center,
+                &format!("hourValue{index}"),
+                spacing,
+                indent,
+            ));
+            output.push_str(&draw_text(
+                x + 48,
+                y,
+                color,
+                font_resource(FontRole::Time),
+                Alignment::Center,
+                &format!("minuteValue{index}"),
+                spacing,
+                indent,
+            ));
+            writeln!(
+                output,
+                "{indent}dc.setColor({}, Graphics.COLOR_TRANSPARENT);",
+                color_code(color)
+            )
+            .unwrap();
+            writeln!(output, "{indent}dc.setPenWidth(2);\n{indent}dc.drawLine({x}, {}, {x}, {});\n{indent}dc.setPenWidth(1);", y - 24, y + 24).unwrap();
+        }
+        Representation::Analog | Representation::AnalogDigital => {
+            output.push_str(&render_analog_clock(
+                index,
+                x,
+                y,
+                color,
+                show_seconds,
+                indent,
+            ));
+            if representation == Representation::AnalogDigital {
+                output.push_str(&draw_text(
+                    x,
+                    y + 66,
+                    color,
+                    font_resource(FontRole::Label),
+                    Alignment::Center,
+                    &format!("timeValue{index}"),
+                    0,
+                    indent,
+                ));
+            }
+        }
+        Representation::SecondsRing => {
+            writeln!(
+                output,
+                "{indent}dc.setColor({}, Graphics.COLOR_TRANSPARENT);",
+                color_code(color)
+            )
+            .unwrap();
+            writeln!(output, "{indent}dc.setPenWidth(3);\n{indent}dc.drawCircle({x}, {y}, 61);\n{indent}dc.drawArc({x}, {y}, 61, Graphics.ARC_CLOCKWISE, -90, -90 + (clock{index}.sec * 6));\n{indent}dc.setPenWidth(1);").unwrap();
+            output.push_str(&draw_text(
+                x,
+                y,
+                color,
+                font_resource(FontRole::Time),
+                Alignment::Center,
+                &format!("timeValue{index}"),
+                spacing,
+                indent,
+            ));
+        }
+        _ => output.push_str(&draw_text(
             x,
             y,
             color,
@@ -1414,8 +1624,39 @@ fn render_time(
             &format!("timeValue{index}"),
             spacing,
             indent,
-        ));
+        )),
     }
+    output
+}
+
+fn render_analog_clock(
+    index: usize,
+    x: i32,
+    y: i32,
+    color: &str,
+    show_seconds: bool,
+    indent: &str,
+) -> String {
+    let mut output = format!(
+        "{indent}dc.setColor({}, Graphics.COLOR_TRANSPARENT);\n\
+{indent}dc.setPenWidth(2);\n\
+{indent}dc.drawCircle({x}, {y}, 52);\n\
+{indent}var hourAngle{index} = Math.toRadians((((clock{index}.hour % 12) * 60) + clock{index}.min) * 0.5 - 90);\n\
+{indent}var minuteAngle{index} = Math.toRadians(clock{index}.min * 6 - 90);\n\
+{indent}dc.setPenWidth(4);\n\
+{indent}dc.drawLine({x}, {y}, {x} + (27 * Math.cos(hourAngle{index})).toNumber(), {y} + (27 * Math.sin(hourAngle{index})).toNumber());\n\
+{indent}dc.setPenWidth(2);\n\
+{indent}dc.drawLine({x}, {y}, {x} + (40 * Math.cos(minuteAngle{index})).toNumber(), {y} + (40 * Math.sin(minuteAngle{index})).toNumber());\n",
+        color_code(color)
+    );
+    if show_seconds {
+        writeln!(output, "{indent}var secondAngle{index} = Math.toRadians(clock{index}.sec * 6 - 90);\n{indent}dc.setPenWidth(1);\n{indent}dc.drawLine({x}, {y}, {x} + (44 * Math.cos(secondAngle{index})).toNumber(), {y} + (44 * Math.sin(secondAngle{index})).toNumber());").unwrap();
+    }
+    writeln!(
+        output,
+        "{indent}dc.fillCircle({x}, {y}, 3);\n{indent}dc.setPenWidth(1);"
+    )
+    .unwrap();
     output
 }
 

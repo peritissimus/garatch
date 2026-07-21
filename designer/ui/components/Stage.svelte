@@ -24,7 +24,18 @@
 
   function previewText(element) {
     if (element.type === "label") return element.text;
-    if (element.type === "date") return `${String(now.getDate()).padStart(2, "0")}/${String(now.getMonth() + 1).padStart(2, "0")}`;
+    if (element.type === "date") {
+      const day = String(now.getDate()).padStart(2, "0");
+      const month = String(now.getMonth() + 1).padStart(2, "0");
+      const weekday = now.toLocaleDateString("en", { weekday: "short" }).toUpperCase();
+      const monthName = now.toLocaleDateString("en", { month: "short" }).toUpperCase();
+      const representation = element.representation ?? "value";
+      if (representation === "weekday") return weekday;
+      if (representation === "month-day") return `${monthName} ${day}`;
+      if (representation === "full-date") return `${weekday}, ${monthName} ${day}`;
+      if (representation === "date-year") return `${day} ${monthName} ${now.getFullYear()}`;
+      return `${day}/${month}`;
+    }
     if (element.type === "steps") return "8421";
     if (element.type === "heart-rate") return "72";
     if (element.type === "battery") return "83%";
@@ -93,8 +104,68 @@
     return element.x - width / 2;
   }
 
+  function drawAnalogClock(element, includeDigital = false) {
+    const radius = 52;
+    const hourAngle = (((now.getHours() % 12) * 60 + now.getMinutes()) * 0.5 - 90) * Math.PI / 180;
+    const minuteAngle = (now.getMinutes() * 6 - 90) * Math.PI / 180;
+    context.save();
+    context.strokeStyle = element.color;
+    context.fillStyle = element.color;
+    context.lineCap = "round";
+    context.lineWidth = 2;
+    context.beginPath(); context.arc(element.x, element.y, radius, 0, Math.PI * 2); context.stroke();
+    context.lineWidth = 4;
+    context.beginPath(); context.moveTo(element.x, element.y); context.lineTo(element.x + Math.cos(hourAngle) * 27, element.y + Math.sin(hourAngle) * 27); context.stroke();
+    context.lineWidth = 2;
+    context.beginPath(); context.moveTo(element.x, element.y); context.lineTo(element.x + Math.cos(minuteAngle) * 40, element.y + Math.sin(minuteAngle) * 40); context.stroke();
+    if (element.showSeconds && !aod) {
+      const secondAngle = (now.getSeconds() * 6 - 90) * Math.PI / 180;
+      context.lineWidth = 1;
+      context.beginPath(); context.moveTo(element.x, element.y); context.lineTo(element.x + Math.cos(secondAngle) * 44, element.y + Math.sin(secondAngle) * 44); context.stroke();
+    }
+    context.beginPath(); context.arc(element.x, element.y, 3, 0, Math.PI * 2); context.fill();
+    context.restore();
+    if (includeDigital) drawText({ ...element, type: "date" }, null, previewText(element), element.x, element.y + 66, "center");
+  }
+
+  function drawCalendar(element) {
+    const month = now.toLocaleDateString("en", { month: "short" }).toUpperCase();
+    const day = String(now.getDate()).padStart(2, "0");
+    context.save();
+    context.strokeStyle = element.color;
+    context.lineWidth = 1;
+    context.beginPath(); context.roundRect(element.x - 31, element.y - 32, 62, 64, 8); context.stroke();
+    context.beginPath(); context.moveTo(element.x - 31, element.y - 10); context.lineTo(element.x + 31, element.y - 10); context.stroke();
+    context.restore();
+    drawText(element, null, month, element.x, element.y - 21, "center");
+    drawText(element, null, day, element.x, element.y + 11, "center");
+  }
+
   function drawDynamicElement(element) {
     const representation = element.representation ?? "value";
+    if (element.type === "time" && representation === "split") {
+      const [hours, ...minutes] = previewText(element).split(":");
+      drawText(element, null, hours, element.x - 48, element.y, "center");
+      drawText(element, null, minutes.join(":"), element.x + 48, element.y, "center");
+      context.save(); context.strokeStyle = element.color; context.lineWidth = 2;
+      context.beginPath(); context.moveTo(element.x, element.y - 24); context.lineTo(element.x, element.y + 24); context.stroke(); context.restore();
+      return;
+    }
+    if (element.type === "time" && (representation === "analog" || representation === "analog-digital")) {
+      drawAnalogClock(element, representation === "analog-digital");
+      return;
+    }
+    if (element.type === "time" && representation === "seconds-ring") {
+      context.save(); context.strokeStyle = element.color; context.lineWidth = 3;
+      context.beginPath(); context.arc(element.x, element.y, 61, 0, Math.PI * 2); context.stroke();
+      context.beginPath(); context.arc(element.x, element.y, 61, -Math.PI / 2, -Math.PI / 2 + (now.getSeconds() / 60) * Math.PI * 2); context.stroke(); context.restore();
+      drawText(element, null, previewText(element), element.x, element.y, "center");
+      return;
+    }
+    if (element.type === "date" && representation === "calendar") {
+      drawCalendar(element);
+      return;
+    }
     if (representation === "stacked") {
       const parts = previewText(element).split(/[/:]/);
       const gap = element.type === "time" ? project.fontHeights.time / 2 : Math.max(10, project.fontHeights.label / 2);
@@ -170,6 +241,20 @@
 
   function dynamicBounds(element) {
     const representation = element.representation ?? "value";
+    if (element.type === "time" && representation === "split") {
+      const [hours, ...minutes] = previewText(element).split(":");
+      return unionBounds([
+        textLayout(element, hours, element.x - 48, element.y, "center"),
+        textLayout(element, minutes.join(":"), element.x + 48, element.y, "center"),
+        { x: element.x - 1, y: element.y - 24, width: 2, height: 48 },
+      ]);
+    }
+    if (element.type === "time" && representation === "analog") return { x: element.x - 53, y: element.y - 53, width: 106, height: 106 };
+    if (element.type === "time" && representation === "analog-digital") {
+      return unionBounds([{ x: element.x - 53, y: element.y - 53, width: 106, height: 106 }, textLayout({ ...element, type: "date" }, previewText(element), element.x, element.y + 66, "center")]);
+    }
+    if (element.type === "time" && representation === "seconds-ring") return { x: element.x - 63, y: element.y - 63, width: 126, height: 126 };
+    if (element.type === "date" && representation === "calendar") return { x: element.x - 32, y: element.y - 33, width: 64, height: 66 };
     if (representation === "stacked") {
       const parts = previewText(element).split(/[/:]/);
       const gap = element.type === "time" ? project.fontHeights.time / 2 : Math.max(10, project.fontHeights.label / 2);
