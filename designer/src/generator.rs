@@ -394,11 +394,31 @@ pub fn validate_spec(spec: &ProjectSpec) -> ValidationReport {
                     );
                 }
             }
-            Element::Steps { representation, .. }
-            | Element::HeartRate { representation, .. }
-            | Element::Battery { representation, .. }
-            | Element::Calories { representation, .. }
-            | Element::Distance { representation, .. } => {
+            Element::Steps {
+                representation,
+                progress_max,
+                ..
+            }
+            | Element::HeartRate {
+                representation,
+                progress_max,
+                ..
+            }
+            | Element::Battery {
+                representation,
+                progress_max,
+                ..
+            }
+            | Element::Calories {
+                representation,
+                progress_max,
+                ..
+            }
+            | Element::Distance {
+                representation,
+                progress_max,
+                ..
+            } => {
                 if !matches!(
                     representation,
                     Representation::Value | Representation::IconValue | Representation::ProgressBar
@@ -407,6 +427,13 @@ pub fn validate_spec(spec: &ProjectSpec) -> ValidationReport {
                         &mut issues,
                         format!("{field}.representation"),
                         "must be value, icon-value, or progress-bar for metrics",
+                    );
+                }
+                if progress_max.is_some_and(|maximum| maximum <= 0.0 || maximum > 1_000_000.0) {
+                    issue(
+                        &mut issues,
+                        format!("{field}.progressMax"),
+                        "must be greater than zero and no more than 1000000",
                     );
                 }
             }
@@ -934,6 +961,7 @@ fn render_element(element: &Element, index: usize, indent: &str, spacing: Letter
             color,
             align,
             representation,
+            progress_max,
             ..
         } => format!(
             "{indent}var activity{index} = ActivityMonitor.getInfo();\n\
@@ -954,7 +982,7 @@ fn render_element(element: &Element, index: usize, indent: &str, spacing: Letter
                 *align,
                 &format!("stepsValue{index}"),
                 &format!("stepsNumber{index}"),
-                &format!("stepsGoal{index}"),
+                &progress_max_expression(*progress_max, &format!("stepsGoal{index}")),
                 *representation,
                 IconKind::Steps,
                 spacing.value,
@@ -967,6 +995,7 @@ fn render_element(element: &Element, index: usize, indent: &str, spacing: Letter
             color,
             align,
             representation,
+            progress_max,
             ..
         } => format!(
             "{indent}var heartInfo{index} = Activity.getActivityInfo();\n\
@@ -985,7 +1014,7 @@ fn render_element(element: &Element, index: usize, indent: &str, spacing: Letter
                 *align,
                 &format!("heartValue{index}"),
                 &format!("heartNumber{index}"),
-                "200",
+                &progress_max_expression(*progress_max, "200"),
                 *representation,
                 IconKind::Heart,
                 spacing.value,
@@ -998,6 +1027,7 @@ fn render_element(element: &Element, index: usize, indent: &str, spacing: Letter
             color,
             align,
             representation,
+            progress_max,
             ..
         } => format!(
             "{indent}var stats{index} = System.getSystemStats();\n\
@@ -1016,7 +1046,7 @@ fn render_element(element: &Element, index: usize, indent: &str, spacing: Letter
                 *align,
                 &format!("batteryValue{index}"),
                 &format!("batteryNumber{index}"),
-                "100",
+                &progress_max_expression(*progress_max, "100"),
                 *representation,
                 IconKind::Battery,
                 spacing.value,
@@ -1029,6 +1059,7 @@ fn render_element(element: &Element, index: usize, indent: &str, spacing: Letter
             color,
             align,
             representation,
+            progress_max,
             ..
         } => format!(
             "{indent}var activity{index} = ActivityMonitor.getInfo();\n\
@@ -1047,7 +1078,7 @@ fn render_element(element: &Element, index: usize, indent: &str, spacing: Letter
                 *align,
                 &format!("caloriesValue{index}"),
                 &format!("caloriesNumber{index}"),
-                "500",
+                &progress_max_expression(*progress_max, "500"),
                 *representation,
                 IconKind::Flame,
                 spacing.value,
@@ -1061,6 +1092,7 @@ fn render_element(element: &Element, index: usize, indent: &str, spacing: Letter
             align,
             unit,
             representation,
+            progress_max,
             ..
         } => {
             let divisor = match unit {
@@ -1084,7 +1116,7 @@ fn render_element(element: &Element, index: usize, indent: &str, spacing: Letter
                     *align,
                     &format!("distanceValue{index}"),
                     &format!("distanceNumber{index}"),
-                    "10.0",
+                    &progress_max_expression(*progress_max, "10.0"),
                     *representation,
                     IconKind::Pin,
                     spacing.value,
@@ -1202,6 +1234,12 @@ fn render_icon(
         x - half,
         y - half,
     )
+}
+
+fn progress_max_expression(maximum: Option<f64>, fallback: &str) -> String {
+    maximum
+        .map(|value| value.to_string())
+        .unwrap_or_else(|| fallback.to_owned())
 }
 
 #[allow(clippy::too_many_arguments)]

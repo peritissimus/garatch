@@ -70,6 +70,8 @@ pub enum Element {
         align: Alignment,
         #[serde(default)]
         representation: Representation,
+        #[serde(default)]
+        progress_max: Option<f64>,
     },
     HeartRate {
         id: String,
@@ -83,6 +85,8 @@ pub enum Element {
         align: Alignment,
         #[serde(default)]
         representation: Representation,
+        #[serde(default)]
+        progress_max: Option<f64>,
     },
     Battery {
         id: String,
@@ -96,6 +100,8 @@ pub enum Element {
         align: Alignment,
         #[serde(default)]
         representation: Representation,
+        #[serde(default)]
+        progress_max: Option<f64>,
     },
     Calories {
         id: String,
@@ -109,6 +115,8 @@ pub enum Element {
         align: Alignment,
         #[serde(default)]
         representation: Representation,
+        #[serde(default)]
+        progress_max: Option<f64>,
     },
     Distance {
         id: String,
@@ -124,6 +132,8 @@ pub enum Element {
         unit: DistanceUnit,
         #[serde(default)]
         representation: Representation,
+        #[serde(default)]
+        progress_max: Option<f64>,
     },
     Label {
         id: String,

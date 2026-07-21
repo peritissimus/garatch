@@ -306,6 +306,7 @@ fn exports_dynamic_component_representations() {
     project["elements"][0]["representation"] = "stacked".into();
     project["elements"][1]["representation"] = "icon-value".into();
     project["elements"][2]["representation"] = "progress-bar".into();
+    project["elements"][2]["progressMax"] = 180.into();
     project["elements"].as_array_mut().unwrap().extend([
         serde_json::json!({
             "type": "date", "id": "date", "x": 160, "y": 190,
@@ -347,7 +348,7 @@ fn exports_dynamic_component_representations() {
     assert!(view.contains("metricTransform1.scale(0.187500, 0.187500)"));
     assert!(view.contains("Rez.Drawables.IconStepsFilled"));
     assert!(view.contains("Rez.Drawables.IconBatteryFilled"));
-    assert!(view.contains("var progress2 = heartNumber2.toFloat() / 200"));
+    assert!(view.contains("var progress2 = heartNumber2.toFloat() / 180"));
     assert!(view.contains("fillRoundedRectangle(116, 345, 88, 6, 3)"));
     assert!(paths.contains(&"resources/drawables/steps_filled.png"));
     assert!(paths.contains(&"resources/drawables/battery_filled.png"));

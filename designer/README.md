@@ -19,6 +19,8 @@ ZIP. Users compile the downloaded project locally with Garmin's official
 - Dynamic components are separated from static design layers in the palette
 - Digital and stacked time/date representations, plus value, icon-value, and
   progress-bar representations for activity metrics
+- Editable progress goals or scale maxima for steps, heart rate, calories, and
+  distance; battery progress is fixed to its natural 100% scale
 - Rectangle, ellipse, adjustable line, and Phosphor watch icons
 - Six complete editable watch-face templates for fast starting points
 - Seven built-in icons with filled and outline appearances: heart, steps,

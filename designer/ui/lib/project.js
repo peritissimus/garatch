@@ -56,6 +56,9 @@ function migrateFontFamily(project) {
     }
     if (element.type === "icon") element.style ??= "filled";
     if (DYNAMIC_TYPES.has(element.type)) element.representation ??= "value";
+    if (["steps", "heart-rate", "battery", "calories", "distance"].includes(element.type)) {
+      element.progressMax ??= defaultProgressMax(element.type);
+    }
   }
   return project;
 }
@@ -112,12 +115,16 @@ export function elementFactory(type) {
   const base = { ...common, type, color: "#FFFFFF", align: "center" };
   if (type === "time") return { ...base, y: 132, representation: "value", format: "device", showSeconds: false };
   if (type === "date") return { ...base, y: 210, representation: "value" };
-  if (type === "steps") return { ...base, y: 260, color: "#72D6B2", representation: "value" };
-  if (type === "heart-rate") return { ...base, y: 290, color: "#EF7E74", representation: "value" };
-  if (type === "battery") return { ...base, y: 320, representation: "value" };
-  if (type === "calories") return { ...base, y: 290, color: "#E5AD59", representation: "value" };
-  if (type === "distance") return { ...base, y: 290, color: "#78A6D6", representation: "value", unit: "kilometers" };
+  if (type === "steps") return { ...base, y: 260, color: "#72D6B2", representation: "value", progressMax: 10000 };
+  if (type === "heart-rate") return { ...base, y: 290, color: "#EF7E74", representation: "value", progressMax: 200 };
+  if (type === "battery") return { ...base, y: 320, representation: "value", progressMax: 100 };
+  if (type === "calories") return { ...base, y: 290, color: "#E5AD59", representation: "value", progressMax: 500 };
+  if (type === "distance") return { ...base, y: 290, color: "#78A6D6", representation: "value", progressMax: 10, unit: "kilometers" };
   return { ...base, type: "label", y: 80, text: "YOUR LABEL", maxWidth: 280, lineHeight: 22 };
+}
+
+export function defaultProgressMax(type) {
+  return { steps: 10000, "heart-rate": 200, battery: 100, calories: 500, distance: 10 }[type] ?? 100;
 }
 
 export function duplicateElement(element) {

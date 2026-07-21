@@ -43,7 +43,8 @@
       "y": 190,
       "color": "#EF7E74",
       "align": "center",
-      "representation": "progress-bar"
+      "representation": "progress-bar",
+      "progressMax": 180
     },
     {
       "type": "battery",
@@ -61,7 +62,8 @@
       "y": 320,
       "color": "#E5AD59",
       "align": "center",
-      "representation": "progress-bar"
+      "representation": "progress-bar",
+      "progressMax": 500
     },
     {
       "type": "distance",

@@ -3,7 +3,7 @@
   import Icon from "./Icon.svelte";
   import { DYNAMIC_TYPES, TYPE_NAMES } from "../lib/catalog.js";
   import { drawBitmapText, fontForElement, loadWatchFonts } from "../lib/bmfont.js";
-  import { WATCH_HEIGHT, WATCH_WIDTH, clampPosition, isShapeElement } from "../lib/project.js";
+  import { WATCH_HEIGHT, WATCH_WIDTH, clampPosition, defaultProgressMax, isShapeElement } from "../lib/project.js";
   import { ensureProjectFonts, positionedWatchText } from "../lib/textLayout.js";
   import { tactile } from "../lib/motion.js";
   import { drawCanvasIcon } from "../lib/iconDrawing.js";
@@ -15,7 +15,12 @@
   let drag = $state(null);
   let now = $state(new Date());
   const metricIcons = { steps: "steps", "heart-rate": "heart", battery: "battery", calories: "flame", distance: "pin" };
-  const previewProgress = { steps: 0.84, "heart-rate": 0.36, battery: 0.83, calories: 0.71, distance: 0.42 };
+  const previewNumbers = { steps: 8421, "heart-rate": 72, battery: 83, calories: 356, distance: 4.2 };
+
+  function previewProgress(element) {
+    const maximum = Math.max(1, Number(element.progressMax) || defaultProgressMax(element.type));
+    return Math.max(0, Math.min(1, (previewNumbers[element.type] ?? 0) / maximum));
+  }
 
   function previewText(element) {
     if (element.type === "label") return element.text;
@@ -119,7 +124,7 @@
       context.fill();
       context.fillStyle = element.color;
       context.beginPath();
-      context.roundRect(left, element.y + 15, Math.max(height, width * (previewProgress[element.type] ?? 0)), height, height / 2);
+      context.roundRect(left, element.y + 15, Math.max(height, width * previewProgress(element)), height, height / 2);
       context.fill();
       context.restore();
       return;

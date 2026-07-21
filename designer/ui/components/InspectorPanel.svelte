@@ -6,7 +6,7 @@
   import { ALIGN_OPTIONS, DYNAMIC_TYPES, TYPE_NAMES } from "../lib/catalog.js";
   import { FONT_FAMILIES, FONT_HEIGHT_OPTIONS, FONT_ROLE_DETAILS, normalizeFontFamily, roleForElement } from "../lib/bmfont.js";
   import { tactile } from "../lib/motion.js";
-  import { isShapeElement } from "../lib/project.js";
+  import { defaultProgressMax, isShapeElement } from "../lib/project.js";
 
   let { element, fontFamily, fontFamilySecondary, fontHeights, letterSpacing, onfontfamily, onfontfamilysecondary, onfontheight, onletterspacing, onupdate, onduplicate, ondelete, onmove, onalign } = $props();
   let primaryFamily = $derived(FONT_FAMILIES.find((family) => family.id === normalizeFontFamily(fontFamily)) ?? FONT_FAMILIES[0]);
@@ -85,6 +85,19 @@
           value={element.representation ?? "value"}
           onselect={(value) => update("representation", value, true)}
         />
+        {#if element.representation === "progress-bar" && element.type !== "battery"}
+          <div class="representation-target">
+            <Field
+              label={element.type === "heart-rate" ? "Scale maximum" : element.type === "distance" ? "Goal distance" : "Goal"}
+              type="number"
+              value={element.progressMax ?? defaultProgressMax(element.type)}
+              min={1}
+              max={1000000}
+              oninput={(value) => update("progressMax", value)}
+              onchange={(value) => update("progressMax", value, true)}
+            />
+          </div>
+        {/if}
       </section>
     {/if}
 
