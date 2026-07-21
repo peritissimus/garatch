@@ -246,10 +246,24 @@ fn exports_editable_icon_primitives() {
                 "x": 40 + (index as i32 * 38),
                 "y": 320,
                 "icon": icon,
+                "style": if index % 2 == 1 || *icon == "battery" { "outline" } else { "filled" },
                 "size": 24,
                 "color": "#72D6B2"
             }));
     }
+    project["elements"]
+        .as_array_mut()
+        .unwrap()
+        .push(serde_json::json!({
+            "type": "icon",
+            "id": "icon-steps-filled",
+            "x": 40,
+            "y": 285,
+            "icon": "steps",
+            "style": "filled",
+            "size": 24,
+            "color": "#72D6B2"
+        }));
     let spec = parse_spec(&project.to_string()).unwrap();
     assert!(validate_spec(&spec).valid);
     let generated = generate_project(&spec).unwrap();
@@ -260,9 +274,13 @@ fn exports_editable_icon_primitives() {
         .map(|file| String::from_utf8(file.bytes.clone()).unwrap())
         .unwrap();
     assert!(view.contains("dc.fillCircle"));
+    assert!(view.contains("dc.drawCircle"));
     assert!(view.contains("dc.fillPolygon"));
+    assert!(view.contains("dc.drawLine"));
+    assert!(!view.contains("dc.drawPolygon"));
     assert!(view.contains("dc.drawRectangle"));
     assert!(view.contains("dc.fillEllipse"));
+    assert!(view.contains("dc.drawEllipse"));
 }
 
 #[test]

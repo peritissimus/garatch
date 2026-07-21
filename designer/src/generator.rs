@@ -4,7 +4,7 @@ use std::fmt::{self, Write};
 use serde::{Deserialize, Serialize};
 
 use crate::model::{
-    Alignment, DistanceUnit, Element, FontFamily, FontHeights, IconKind, LetterSpacing,
+    Alignment, DistanceUnit, Element, FontFamily, FontHeights, IconKind, IconStyle, LetterSpacing,
     ProjectSpec, TimeFormat,
 };
 
@@ -927,39 +927,68 @@ fn render_element(element: &Element, index: usize, indent: &str, spacing: Letter
             x,
             y,
             icon,
+            style,
             size,
             color,
             ..
-        } => render_icon(*x, *y, *size, color, *icon, indent),
+        } => render_icon(*x, *y, *size, color, *icon, *style, indent),
     }
 }
 
-fn render_icon(x: i32, y: i32, size: u32, color: &str, icon: IconKind, indent: &str) -> String {
+fn render_icon(
+    x: i32,
+    y: i32,
+    size: u32,
+    color: &str,
+    icon: IconKind,
+    style: IconStyle,
+    indent: &str,
+) -> String {
     let half = i32::try_from(size / 2).unwrap_or(0);
     let quarter = i32::try_from(size / 4).unwrap_or(0);
     let fifth = i32::try_from(size / 5).unwrap_or(0);
     let eighth = i32::try_from(size / 8).unwrap_or(0);
     let color = color_code(color);
+    let circle = if style == IconStyle::Filled {
+        "fillCircle"
+    } else {
+        "drawCircle"
+    };
+    let ellipse = if style == IconStyle::Filled {
+        "fillEllipse"
+    } else {
+        "drawEllipse"
+    };
     match icon {
-        IconKind::Heart => format!(
-            "{indent}dc.setColor({color}, Graphics.COLOR_TRANSPARENT);\n\
-{indent}dc.fillCircle({}, {}, {quarter});\n\
-{indent}dc.fillCircle({}, {}, {quarter});\n\
-{indent}dc.fillPolygon([[{}, {}], [{}, {}], [{x}, {}]]);\n",
-            x - fifth,
-            y - eighth,
-            x + fifth,
-            y - eighth,
-            x - half,
-            y - eighth,
-            x + half,
-            y - eighth,
-            y + half
-        ),
+        IconKind::Heart => {
+            let triangle = render_icon_polygon(
+                &[
+                    (x - half, y - eighth),
+                    (x + half, y - eighth),
+                    (x, y + half),
+                ],
+                style,
+                indent,
+            );
+            format!(
+                "{indent}dc.setColor({color}, Graphics.COLOR_TRANSPARENT);\n\
+{indent}dc.setPenWidth(2);\n\
+{indent}dc.{circle}({}, {}, {quarter});\n\
+{indent}dc.{circle}({}, {}, {quarter});\n\
+{triangle}\
+{indent}dc.setPenWidth(1);\n",
+                x - fifth,
+                y - eighth,
+                x + fifth,
+                y - eighth,
+            )
+        }
         IconKind::Steps => format!(
             "{indent}dc.setColor({color}, Graphics.COLOR_TRANSPARENT);\n\
-{indent}dc.fillEllipse({}, {}, {}, {});\n\
-{indent}dc.fillEllipse({}, {}, {}, {});\n",
+{indent}dc.setPenWidth(2);\n\
+{indent}dc.{ellipse}({}, {}, {}, {});\n\
+{indent}dc.{ellipse}({}, {}, {}, {});\n\
+{indent}dc.setPenWidth(1);\n",
             x - quarter,
             y - quarter,
             eighth,
@@ -969,54 +998,70 @@ fn render_icon(x: i32, y: i32, size: u32, color: &str, icon: IconKind, indent: &
             eighth,
             quarter
         ),
-        IconKind::Battery => format!(
-            "{indent}dc.setColor({color}, Graphics.COLOR_TRANSPARENT);\n\
+        IconKind::Battery => {
+            let body = if style == IconStyle::Filled {
+                "fillRectangle"
+            } else {
+                "drawRectangle"
+            };
+            format!(
+                "{indent}dc.setColor({color}, Graphics.COLOR_TRANSPARENT);\n\
 {indent}dc.setPenWidth(2);\n\
-{indent}dc.drawRectangle({}, {}, {}, {});\n\
-{indent}dc.fillRectangle({}, {}, {}, {});\n\
+{indent}dc.{body}({}, {}, {}, {});\n\
 {indent}dc.fillRectangle({}, {}, {}, {});\n\
 {indent}dc.setPenWidth(1);\n",
-            x - half,
-            y - quarter,
-            size - 3,
-            size / 2,
-            x + half - 2,
-            y - eighth,
-            3,
-            size / 4,
-            x - half + 4,
-            y - quarter + 4,
-            size.saturating_sub(11),
-            size.saturating_sub(8) / 2
-        ),
-        IconKind::Flame => format!(
-            "{indent}dc.setColor({color}, Graphics.COLOR_TRANSPARENT);\n\
-{indent}dc.fillPolygon([[{x}, {}], [{}, {}], [{}, {}], [{}, {}], [{}, {}]]);\n",
-            y - half,
-            x + half,
-            y + eighth,
-            x + quarter,
-            y + half,
-            x - quarter,
-            y + half,
-            x - half,
-            y
-        ),
-        IconKind::Pin => format!(
-            "{indent}dc.setColor({color}, Graphics.COLOR_TRANSPARENT);\n\
-{indent}dc.fillCircle({x}, {}, {quarter});\n\
-{indent}dc.fillPolygon([[{}, {}], [{}, {}], [{x}, {}]]);\n",
-            y - quarter,
-            x - quarter,
-            y - eighth,
-            x + quarter,
-            y - eighth,
-            y + half
-        ),
+                x - half,
+                y - quarter,
+                size - 3,
+                size / 2,
+                x + half - 2,
+                y - eighth,
+                3,
+                size / 4
+            )
+        }
+        IconKind::Flame => {
+            let shape = render_icon_polygon(
+                &[
+                    (x, y - half),
+                    (x + half, y + eighth),
+                    (x + quarter, y + half),
+                    (x - quarter, y + half),
+                    (x - half, y),
+                ],
+                style,
+                indent,
+            );
+            format!(
+                "{indent}dc.setColor({color}, Graphics.COLOR_TRANSPARENT);\n\
+{indent}dc.setPenWidth(2);\n\
+{shape}\
+{indent}dc.setPenWidth(1);\n",
+            )
+        }
+        IconKind::Pin => {
+            let triangle = render_icon_polygon(
+                &[
+                    (x - quarter, y - eighth),
+                    (x + quarter, y - eighth),
+                    (x, y + half),
+                ],
+                style,
+                indent,
+            );
+            format!(
+                "{indent}dc.setColor({color}, Graphics.COLOR_TRANSPARENT);\n\
+{indent}dc.setPenWidth(2);\n\
+{indent}dc.{circle}({x}, {}, {quarter});\n\
+{triangle}\
+{indent}dc.setPenWidth(1);\n",
+                y - quarter,
+            )
+        }
         IconKind::Sun => format!(
             "{indent}dc.setColor({color}, Graphics.COLOR_TRANSPARENT);\n\
-{indent}dc.fillCircle({x}, {y}, {quarter});\n\
 {indent}dc.setPenWidth(2);\n\
+{indent}dc.{circle}({x}, {y}, {quarter});\n\
 {indent}dc.drawLine({x}, {}, {x}, {});\n\
 {indent}dc.drawLine({x}, {}, {x}, {});\n\
 {indent}dc.drawLine({}, {y}, {}, {y});\n\
@@ -1031,21 +1076,45 @@ fn render_icon(x: i32, y: i32, size: u32, color: &str, icon: IconKind, indent: &
             x + quarter + 2,
             x + half
         ),
-        IconKind::Bolt => format!(
-            "{indent}dc.setColor({color}, Graphics.COLOR_TRANSPARENT);\n\
-{indent}dc.fillPolygon([[{}, {}], [{}, {}], [{}, {y}], [{}, {y}], [{}, {}], [{}, {}]]);\n",
-            x + eighth,
-            y - half,
-            x - half,
-            y + eighth,
-            x - eighth,
-            x - quarter,
-            x - eighth,
-            y + half,
-            x + half,
-            y - eighth
-        ),
+        IconKind::Bolt => {
+            let shape = render_icon_polygon(
+                &[
+                    (x + eighth, y - half),
+                    (x - half, y + eighth),
+                    (x - eighth, y),
+                    (x - quarter, y),
+                    (x - eighth, y + half),
+                    (x + half, y - eighth),
+                ],
+                style,
+                indent,
+            );
+            format!(
+                "{indent}dc.setColor({color}, Graphics.COLOR_TRANSPARENT);\n\
+{indent}dc.setPenWidth(2);\n\
+{shape}\
+{indent}dc.setPenWidth(1);\n",
+            )
+        }
     }
+}
+
+fn render_icon_polygon(points: &[(i32, i32)], style: IconStyle, indent: &str) -> String {
+    if style == IconStyle::Filled {
+        let points = points
+            .iter()
+            .map(|(x, y)| format!("[{x}, {y}]"))
+            .collect::<Vec<_>>()
+            .join(", ");
+        return format!("{indent}dc.fillPolygon([{points}]);\n");
+    }
+    let mut output = String::new();
+    for index in 0..points.len() {
+        let (x1, y1) = points[index];
+        let (x2, y2) = points[(index + 1) % points.len()];
+        writeln!(output, "{indent}dc.drawLine({x1}, {y1}, {x2}, {y2});").unwrap();
+    }
+    output
 }
 
 #[allow(clippy::too_many_arguments)]

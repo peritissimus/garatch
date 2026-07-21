@@ -162,6 +162,8 @@ pub enum Element {
         y: i32,
         #[serde(default)]
         icon: IconKind,
+        #[serde(default)]
+        style: IconStyle,
         #[serde(default = "default_icon_size")]
         size: u32,
         #[serde(default = "default_foreground")]
@@ -180,6 +182,14 @@ pub enum IconKind {
     Pin,
     Sun,
     Bolt,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Default)]
+#[serde(rename_all = "kebab-case")]
+pub enum IconStyle {
+    #[default]
+    Filled,
+    Outline,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Default)]

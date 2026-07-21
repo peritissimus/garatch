@@ -79,6 +79,7 @@
       "x": 238,
       "y": 244,
       "icon": "pin",
+      "style": "outline",
       "size": 22,
       "color": "#78A6D6"
     },
