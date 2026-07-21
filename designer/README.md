@@ -14,8 +14,9 @@ ZIP. Users compile the downloaded project locally with Garmin's official
 
 - Venu SQ 2 and Venu SQ 2 Music (shared `venusq2` device profile)
 - Fixed 320×360 canvas
-- Digital time, date, steps, current heart rate, battery, static labels, and
-  rectangles
+- Digital time, date, steps, current heart rate, battery, calories, distance,
+  and static labels
+- Rectangle, ellipse, and adjustable line primitives
 - Null-safe metric reads
 - Sparse always-on time rendering
 - One face-wide typeface choice shared by every text layer and the generated
@@ -86,6 +87,14 @@ Generate a sample project archive:
 ```sh
 cargo run --manifest-path designer/Cargo.toml \
   --example export_sample -- /tmp/garatch-wasm-sample.zip
+```
+
+Generate the expanded-components example:
+
+```sh
+cargo run --manifest-path designer/Cargo.toml \
+  --example export_sample -- /tmp/garatch-expanded.zip \
+  designer/examples/expanded_components.json
 ```
 
 ## Input format
