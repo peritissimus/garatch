@@ -42,6 +42,8 @@ pub enum Element {
         format: TimeFormat,
         #[serde(default)]
         show_seconds: bool,
+        #[serde(default)]
+        representation: Representation,
     },
     Date {
         id: String,
@@ -53,6 +55,8 @@ pub enum Element {
         font: Font,
         #[serde(default)]
         align: Alignment,
+        #[serde(default)]
+        representation: Representation,
     },
     Steps {
         id: String,
@@ -64,6 +68,8 @@ pub enum Element {
         font: Font,
         #[serde(default)]
         align: Alignment,
+        #[serde(default)]
+        representation: Representation,
     },
     HeartRate {
         id: String,
@@ -75,6 +81,8 @@ pub enum Element {
         font: Font,
         #[serde(default)]
         align: Alignment,
+        #[serde(default)]
+        representation: Representation,
     },
     Battery {
         id: String,
@@ -86,6 +94,8 @@ pub enum Element {
         font: Font,
         #[serde(default)]
         align: Alignment,
+        #[serde(default)]
+        representation: Representation,
     },
     Calories {
         id: String,
@@ -97,6 +107,8 @@ pub enum Element {
         font: Font,
         #[serde(default)]
         align: Alignment,
+        #[serde(default)]
+        representation: Representation,
     },
     Distance {
         id: String,
@@ -110,6 +122,8 @@ pub enum Element {
         align: Alignment,
         #[serde(default)]
         unit: DistanceUnit,
+        #[serde(default)]
+        representation: Representation,
     },
     Label {
         id: String,
@@ -173,6 +187,16 @@ pub enum Element {
         #[serde(default = "default_foreground")]
         color: String,
     },
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Default)]
+#[serde(rename_all = "kebab-case")]
+pub enum Representation {
+    #[default]
+    Value,
+    IconValue,
+    ProgressBar,
+    Stacked,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Default)]

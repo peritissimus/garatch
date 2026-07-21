@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::model::{
     Alignment, DistanceUnit, Element, FontFamily, FontHeights, IconKind, IconStyle, LetterSpacing,
-    ProjectSpec, TimeFormat,
+    ProjectSpec, Representation, TimeFormat,
 };
 
 const WATCH_WIDTH: i32 = 320;
@@ -66,12 +66,34 @@ fn selected_icon_assets(spec: &ProjectSpec) -> Vec<&'static IconAsset> {
     ICON_ASSETS
         .iter()
         .filter(|asset| {
-            spec.elements.iter().any(|element| {
-                matches!(
-                    element,
-                    Element::Icon { icon, style, .. }
-                        if *icon == asset.kind && *style == asset.style
-                )
+            spec.elements.iter().any(|element| match element {
+                Element::Icon { icon, style, .. } => *icon == asset.kind && *style == asset.style,
+                Element::Steps { representation, .. } => {
+                    *representation == Representation::IconValue
+                        && asset.kind == IconKind::Steps
+                        && asset.style == IconStyle::Filled
+                }
+                Element::HeartRate { representation, .. } => {
+                    *representation == Representation::IconValue
+                        && asset.kind == IconKind::Heart
+                        && asset.style == IconStyle::Filled
+                }
+                Element::Battery { representation, .. } => {
+                    *representation == Representation::IconValue
+                        && asset.kind == IconKind::Battery
+                        && asset.style == IconStyle::Filled
+                }
+                Element::Calories { representation, .. } => {
+                    *representation == Representation::IconValue
+                        && asset.kind == IconKind::Flame
+                        && asset.style == IconStyle::Filled
+                }
+                Element::Distance { representation, .. } => {
+                    *representation == Representation::IconValue
+                        && asset.kind == IconKind::Pin
+                        && asset.style == IconStyle::Filled
+                }
+                _ => false,
             })
         })
         .collect()
@@ -360,6 +382,34 @@ pub fn validate_spec(spec: &ProjectSpec) -> ValidationReport {
         }
 
         match element {
+            Element::Time { representation, .. } | Element::Date { representation, .. } => {
+                if !matches!(
+                    representation,
+                    Representation::Value | Representation::Stacked
+                ) {
+                    issue(
+                        &mut issues,
+                        format!("{field}.representation"),
+                        "must be value or stacked for time and date",
+                    );
+                }
+            }
+            Element::Steps { representation, .. }
+            | Element::HeartRate { representation, .. }
+            | Element::Battery { representation, .. }
+            | Element::Calories { representation, .. }
+            | Element::Distance { representation, .. } => {
+                if !matches!(
+                    representation,
+                    Representation::Value | Representation::IconValue | Representation::ProgressBar
+                ) {
+                    issue(
+                        &mut issues,
+                        format!("{field}.representation"),
+                        "must be value, icon-value, or progress-bar for metrics",
+                    );
+                }
+            }
             Element::Label {
                 text,
                 max_width,
@@ -497,7 +547,6 @@ pub fn validate_spec(spec: &ProjectSpec) -> ValidationReport {
                     );
                 }
             }
-            _ => {}
         }
     }
 
@@ -815,6 +864,7 @@ fn render_element(element: &Element, index: usize, indent: &str, spacing: Letter
             align,
             format,
             show_seconds,
+            representation,
             ..
         } => render_time(
             index,
@@ -824,102 +874,182 @@ fn render_element(element: &Element, index: usize, indent: &str, spacing: Letter
             *align,
             *format,
             *show_seconds,
+            *representation,
             spacing.time,
             indent,
         ),
         Element::Date {
-            x, y, color, align, ..
-        } => format!(
-            "{indent}var date{index} = Gregorian.info(Time.now(), Time.FORMAT_SHORT);\n\
+            x,
+            y,
+            color,
+            align,
+            representation,
+            ..
+        } => {
+            let display = if *representation == Representation::Stacked {
+                format!(
+                    "{}{}",
+                    draw_text(
+                        *x,
+                        *y - 10,
+                        color,
+                        font_resource(FontRole::Label),
+                        *align,
+                        &format!("date{index}.day.format(\"%02d\")"),
+                        spacing.label,
+                        indent
+                    ),
+                    draw_text(
+                        *x,
+                        *y + 10,
+                        color,
+                        font_resource(FontRole::Label),
+                        *align,
+                        &format!("date{index}.month.format(\"%02d\")"),
+                        spacing.label,
+                        indent
+                    )
+                )
+            } else {
+                draw_text(
+                    *x,
+                    *y,
+                    color,
+                    font_resource(FontRole::Label),
+                    *align,
+                    &format!("dateValue{index}"),
+                    spacing.label,
+                    indent,
+                )
+            };
+            format!(
+                "{indent}var date{index} = Gregorian.info(Time.now(), Time.FORMAT_SHORT);\n\
 {indent}var dateValue{index} = date{index}.day.format(\"%02d\") + \"/\" + date{index}.month.format(\"%02d\");\n\
-{}",
-            draw_text(
-                *x,
-                *y,
-                color,
-                font_resource(FontRole::Label),
-                *align,
-                &format!("dateValue{index}"),
-                spacing.label,
-                indent
+{display}"
             )
-        ),
+        }
         Element::Steps {
-            x, y, color, align, ..
+            x,
+            y,
+            color,
+            align,
+            representation,
+            ..
         } => format!(
             "{indent}var activity{index} = ActivityMonitor.getInfo();\n\
 {indent}var stepsValue{index} = \"--\";\n\
+{indent}var stepsNumber{index} = 0;\n\
+{indent}var stepsGoal{index} = 10000;\n\
 {indent}if (activity{index} != null && activity{index}.steps != null) {{\n\
+{indent}    stepsNumber{index} = activity{index}.steps;\n\
 {indent}    stepsValue{index} = activity{index}.steps.format(\"%d\");\n\
+{indent}    if (activity{index}.stepGoal != null && activity{index}.stepGoal > 0) {{ stepsGoal{index} = activity{index}.stepGoal; }}\n\
 {indent}}}\n\
 {}",
-            draw_text(
+            render_metric_display(
+                index,
                 *x,
                 *y,
                 color,
-                font_resource(FontRole::Value),
                 *align,
                 &format!("stepsValue{index}"),
+                &format!("stepsNumber{index}"),
+                &format!("stepsGoal{index}"),
+                *representation,
+                IconKind::Steps,
                 spacing.value,
                 indent
             )
         ),
         Element::HeartRate {
-            x, y, color, align, ..
+            x,
+            y,
+            color,
+            align,
+            representation,
+            ..
         } => format!(
             "{indent}var heartInfo{index} = Activity.getActivityInfo();\n\
 {indent}var heartValue{index} = \"--\";\n\
+{indent}var heartNumber{index} = 0;\n\
 {indent}if (heartInfo{index} != null && heartInfo{index}.currentHeartRate != null) {{\n\
+{indent}    heartNumber{index} = heartInfo{index}.currentHeartRate;\n\
 {indent}    heartValue{index} = heartInfo{index}.currentHeartRate.format(\"%d\");\n\
 {indent}}}\n\
 {}",
-            draw_text(
+            render_metric_display(
+                index,
                 *x,
                 *y,
                 color,
-                font_resource(FontRole::Value),
                 *align,
                 &format!("heartValue{index}"),
+                &format!("heartNumber{index}"),
+                "200",
+                *representation,
+                IconKind::Heart,
                 spacing.value,
                 indent
             )
         ),
         Element::Battery {
-            x, y, color, align, ..
+            x,
+            y,
+            color,
+            align,
+            representation,
+            ..
         } => format!(
             "{indent}var stats{index} = System.getSystemStats();\n\
 {indent}var batteryValue{index} = \"--\";\n\
+{indent}var batteryNumber{index} = 0;\n\
 {indent}if (stats{index} != null && stats{index}.battery != null) {{\n\
+{indent}    batteryNumber{index} = stats{index}.battery;\n\
 {indent}    batteryValue{index} = stats{index}.battery.toNumber().format(\"%d\") + \"%\";\n\
 {indent}}}\n\
 {}",
-            draw_text(
+            render_metric_display(
+                index,
                 *x,
                 *y,
                 color,
-                font_resource(FontRole::Value),
                 *align,
                 &format!("batteryValue{index}"),
+                &format!("batteryNumber{index}"),
+                "100",
+                *representation,
+                IconKind::Battery,
                 spacing.value,
                 indent
             )
         ),
         Element::Calories {
-            x, y, color, align, ..
+            x,
+            y,
+            color,
+            align,
+            representation,
+            ..
         } => format!(
             "{indent}var activity{index} = ActivityMonitor.getInfo();\n\
 {indent}var caloriesValue{index} = \"--\";\n\
+{indent}var caloriesNumber{index} = 0;\n\
 {indent}if (activity{index} != null && activity{index}.calories != null) {{\n\
+{indent}    caloriesNumber{index} = activity{index}.calories;\n\
 {indent}    caloriesValue{index} = activity{index}.calories.format(\"%d\");\n\
 {indent}}}\n\
 {}",
-            draw_text(
+            render_metric_display(
+                index,
                 *x,
                 *y,
                 color,
-                font_resource(FontRole::Value),
                 *align,
                 &format!("caloriesValue{index}"),
+                &format!("caloriesNumber{index}"),
+                "500",
+                *representation,
+                IconKind::Flame,
                 spacing.value,
                 indent
             )
@@ -930,6 +1060,7 @@ fn render_element(element: &Element, index: usize, indent: &str, spacing: Letter
             color,
             align,
             unit,
+            representation,
             ..
         } => {
             let divisor = match unit {
@@ -939,18 +1070,23 @@ fn render_element(element: &Element, index: usize, indent: &str, spacing: Letter
             format!(
                 "{indent}var activity{index} = ActivityMonitor.getInfo();\n\
 {indent}var distanceValue{index} = \"--\";\n\
+{indent}var distanceNumber{index} = 0.0;\n\
 {indent}if (activity{index} != null && activity{index}.distance != null) {{\n\
-{indent}    var distanceNumber{index} = activity{index}.distance / {divisor};\n\
+{indent}    distanceNumber{index} = activity{index}.distance / {divisor};\n\
 {indent}    distanceValue{index} = distanceNumber{index}.format(\"%.1f\");\n\
 {indent}}}\n\
 {}",
-                draw_text(
+                render_metric_display(
+                    index,
                     *x,
                     *y,
                     color,
-                    font_resource(FontRole::Value),
                     *align,
                     &format!("distanceValue{index}"),
+                    &format!("distanceNumber{index}"),
+                    "10.0",
+                    *representation,
+                    IconKind::Pin,
                     spacing.value,
                     indent
                 )
@@ -1069,6 +1205,94 @@ fn render_icon(
 }
 
 #[allow(clippy::too_many_arguments)]
+fn render_metric_display(
+    index: usize,
+    x: i32,
+    y: i32,
+    color: &str,
+    align: Alignment,
+    value: &str,
+    numeric_value: &str,
+    maximum: &str,
+    representation: Representation,
+    icon: IconKind,
+    spacing: i32,
+    indent: &str,
+) -> String {
+    match representation {
+        Representation::IconValue => {
+            let asset = selected_icon_asset(icon, IconStyle::Filled);
+            let left = match align {
+                Alignment::Left => format!("{x}"),
+                Alignment::Center => {
+                    format!("{x} - (dc.getTextWidthInPixels({value}, _fontValue) + 24) / 2")
+                }
+                Alignment::Right => {
+                    format!("{x} - dc.getTextWidthInPixels({value}, _fontValue) - 24")
+                }
+            };
+            format!(
+                "{indent}var metricLeft{index} = {left};\n\
+{indent}var metricTransform{index} = new Graphics.AffineTransform();\n\
+{indent}metricTransform{index}.scale(0.187500, 0.187500);\n\
+{indent}var metricBitmap{index} = WatchUi.loadResource(Rez.Drawables.{});\n\
+{indent}dc.drawBitmap2(metricLeft{index}, {}, metricBitmap{index}, {{\n\
+{indent}    :transform => metricTransform{index},\n\
+{indent}    :tintColor => {},\n\
+{indent}    :filterMode => Graphics.FILTER_MODE_BILINEAR\n\
+{indent}}});\n\
+{indent}dc.setColor({}, Graphics.COLOR_TRANSPARENT);\n\
+{indent}drawText(dc, metricLeft{index} + 24, {y}, _fontValue, {value}, Graphics.TEXT_JUSTIFY_LEFT, {spacing});\n",
+                asset.resource_id,
+                y - 9,
+                color_code(color),
+                color_code(color),
+            )
+        }
+        Representation::ProgressBar => {
+            let left = match align {
+                Alignment::Left => x,
+                Alignment::Center => x - 44,
+                Alignment::Right => x - 88,
+            };
+            format!(
+                "{}{indent}var progress{index} = {numeric_value}.toFloat() / {maximum};\n\
+{indent}if (progress{index} < 0.0) {{ progress{index} = 0.0; }}\n\
+{indent}else if (progress{index} > 1.0) {{ progress{index} = 1.0; }}\n\
+{indent}var progressWidth{index} = (progress{index} * 88).toNumber();\n\
+{indent}dc.setColor(0x242725, Graphics.COLOR_TRANSPARENT);\n\
+{indent}dc.fillRoundedRectangle({left}, {}, 88, 6, 3);\n\
+{indent}dc.setColor({}, Graphics.COLOR_TRANSPARENT);\n\
+{indent}if (progressWidth{index} > 0) {{ dc.fillRoundedRectangle({left}, {}, progressWidth{index}, 6, 3); }}\n",
+                draw_text(
+                    x,
+                    y - 11,
+                    color,
+                    font_resource(FontRole::Value),
+                    align,
+                    value,
+                    spacing,
+                    indent,
+                ),
+                y + 15,
+                color_code(color),
+                y + 15,
+            )
+        }
+        _ => draw_text(
+            x,
+            y,
+            color,
+            font_resource(FontRole::Value),
+            align,
+            value,
+            spacing,
+            indent,
+        ),
+    }
+}
+
+#[allow(clippy::too_many_arguments)]
 fn render_time(
     index: usize,
     x: i32,
@@ -1077,6 +1301,7 @@ fn render_time(
     align: Alignment,
     format: TimeFormat,
     show_seconds: bool,
+    representation: Representation,
     spacing: i32,
     indent: &str,
 ) -> String {
@@ -1106,16 +1331,53 @@ fn render_time(
         write!(output, " + \":\" + clock{index}.sec.format(\"%02d\")").unwrap();
     }
     output.push_str(";\n");
-    output.push_str(&draw_text(
-        x,
-        y,
-        color,
-        font_resource(FontRole::Time),
-        align,
-        &format!("timeValue{index}"),
-        spacing,
-        indent,
-    ));
+    if representation == Representation::Stacked {
+        writeln!(
+            output,
+            "{indent}var hourValue{index} = hour{index}.format(\"%02d\");"
+        )
+        .unwrap();
+        write!(
+            output,
+            "{indent}var minuteValue{index} = clock{index}.min.format(\"%02d\")"
+        )
+        .unwrap();
+        if show_seconds {
+            write!(output, " + \":\" + clock{index}.sec.format(\"%02d\")").unwrap();
+        }
+        output.push_str(";\n");
+        output.push_str(&draw_text(
+            x,
+            y - 52,
+            color,
+            font_resource(FontRole::Time),
+            align,
+            &format!("hourValue{index}"),
+            spacing,
+            indent,
+        ));
+        output.push_str(&draw_text(
+            x,
+            y + 52,
+            color,
+            font_resource(FontRole::Time),
+            align,
+            &format!("minuteValue{index}"),
+            spacing,
+            indent,
+        ));
+    } else {
+        output.push_str(&draw_text(
+            x,
+            y,
+            color,
+            font_resource(FontRole::Time),
+            align,
+            &format!("timeValue{index}"),
+            spacing,
+            indent,
+        ));
+    }
     output
 }
 
@@ -1145,6 +1407,7 @@ fn render_always_on_time(element: &Element, index: usize, spacing: i32) -> Strin
         *align,
         *format,
         false,
+        Representation::Value,
         spacing,
         "        ",
     )

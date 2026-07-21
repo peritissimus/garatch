@@ -1,17 +1,45 @@
 export const ELEMENT_CATALOG = [
-  { type: "time", glyph: "12:34", name: "Time", description: "Digital clock", tone: "mint" },
-  { type: "date", glyph: "21", name: "Date", description: "Day + month", tone: "blue" },
-  { type: "steps", glyph: "8K", name: "Steps", description: "Daily activity", tone: "amber" },
-  { type: "heart-rate", glyph: "♥", name: "Heart rate", description: "Current BPM", tone: "coral" },
-  { type: "battery", glyph: "83", name: "Battery", description: "Device charge", tone: "violet" },
-  { type: "calories", glyph: "356", name: "Calories", description: "Daily burn", tone: "amber" },
-  { type: "distance", glyph: "4.2", name: "Distance", description: "Km or miles", tone: "blue" },
-  { type: "label", glyph: "Aa", name: "Label", description: "Static text", tone: "neutral" },
-  { type: "rectangle", glyph: "▭", name: "Rectangle", description: "Block + divider", tone: "neutral" },
-  { type: "ellipse", glyph: "○", name: "Ellipse", description: "Circle + oval", tone: "neutral" },
-  { type: "line", glyph: "╱", name: "Line", description: "Rules + accents", tone: "neutral" },
-  { type: "icon", glyph: "♥", name: "Icon", description: "Visual symbol", tone: "coral" },
+  { type: "time", glyph: "12:34", name: "Time", description: "Live clock", tone: "mint", group: "dynamic" },
+  { type: "date", glyph: "21", name: "Date", description: "Today’s date", tone: "blue", group: "dynamic" },
+  { type: "steps", glyph: "8K", name: "Steps", description: "Daily activity", tone: "amber", group: "dynamic" },
+  { type: "heart-rate", glyph: "♥", name: "Heart rate", description: "Current BPM", tone: "coral", group: "dynamic" },
+  { type: "battery", glyph: "83", name: "Battery", description: "Device charge", tone: "violet", group: "dynamic" },
+  { type: "calories", glyph: "356", name: "Calories", description: "Daily burn", tone: "amber", group: "dynamic" },
+  { type: "distance", glyph: "4.2", name: "Distance", description: "Km or miles", tone: "blue", group: "dynamic" },
+  { type: "label", glyph: "Aa", name: "Label", description: "Fixed text", tone: "neutral", group: "static" },
+  { type: "rectangle", glyph: "▭", name: "Rectangle", description: "Block + divider", tone: "neutral", group: "static" },
+  { type: "ellipse", glyph: "○", name: "Ellipse", description: "Circle + oval", tone: "neutral", group: "static" },
+  { type: "line", glyph: "╱", name: "Line", description: "Rules + accents", tone: "neutral", group: "static" },
+  { type: "icon", glyph: "♥", name: "Icon", description: "Fixed symbol", tone: "coral", group: "static" },
 ];
+
+export const DYNAMIC_CATALOG = ELEMENT_CATALOG.filter((item) => item.group === "dynamic");
+export const STATIC_CATALOG = ELEMENT_CATALOG.filter((item) => item.group === "static");
+export const DYNAMIC_TYPES = new Set(DYNAMIC_CATALOG.map((item) => item.type));
+
+export const REPRESENTATION_OPTIONS = {
+  time: [
+    { id: "value", name: "Digital", description: "One-line clock", preview: "10:28" },
+    { id: "stacked", name: "Stacked", description: "Hours over minutes", preview: "10\n28" },
+  ],
+  date: [
+    { id: "value", name: "Numeric", description: "Day and month", preview: "22/07" },
+    { id: "stacked", name: "Stacked", description: "Day over month", preview: "22\n07" },
+  ],
+  steps: metricRepresentations("8.4K", "ST"),
+  "heart-rate": metricRepresentations("72", "♥"),
+  battery: metricRepresentations("83%", "▰"),
+  calories: metricRepresentations("356", "◆"),
+  distance: metricRepresentations("4.2", "⌖"),
+};
+
+function metricRepresentations(value, icon) {
+  return [
+    { id: "value", name: "Value", description: "Number only", preview: value },
+    { id: "icon-value", name: "Icon + value", description: "Symbol and number", preview: `${icon} ${value}` },
+    { id: "progress-bar", name: "Progress", description: "Value with goal bar", preview: `${value}\n━━━━` },
+  ];
+}
 
 export const TYPE_NAMES = Object.fromEntries(ELEMENT_CATALOG.map(({ type, name }) => [type, name]));
 

@@ -1,7 +1,7 @@
 <script>
   import { onMount } from "svelte";
   import Icon from "./Icon.svelte";
-  import { TYPE_NAMES } from "../lib/catalog.js";
+  import { DYNAMIC_TYPES, TYPE_NAMES } from "../lib/catalog.js";
   import { drawBitmapText, fontForElement, loadWatchFonts } from "../lib/bmfont.js";
   import { WATCH_HEIGHT, WATCH_WIDTH, clampPosition, isShapeElement } from "../lib/project.js";
   import { ensureProjectFonts, positionedWatchText } from "../lib/textLayout.js";
@@ -14,6 +14,8 @@
   let fonts = $state(null);
   let drag = $state(null);
   let now = $state(new Date());
+  const metricIcons = { steps: "steps", "heart-rate": "heart", battery: "battery", calories: "flame", distance: "pin" };
+  const previewProgress = { steps: 0.84, "heart-rate": 0.36, battery: 0.83, calories: 0.71, distance: 0.42 };
 
   function previewText(element) {
     if (element.type === "label") return element.text;
@@ -58,25 +60,75 @@
     context.restore();
   }
 
-  function drawText(element, colorOverride = null) {
+  function textLayout(element, text = previewText(element), x = element.x, y = element.y, align = element.align) {
+    return positionedWatchText(project, { ...element, x, y, align }, text);
+  }
+
+  function drawText(element, colorOverride = null, text = previewText(element), x = element.x, y = element.y, align = element.align) {
     if (!fonts) return;
     const font = fontForElement(fonts, element);
-    const layout = positionedWatchText(project, element, previewText(element));
+    const layout = textLayout(element, text, x, y, align);
     layout.lines.forEach((line) => {
       drawBitmapText(
         context,
         font,
         line.text,
-        element.x,
+        x,
         line.centerY,
-        element.align,
+        align,
         colorOverride ?? element.color,
         layout.letterSpacing,
       );
     });
   }
 
+  function alignedLeft(element, width) {
+    if (element.align === "left") return element.x;
+    if (element.align === "right") return element.x - width;
+    return element.x - width / 2;
+  }
+
+  function drawDynamicElement(element) {
+    const representation = element.representation ?? "value";
+    if (representation === "stacked") {
+      const parts = previewText(element).split(/[/:]/);
+      const gap = element.type === "time" ? project.fontHeights.time / 2 : Math.max(10, project.fontHeights.label / 2);
+      drawText(element, null, parts[0] ?? "--", element.x, element.y - gap);
+      drawText(element, null, parts.slice(1).join(":") || "--", element.x, element.y + gap);
+      return;
+    }
+    if (representation === "icon-value" && metricIcons[element.type]) {
+      const value = previewText(element);
+      const measured = textLayout(element, value, 0, element.y, "left");
+      const iconSize = 18;
+      const gap = 6;
+      const left = alignedLeft(element, iconSize + gap + measured.width);
+      drawCanvasIcon(context, { x: left + iconSize / 2, y: element.y, size: iconSize, icon: metricIcons[element.type], style: "filled", color: element.color });
+      drawText(element, null, value, left + iconSize + gap, element.y, "left");
+      return;
+    }
+    if (representation === "progress-bar") {
+      const width = 88;
+      const height = 6;
+      const left = alignedLeft(element, width);
+      drawText(element, null, previewText(element), element.x, element.y - 11);
+      context.save();
+      context.fillStyle = "#242725";
+      context.beginPath();
+      context.roundRect(left, element.y + 15, width, height, height / 2);
+      context.fill();
+      context.fillStyle = element.color;
+      context.beginPath();
+      context.roundRect(left, element.y + 15, Math.max(height, width * (previewProgress[element.type] ?? 0)), height, height / 2);
+      context.fill();
+      context.restore();
+      return;
+    }
+    drawText(element);
+  }
+
   function drawElement(element) {
+    if (DYNAMIC_TYPES.has(element.type)) return drawDynamicElement(element);
     if (!isShapeElement(element)) return drawText(element);
     context.save();
     if (element.type === "rectangle") {
@@ -103,7 +155,45 @@
     context.restore();
   }
 
+  function unionBounds(bounds) {
+    const left = Math.min(...bounds.map((item) => item.x));
+    const top = Math.min(...bounds.map((item) => item.y));
+    const right = Math.max(...bounds.map((item) => item.x + item.width));
+    const bottom = Math.max(...bounds.map((item) => item.y + item.height));
+    return { x: left, y: top, width: right - left, height: bottom - top };
+  }
+
+  function dynamicBounds(element) {
+    const representation = element.representation ?? "value";
+    if (representation === "stacked") {
+      const parts = previewText(element).split(/[/:]/);
+      const gap = element.type === "time" ? project.fontHeights.time / 2 : Math.max(10, project.fontHeights.label / 2);
+      return unionBounds([
+        textLayout(element, parts[0] ?? "--", element.x, element.y - gap),
+        textLayout(element, parts.slice(1).join(":") || "--", element.x, element.y + gap),
+      ]);
+    }
+    if (representation === "icon-value" && metricIcons[element.type]) {
+      const measured = textLayout(element, previewText(element), 0, element.y, "left");
+      const width = 18 + 6 + measured.width;
+      const left = alignedLeft(element, width);
+      return unionBounds([
+        { x: left, y: element.y - 9, width: 18, height: 18 },
+        textLayout(element, previewText(element), left + 24, element.y, "left"),
+      ]);
+    }
+    if (representation === "progress-bar") {
+      const left = alignedLeft(element, 88);
+      return unionBounds([
+        textLayout(element, previewText(element), element.x, element.y - 11),
+        { x: left, y: element.y + 15, width: 88, height: 6 },
+      ]);
+    }
+    return textLayout(element);
+  }
+
   function elementBounds(element) {
+    if (DYNAMIC_TYPES.has(element.type) && fonts) return dynamicBounds(element);
     if (element.type === "rectangle") return { x: element.x, y: element.y, width: element.width, height: element.height };
     if (element.type === "ellipse") return { x: element.x - element.radiusX, y: element.y - element.radiusY, width: element.radiusX * 2, height: element.radiusY * 2 };
     if (element.type === "line") {
@@ -119,7 +209,7 @@
     }
     if (element.type === "icon") return { x: element.x - element.size / 2, y: element.y - element.size / 2, width: element.size, height: element.size };
     if (!fonts) return { x: element.x - 8, y: element.y - 8, width: 16, height: 16 };
-    const layout = positionedWatchText(project, element, previewText(element));
+    const layout = textLayout(element);
     return { x: layout.x, y: layout.y, width: layout.width, height: layout.height };
   }
 

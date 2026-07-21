@@ -2,7 +2,8 @@
   import Field from "./Field.svelte";
   import Icon from "./Icon.svelte";
   import IconPicker from "./IconPicker.svelte";
-  import { ALIGN_OPTIONS, TYPE_NAMES } from "../lib/catalog.js";
+  import RepresentationPicker from "./RepresentationPicker.svelte";
+  import { ALIGN_OPTIONS, DYNAMIC_TYPES, TYPE_NAMES } from "../lib/catalog.js";
   import { FONT_FAMILIES, FONT_HEIGHT_OPTIONS, FONT_ROLE_DETAILS, normalizeFontFamily, roleForElement } from "../lib/bmfont.js";
   import { tactile } from "../lib/motion.js";
   import { isShapeElement } from "../lib/project.js";
@@ -72,6 +73,20 @@
       <span class="selection-glyph">{TYPE_NAMES[element.type].slice(0, 1)}</span>
       <div><strong>{TYPE_NAMES[element.type]}</strong><span>Selected layer</span></div>
     </div>
+
+    {#if DYNAMIC_TYPES.has(element.type)}
+      <section class="inspector-group representation-group">
+        <div class="group-heading">
+          <h3>Representation</h3>
+          <p>Choose how this live value appears on the watch.</p>
+        </div>
+        <RepresentationPicker
+          type={element.type}
+          value={element.representation ?? "value"}
+          onselect={(value) => update("representation", value, true)}
+        />
+      </section>
+    {/if}
 
     {#if element.type === "icon"}
       <section class="inspector-group icon-visual-group">

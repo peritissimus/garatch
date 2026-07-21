@@ -301,6 +301,75 @@ fn exports_phosphor_icon_resources_and_draw_calls() {
 }
 
 #[test]
+fn exports_dynamic_component_representations() {
+    let mut project: serde_json::Value = serde_json::from_str(&sample_json()).unwrap();
+    project["elements"][0]["representation"] = "stacked".into();
+    project["elements"][1]["representation"] = "icon-value".into();
+    project["elements"][2]["representation"] = "progress-bar".into();
+    project["elements"].as_array_mut().unwrap().extend([
+        serde_json::json!({
+            "type": "date", "id": "date", "x": 160, "y": 190,
+            "color": "#FFFFFF", "align": "center", "representation": "stacked"
+        }),
+        serde_json::json!({
+            "type": "battery", "id": "battery", "x": 240, "y": 300,
+            "color": "#FFFFFF", "align": "center", "representation": "icon-value"
+        }),
+        serde_json::json!({
+            "type": "calories", "id": "calories", "x": 80, "y": 300,
+            "color": "#E5AD59", "align": "center", "representation": "progress-bar"
+        }),
+        serde_json::json!({
+            "type": "distance", "id": "distance", "x": 160, "y": 330,
+            "color": "#78A6D6", "align": "center", "unit": "kilometers",
+            "representation": "progress-bar"
+        }),
+    ]);
+
+    let spec = parse_spec(&project.to_string()).unwrap();
+    assert!(validate_spec(&spec).valid);
+    let generated = generate_project(&spec).unwrap();
+    let view = generated
+        .files
+        .iter()
+        .find(|file| file.path.ends_with("View.mc"))
+        .map(|file| String::from_utf8(file.bytes.clone()).unwrap())
+        .unwrap();
+    let paths: Vec<&str> = generated
+        .files
+        .iter()
+        .map(|file| file.path.as_str())
+        .collect();
+
+    assert!(view.contains("hourValue0"));
+    assert!(view.contains("minuteValue0"));
+    assert!(view.contains("date3.day.format(\"%02d\")"));
+    assert!(view.contains("metricTransform1.scale(0.187500, 0.187500)"));
+    assert!(view.contains("Rez.Drawables.IconStepsFilled"));
+    assert!(view.contains("Rez.Drawables.IconBatteryFilled"));
+    assert!(view.contains("var progress2 = heartNumber2.toFloat() / 200"));
+    assert!(view.contains("fillRoundedRectangle(116, 345, 88, 6, 3)"));
+    assert!(paths.contains(&"resources/drawables/steps_filled.png"));
+    assert!(paths.contains(&"resources/drawables/battery_filled.png"));
+}
+
+#[test]
+fn rejects_representation_that_does_not_fit_the_dynamic_type() {
+    let mut project: serde_json::Value = serde_json::from_str(&sample_json()).unwrap();
+    project["elements"][0]["representation"] = "icon-value".into();
+    let spec = parse_spec(&project.to_string()).unwrap();
+    let report = validate_spec(&spec);
+
+    assert!(!report.valid);
+    assert!(
+        report
+            .issues
+            .iter()
+            .any(|issue| issue.field == "elements[0].representation")
+    );
+}
+
+#[test]
 fn reports_invalid_ids_colors_and_missing_time() {
     let json = serde_json::json!({
         "name": "Broken",

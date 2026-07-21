@@ -1,5 +1,6 @@
 import { normalizeFontFamily, normalizeFontHeights, normalizeLetterSpacing } from "./bmfont.js";
 import { createProjectFromTemplate } from "./templates.js";
+import { DYNAMIC_TYPES } from "./catalog.js";
 
 export const WATCH_WIDTH = 320;
 export const WATCH_HEIGHT = 360;
@@ -54,6 +55,7 @@ function migrateFontFamily(project) {
       delete element.renderedLines;
     }
     if (element.type === "icon") element.style ??= "filled";
+    if (DYNAMIC_TYPES.has(element.type)) element.representation ??= "value";
   }
   return project;
 }
@@ -108,13 +110,13 @@ export function elementFactory(type) {
   }
   if (type === "icon") return { ...common, type, icon: "heart", style: "filled", size: 32, color: "#EF7E74" };
   const base = { ...common, type, color: "#FFFFFF", align: "center" };
-  if (type === "time") return { ...base, y: 132, format: "device", showSeconds: false };
-  if (type === "date") return { ...base, y: 210 };
-  if (type === "steps") return { ...base, y: 260, color: "#72D6B2" };
-  if (type === "heart-rate") return { ...base, y: 290, color: "#EF7E74" };
-  if (type === "battery") return { ...base, y: 320 };
-  if (type === "calories") return { ...base, y: 290, color: "#E5AD59" };
-  if (type === "distance") return { ...base, y: 290, color: "#78A6D6", unit: "kilometers" };
+  if (type === "time") return { ...base, y: 132, representation: "value", format: "device", showSeconds: false };
+  if (type === "date") return { ...base, y: 210, representation: "value" };
+  if (type === "steps") return { ...base, y: 260, color: "#72D6B2", representation: "value" };
+  if (type === "heart-rate") return { ...base, y: 290, color: "#EF7E74", representation: "value" };
+  if (type === "battery") return { ...base, y: 320, representation: "value" };
+  if (type === "calories") return { ...base, y: 290, color: "#E5AD59", representation: "value" };
+  if (type === "distance") return { ...base, y: 290, color: "#78A6D6", representation: "value", unit: "kilometers" };
   return { ...base, type: "label", y: 80, text: "YOUR LABEL", maxWidth: 280, lineHeight: 22 };
 }
 
