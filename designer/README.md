@@ -18,7 +18,8 @@ ZIP. Users compile the downloaded project locally with Garmin's official
   and static labels
 - Rectangle, ellipse, adjustable line, and Garmin-safe icon primitives
 - Six complete editable watch-face templates for fast starting points
-- Seven built-in icons: heart, steps, battery, flame, location, sun, and bolt
+- Seven built-in icons with filled and outline appearances: heart, steps,
+  battery, flame, location, sun, and bolt
 - One-click canvas alignment for selected text, shape, line, and icon layers
 - Null-safe metric reads
 - Sparse always-on time rendering

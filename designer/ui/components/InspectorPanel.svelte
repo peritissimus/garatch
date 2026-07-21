@@ -5,7 +5,7 @@
   import { FONT_FAMILIES, FONT_HEIGHT_OPTIONS, FONT_ROLE_DETAILS, normalizeFontFamily, roleForElement } from "../lib/bmfont.js";
   import { tactile } from "../lib/motion.js";
   import { isShapeElement } from "../lib/project.js";
-  import { ICON_OPTIONS } from "../lib/iconDrawing.js";
+  import { ICON_OPTIONS, ICON_STYLE_OPTIONS } from "../lib/iconDrawing.js";
 
   let { element, fontFamily, fontHeights, letterSpacing, onfontfamily, onfontheight, onletterspacing, onupdate, onduplicate, ondelete, onmove, onalign } = $props();
   let selectedFamily = $derived(FONT_FAMILIES.find((family) => family.id === normalizeFontFamily(fontFamily)) ?? FONT_FAMILIES[0]);
@@ -106,6 +106,7 @@
         <h3>Icon</h3>
         <div class="field-grid two">
           <Field label="Symbol" value={element.icon} options={ICON_OPTIONS} oninput={(value) => update("icon", value, true)} />
+          <Field label="Appearance" value={element.style ?? "filled"} options={ICON_STYLE_OPTIONS} oninput={(value) => update("style", value, true)} />
           <Field label="Size" type="number" value={element.size} min={12} max={96} oninput={(value) => update("size", value)} onchange={(value) => update("size", value, true)} />
           <Field label="Color" type="color" value={element.color} oninput={(value) => update("color", value.toUpperCase())} onchange={(value) => update("color", value.toUpperCase(), true)} />
         </div>

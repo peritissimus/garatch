@@ -76,6 +76,7 @@ export function createProjectFromTemplate(templateId = "night-signal") {
     letterSpacing: { ...DEFAULT_LETTER_SPACING, ...template.letterSpacing },
     elements: template.elements.map((element) => ({
       ...structuredClone(element),
+      ...(element.type === "icon" ? { style: element.style ?? "filled" } : {}),
       id: `${element.type}-${crypto.randomUUID().replaceAll("-", "").slice(0, 8)}`,
     })),
   };

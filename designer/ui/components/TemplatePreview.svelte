@@ -13,7 +13,7 @@
     {:else if element.type === "line"}
       <line x1={element.x} y1={element.y} x2={element.endX} y2={element.endY} stroke={element.color} stroke-width={element.thickness} />
     {:else if element.type === "icon"}
-      <circle cx={element.x} cy={element.y} r={element.size / 3} fill={element.color} opacity=".92" />
+      <circle cx={element.x} cy={element.y} r={element.size / 3} fill={element.style === "outline" ? "none" : element.color} stroke={element.color} stroke-width="2" opacity=".92" />
     {:else}
       {@const value = element.type === "label" ? element.text : samples[element.type]}
       {@const anchor = element.align === "left" ? "start" : element.align === "right" ? "end" : "middle"}

@@ -44,6 +44,7 @@ function migrateFontFamily(project) {
       element.lineHeight = Math.max(8, Math.min(80, Number(element.lineHeight) || 22));
       delete element.renderedLines;
     }
+    if (element.type === "icon") element.style ??= "filled";
   }
   return project;
 }
@@ -96,7 +97,7 @@ export function elementFactory(type) {
   if (type === "line") {
     return { ...common, type, x: 60, endX: 260, endY: 180, color: "#72D6B2", thickness: 1 };
   }
-  if (type === "icon") return { ...common, type, icon: "heart", size: 32, color: "#EF7E74" };
+  if (type === "icon") return { ...common, type, icon: "heart", style: "filled", size: 32, color: "#EF7E74" };
   const base = { ...common, type, color: "#FFFFFF", align: "center" };
   if (type === "time") return { ...base, y: 132, format: "device", showSeconds: false };
   if (type === "date") return { ...base, y: 210 };
