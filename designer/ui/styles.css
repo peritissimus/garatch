@@ -576,7 +576,16 @@ kbd { display: inline-grid; min-width: 17px; height: 17px; place-items: center; 
 }
 .field input:hover, .field select:hover { background: var(--surface-hover); border-color: var(--line-strong); }
 .field input:focus, .field select:focus { background: var(--surface-hover); border-color: var(--accent-line); box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.08); }
-.field input[type="number"] { font-family: var(--mono); }
+.field input[type="number"] {
+  font-family: var(--mono);
+  cursor: ew-resize;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+.field input[type="number"]:focus { cursor: text; }
+.field input[type="number"].dragging { color: var(--accent); }
+.field input[type="number"]::-webkit-outer-spin-button,
+.field input[type="number"]::-webkit-inner-spin-button { margin: 0; -webkit-appearance: none; }
 .field input[type="color"], .canvas-color-field input[type="color"] { padding: 4px; cursor: pointer; }
 .field input[type="color"]::-webkit-color-swatch, .canvas-color-field input[type="color"]::-webkit-color-swatch { border: 0; border-radius: 5px; }
 .field input[type="color"]::-webkit-color-swatch-wrapper, .canvas-color-field input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }

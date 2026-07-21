@@ -1,5 +1,6 @@
 <script>
   import Select from "./Select.svelte";
+  import NumberInput from "./NumberInput.svelte";
 
   let { label, type = "text", value, min, max, maxlength, options = null, oninput, onchange } = $props();
 </script>
@@ -9,6 +10,11 @@
     <span>{label}</span>
     <Select {value} {options} {oninput} {onchange} />
   </div>
+{:else if type === "number"}
+  <label class="field">
+    <span>{label}</span>
+    <NumberInput {value} {min} {max} {oninput} {onchange} />
+  </label>
 {:else}
   <label class="field">
     <span>{label}</span>
@@ -18,8 +24,8 @@
       {min}
       {max}
       {maxlength}
-      oninput={(event) => oninput(type === "number" ? Number(event.currentTarget.value) : event.currentTarget.value)}
-      onchange={(event) => onchange?.(type === "number" ? Number(event.currentTarget.value) : event.currentTarget.value)}
+      oninput={(event) => oninput(event.currentTarget.value)}
+      onchange={(event) => onchange?.(event.currentTarget.value)}
     />
   </label>
 {/if}
