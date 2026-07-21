@@ -56,6 +56,15 @@
       "align": "center"
     },
     {
+      "type": "icon",
+      "id": "calorie-icon",
+      "x": 82,
+      "y": 244,
+      "icon": "flame",
+      "size": 22,
+      "color": "#E5AD59"
+    },
+    {
       "type": "distance",
       "id": "distance",
       "x": 238,
@@ -63,6 +72,15 @@
       "color": "#78A6D6",
       "align": "center",
       "unit": "kilometers"
+    },
+    {
+      "type": "icon",
+      "id": "distance-icon",
+      "x": 238,
+      "y": 244,
+      "icon": "pin",
+      "size": 22,
+      "color": "#78A6D6"
     },
     {
       "type": "label",

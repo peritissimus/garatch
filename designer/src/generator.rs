@@ -4,8 +4,8 @@ use std::fmt::{self, Write};
 use serde::{Deserialize, Serialize};
 
 use crate::model::{
-    Alignment, DistanceUnit, Element, FontFamily, FontHeights, LetterSpacing, ProjectSpec,
-    TimeFormat,
+    Alignment, DistanceUnit, Element, FontFamily, FontHeights, IconKind, LetterSpacing,
+    ProjectSpec, TimeFormat,
 };
 
 const WATCH_WIDTH: i32 = 320;
@@ -408,6 +408,27 @@ pub fn validate_spec(spec: &ProjectSpec) -> ValidationReport {
                         &mut issues,
                         format!("{field}.thickness"),
                         "must be between 1 and 12 pixels",
+                    );
+                }
+            }
+            Element::Icon { size, .. } => {
+                if !(12..=96).contains(size) {
+                    issue(
+                        &mut issues,
+                        format!("{field}.size"),
+                        "must be between 12 and 96 pixels",
+                    );
+                }
+                let half = i64::from(*size / 2);
+                if i64::from(x) - half < 0
+                    || i64::from(y) - half < 0
+                    || i64::from(x) + half >= i64::from(WATCH_WIDTH)
+                    || i64::from(y) + half >= i64::from(WATCH_HEIGHT)
+                {
+                    issue(
+                        &mut issues,
+                        format!("{field}.size"),
+                        "icon must fit inside the 320×360 canvas",
                     );
                 }
             }
@@ -901,6 +922,128 @@ fn render_element(element: &Element, index: usize, indent: &str, spacing: Letter
 {indent}dc.drawLine({x}, {y}, {end_x}, {end_y});\n\
 {indent}dc.setPenWidth(1);\n",
             color_code(color)
+        ),
+        Element::Icon {
+            x,
+            y,
+            icon,
+            size,
+            color,
+            ..
+        } => render_icon(*x, *y, *size, color, *icon, indent),
+    }
+}
+
+fn render_icon(x: i32, y: i32, size: u32, color: &str, icon: IconKind, indent: &str) -> String {
+    let half = i32::try_from(size / 2).unwrap_or(0);
+    let quarter = i32::try_from(size / 4).unwrap_or(0);
+    let fifth = i32::try_from(size / 5).unwrap_or(0);
+    let eighth = i32::try_from(size / 8).unwrap_or(0);
+    let color = color_code(color);
+    match icon {
+        IconKind::Heart => format!(
+            "{indent}dc.setColor({color}, Graphics.COLOR_TRANSPARENT);\n\
+{indent}dc.fillCircle({}, {}, {quarter});\n\
+{indent}dc.fillCircle({}, {}, {quarter});\n\
+{indent}dc.fillPolygon([[{}, {}], [{}, {}], [{x}, {}]]);\n",
+            x - fifth,
+            y - eighth,
+            x + fifth,
+            y - eighth,
+            x - half,
+            y - eighth,
+            x + half,
+            y - eighth,
+            y + half
+        ),
+        IconKind::Steps => format!(
+            "{indent}dc.setColor({color}, Graphics.COLOR_TRANSPARENT);\n\
+{indent}dc.fillEllipse({}, {}, {}, {});\n\
+{indent}dc.fillEllipse({}, {}, {}, {});\n",
+            x - quarter,
+            y - quarter,
+            eighth,
+            quarter,
+            x + quarter,
+            y + eighth,
+            eighth,
+            quarter
+        ),
+        IconKind::Battery => format!(
+            "{indent}dc.setColor({color}, Graphics.COLOR_TRANSPARENT);\n\
+{indent}dc.setPenWidth(2);\n\
+{indent}dc.drawRectangle({}, {}, {}, {});\n\
+{indent}dc.fillRectangle({}, {}, {}, {});\n\
+{indent}dc.fillRectangle({}, {}, {}, {});\n\
+{indent}dc.setPenWidth(1);\n",
+            x - half,
+            y - quarter,
+            size - 3,
+            size / 2,
+            x + half - 2,
+            y - eighth,
+            3,
+            size / 4,
+            x - half + 4,
+            y - quarter + 4,
+            size.saturating_sub(11),
+            size.saturating_sub(8) / 2
+        ),
+        IconKind::Flame => format!(
+            "{indent}dc.setColor({color}, Graphics.COLOR_TRANSPARENT);\n\
+{indent}dc.fillPolygon([[{x}, {}], [{}, {}], [{}, {}], [{}, {}], [{}, {}]]);\n",
+            y - half,
+            x + half,
+            y + eighth,
+            x + quarter,
+            y + half,
+            x - quarter,
+            y + half,
+            x - half,
+            y
+        ),
+        IconKind::Pin => format!(
+            "{indent}dc.setColor({color}, Graphics.COLOR_TRANSPARENT);\n\
+{indent}dc.fillCircle({x}, {}, {quarter});\n\
+{indent}dc.fillPolygon([[{}, {}], [{}, {}], [{x}, {}]]);\n",
+            y - quarter,
+            x - quarter,
+            y - eighth,
+            x + quarter,
+            y - eighth,
+            y + half
+        ),
+        IconKind::Sun => format!(
+            "{indent}dc.setColor({color}, Graphics.COLOR_TRANSPARENT);\n\
+{indent}dc.fillCircle({x}, {y}, {quarter});\n\
+{indent}dc.setPenWidth(2);\n\
+{indent}dc.drawLine({x}, {}, {x}, {});\n\
+{indent}dc.drawLine({x}, {}, {x}, {});\n\
+{indent}dc.drawLine({}, {y}, {}, {y});\n\
+{indent}dc.drawLine({}, {y}, {}, {y});\n\
+{indent}dc.setPenWidth(1);\n",
+            y - half,
+            y - quarter - 2,
+            y + quarter + 2,
+            y + half,
+            x - half,
+            x - quarter - 2,
+            x + quarter + 2,
+            x + half
+        ),
+        IconKind::Bolt => format!(
+            "{indent}dc.setColor({color}, Graphics.COLOR_TRANSPARENT);\n\
+{indent}dc.fillPolygon([[{}, {}], [{}, {}], [{}, {y}], [{}, {y}], [{}, {}], [{}, {}]]);\n",
+            x + eighth,
+            y - half,
+            x - half,
+            y + eighth,
+            x - eighth,
+            x - quarter,
+            x - eighth,
+            y + half,
+            x + half,
+            y - eighth
         ),
     }
 }

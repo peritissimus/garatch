@@ -156,6 +156,30 @@ pub enum Element {
         #[serde(default = "default_line_thickness")]
         thickness: u32,
     },
+    Icon {
+        id: String,
+        x: i32,
+        y: i32,
+        #[serde(default)]
+        icon: IconKind,
+        #[serde(default = "default_icon_size")]
+        size: u32,
+        #[serde(default = "default_foreground")]
+        color: String,
+    },
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Default)]
+#[serde(rename_all = "kebab-case")]
+pub enum IconKind {
+    #[default]
+    Heart,
+    Steps,
+    Battery,
+    Flame,
+    Pin,
+    Sun,
+    Bolt,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Default)]
@@ -252,7 +276,8 @@ impl Element {
             | Self::Label { id, .. }
             | Self::Rectangle { id, .. }
             | Self::Ellipse { id, .. }
-            | Self::Line { id, .. } => id,
+            | Self::Line { id, .. }
+            | Self::Icon { id, .. } => id,
         }
     }
 
@@ -268,7 +293,8 @@ impl Element {
             | Self::Label { x, y, .. }
             | Self::Rectangle { x, y, .. }
             | Self::Ellipse { x, y, .. }
-            | Self::Line { x, y, .. } => (*x, *y),
+            | Self::Line { x, y, .. }
+            | Self::Icon { x, y, .. } => (*x, *y),
         }
     }
 
@@ -282,7 +308,8 @@ impl Element {
             | Self::Calories { color, .. }
             | Self::Distance { color, .. }
             | Self::Label { color, .. }
-            | Self::Line { color, .. } => color,
+            | Self::Line { color, .. }
+            | Self::Icon { color, .. } => color,
             Self::Rectangle { fill_color, .. } | Self::Ellipse { fill_color, .. } => fill_color,
         }
     }
@@ -310,4 +337,8 @@ fn default_label_line_height() -> u32 {
 
 fn default_line_thickness() -> u32 {
     1
+}
+
+fn default_icon_size() -> u32 {
+    32
 }

@@ -231,6 +231,41 @@ fn exports_activity_metrics_and_shape_primitives() {
 }
 
 #[test]
+fn exports_editable_icon_primitives() {
+    let mut project: serde_json::Value = serde_json::from_str(&sample_json()).unwrap();
+    for (index, icon) in ["heart", "steps", "battery", "flame", "pin", "sun", "bolt"]
+        .iter()
+        .enumerate()
+    {
+        project["elements"]
+            .as_array_mut()
+            .unwrap()
+            .push(serde_json::json!({
+                "type": "icon",
+                "id": format!("icon-{icon}"),
+                "x": 40 + (index as i32 * 38),
+                "y": 320,
+                "icon": icon,
+                "size": 24,
+                "color": "#72D6B2"
+            }));
+    }
+    let spec = parse_spec(&project.to_string()).unwrap();
+    assert!(validate_spec(&spec).valid);
+    let generated = generate_project(&spec).unwrap();
+    let view = generated
+        .files
+        .iter()
+        .find(|file| file.path.ends_with("View.mc"))
+        .map(|file| String::from_utf8(file.bytes.clone()).unwrap())
+        .unwrap();
+    assert!(view.contains("dc.fillCircle"));
+    assert!(view.contains("dc.fillPolygon"));
+    assert!(view.contains("dc.drawRectangle"));
+    assert!(view.contains("dc.fillEllipse"));
+}
+
+#[test]
 fn reports_invalid_ids_colors_and_missing_time() {
     let json = serde_json::json!({
         "name": "Broken",
