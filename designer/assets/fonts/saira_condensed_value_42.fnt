@@ -1,0 +1,20 @@
+info face="SairaCondensed-Medium" size=42 bold=0 italic=0 charset="" unicode=1 stretchH=100 smooth=1 aa=1 padding=0,0,0,0 spacing=0,0
+common lineHeight=67 base=48 scaleW=256 scaleH=128 pages=1 packed=0 alphaChnl=1 redChnl=0 greenChnl=0 blueChnl=0
+page id=0 file="saira_condensed_value_42.png"
+chars count=16
+char id=48 x=4 y=4 width=20 height=29 xoffset=0 yoffset=19 xadvance=20 page=0 chnl=15
+char id=49 x=28 y=4 width=12 height=29 xoffset=0 yoffset=19 xadvance=12 page=0 chnl=15
+char id=50 x=44 y=4 width=18 height=29 xoffset=0 yoffset=19 xadvance=18 page=0 chnl=15
+char id=51 x=66 y=4 width=18 height=29 xoffset=0 yoffset=19 xadvance=18 page=0 chnl=15
+char id=52 x=88 y=4 width=20 height=29 xoffset=0 yoffset=19 xadvance=20 page=0 chnl=15
+char id=53 x=112 y=4 width=19 height=29 xoffset=0 yoffset=19 xadvance=19 page=0 chnl=15
+char id=54 x=135 y=4 width=20 height=29 xoffset=0 yoffset=19 xadvance=20 page=0 chnl=15
+char id=55 x=159 y=4 width=17 height=29 xoffset=0 yoffset=19 xadvance=17 page=0 chnl=15
+char id=56 x=180 y=4 width=21 height=29 xoffset=0 yoffset=19 xadvance=21 page=0 chnl=15
+char id=57 x=205 y=4 width=20 height=29 xoffset=0 yoffset=19 xadvance=20 page=0 chnl=15
+char id=44 x=229 y=4 width=9 height=9 xoffset=0 yoffset=44 xadvance=9 page=0 chnl=15
+char id=45 x=4 y=37 width=13 height=14 xoffset=0 yoffset=34 xadvance=13 page=0 chnl=15
+char id=37 x=21 y=37 width=28 height=29 xoffset=0 yoffset=19 xadvance=28 page=0 chnl=15
+char id=46 x=53 y=37 width=9 height=4 xoffset=0 yoffset=44 xadvance=9 page=0 chnl=15
+char id=47 x=66 y=37 width=13 height=34 xoffset=0 yoffset=16 xadvance=13 page=0 chnl=15
+char id=43 x=83 y=37 width=20 height=18 xoffset=0 yoffset=30 xadvance=20 page=0 chnl=15

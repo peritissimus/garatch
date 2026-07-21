@@ -1,0 +1,15 @@
+info face="Oswald" size=88 bold=0 italic=0 charset="" unicode=1 stretchH=100 smooth=1 aa=1 padding=0,0,0,0 spacing=0,0
+common lineHeight=131 base=105 scaleW=512 scaleH=128 pages=1 packed=0 alphaChnl=1 redChnl=0 greenChnl=0 blueChnl=0
+page id=0 file="oswald_time_88.png"
+chars count=11
+char id=48 x=4 y=4 width=46 height=74 xoffset=0 yoffset=32 xadvance=46 page=0 chnl=15
+char id=49 x=54 y=4 width=33 height=72 xoffset=0 yoffset=33 xadvance=33 page=0 chnl=15
+char id=50 x=91 y=4 width=43 height=73 xoffset=0 yoffset=32 xadvance=43 page=0 chnl=15
+char id=51 x=138 y=4 width=42 height=74 xoffset=0 yoffset=32 xadvance=42 page=0 chnl=15
+char id=52 x=184 y=4 width=42 height=72 xoffset=0 yoffset=33 xadvance=42 page=0 chnl=15
+char id=53 x=230 y=4 width=42 height=73 xoffset=0 yoffset=33 xadvance=42 page=0 chnl=15
+char id=54 x=276 y=4 width=44 height=74 xoffset=0 yoffset=32 xadvance=44 page=0 chnl=15
+char id=55 x=324 y=4 width=35 height=72 xoffset=0 yoffset=33 xadvance=35 page=0 chnl=15
+char id=56 x=363 y=4 width=44 height=74 xoffset=0 yoffset=32 xadvance=44 page=0 chnl=15
+char id=57 x=411 y=4 width=44 height=74 xoffset=0 yoffset=32 xadvance=44 page=0 chnl=15
+char id=58 x=459 y=4 width=17 height=47 xoffset=0 yoffset=58 xadvance=17 page=0 chnl=15

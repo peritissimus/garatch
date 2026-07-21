@@ -1,0 +1,20 @@
+info face="Oxanium" size=42 bold=0 italic=0 charset="" unicode=1 stretchH=100 smooth=1 aa=1 padding=0,0,0,0 spacing=0,0
+common lineHeight=43 base=34 scaleW=256 scaleH=128 pages=1 packed=0 alphaChnl=1 redChnl=0 greenChnl=0 blueChnl=0
+page id=0 file="oxanium_value_42.png"
+chars count=16
+char id=48 x=4 y=4 width=24 height=29 xoffset=0 yoffset=5 xadvance=24 page=0 chnl=15
+char id=49 x=32 y=4 width=24 height=29 xoffset=0 yoffset=5 xadvance=24 page=0 chnl=15
+char id=50 x=60 y=4 width=24 height=29 xoffset=0 yoffset=5 xadvance=24 page=0 chnl=15
+char id=51 x=88 y=4 width=24 height=29 xoffset=0 yoffset=5 xadvance=24 page=0 chnl=15
+char id=52 x=116 y=4 width=24 height=29 xoffset=0 yoffset=5 xadvance=24 page=0 chnl=15
+char id=53 x=144 y=4 width=24 height=29 xoffset=0 yoffset=5 xadvance=24 page=0 chnl=15
+char id=54 x=172 y=4 width=24 height=29 xoffset=0 yoffset=5 xadvance=24 page=0 chnl=15
+char id=55 x=200 y=4 width=24 height=29 xoffset=0 yoffset=5 xadvance=24 page=0 chnl=15
+char id=56 x=228 y=4 width=24 height=29 xoffset=0 yoffset=5 xadvance=24 page=0 chnl=15
+char id=57 x=4 y=37 width=24 height=29 xoffset=0 yoffset=5 xadvance=24 page=0 chnl=15
+char id=44 x=32 y=37 width=10 height=9 xoffset=0 yoffset=30 xadvance=10 page=0 chnl=15
+char id=45 x=46 y=37 width=15 height=14 xoffset=0 yoffset=20 xadvance=15 page=0 chnl=15
+char id=37 x=65 y=37 width=36 height=29 xoffset=0 yoffset=5 xadvance=36 page=0 chnl=15
+char id=46 x=105 y=37 width=10 height=4 xoffset=0 yoffset=30 xadvance=10 page=0 chnl=15
+char id=47 x=119 y=37 width=15 height=33 xoffset=0 yoffset=3 xadvance=15 page=0 chnl=15
+char id=43 x=138 y=37 width=24 height=24 xoffset=0 yoffset=10 xadvance=24 page=0 chnl=15

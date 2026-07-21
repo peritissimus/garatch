@@ -1,0 +1,15 @@
+info face="IBMPlexSansCondensed-Regular" size=72 bold=0 italic=0 charset="" unicode=1 stretchH=100 smooth=1 aa=1 padding=0,0,0,0 spacing=0,0
+common lineHeight=94 base=74 scaleW=256 scaleH=128 pages=1 packed=0 alphaChnl=1 redChnl=0 greenChnl=0 blueChnl=0
+page id=0 file="ibm_plex_sans_condensed_time_72.png"
+chars count=11
+char id=48 x=4 y=4 width=39 height=52 xoffset=0 yoffset=23 xadvance=39 page=0 chnl=15
+char id=49 x=47 y=4 width=39 height=50 xoffset=0 yoffset=24 xadvance=39 page=0 chnl=15
+char id=50 x=90 y=4 width=39 height=51 xoffset=0 yoffset=23 xadvance=39 page=0 chnl=15
+char id=51 x=133 y=4 width=39 height=52 xoffset=0 yoffset=23 xadvance=39 page=0 chnl=15
+char id=52 x=176 y=4 width=39 height=50 xoffset=0 yoffset=24 xadvance=39 page=0 chnl=15
+char id=53 x=4 y=60 width=39 height=51 xoffset=0 yoffset=24 xadvance=39 page=0 chnl=15
+char id=54 x=47 y=60 width=39 height=51 xoffset=0 yoffset=24 xadvance=39 page=0 chnl=15
+char id=55 x=90 y=60 width=39 height=50 xoffset=0 yoffset=24 xadvance=39 page=0 chnl=15
+char id=56 x=133 y=60 width=39 height=52 xoffset=0 yoffset=23 xadvance=39 page=0 chnl=15
+char id=57 x=176 y=60 width=39 height=51 xoffset=0 yoffset=23 xadvance=39 page=0 chnl=15
+char id=58 x=219 y=60 width=19 height=39 xoffset=0 yoffset=36 xadvance=19 page=0 chnl=15

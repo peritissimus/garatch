@@ -1,0 +1,20 @@
+info face="RobotoCondensed" size=36 bold=0 italic=0 charset="" unicode=1 stretchH=100 smooth=1 aa=1 padding=0,0,0,0 spacing=0,0
+common lineHeight=43 base=34 scaleW=128 scaleH=128 pages=1 packed=0 alphaChnl=1 redChnl=0 greenChnl=0 blueChnl=0
+page id=0 file="roboto_condensed_value.png"
+chars count=16
+char id=48 x=4 y=4 width=18 height=26 xoffset=0 yoffset=8 xadvance=18 page=0 chnl=15
+char id=49 x=26 y=4 width=18 height=26 xoffset=0 yoffset=8 xadvance=18 page=0 chnl=15
+char id=50 x=48 y=4 width=18 height=26 xoffset=0 yoffset=8 xadvance=18 page=0 chnl=15
+char id=51 x=70 y=4 width=18 height=26 xoffset=0 yoffset=8 xadvance=18 page=0 chnl=15
+char id=52 x=92 y=4 width=18 height=26 xoffset=0 yoffset=8 xadvance=18 page=0 chnl=15
+char id=53 x=4 y=34 width=18 height=26 xoffset=0 yoffset=8 xadvance=18 page=0 chnl=15
+char id=54 x=26 y=34 width=18 height=26 xoffset=0 yoffset=8 xadvance=18 page=0 chnl=15
+char id=55 x=48 y=34 width=18 height=26 xoffset=0 yoffset=8 xadvance=18 page=0 chnl=15
+char id=56 x=70 y=34 width=18 height=26 xoffset=0 yoffset=8 xadvance=18 page=0 chnl=15
+char id=57 x=92 y=34 width=18 height=26 xoffset=0 yoffset=8 xadvance=18 page=0 chnl=15
+char id=44 x=114 y=34 width=7 height=9 xoffset=0 yoffset=30 xadvance=7 page=0 chnl=15
+char id=45 x=4 y=64 width=9 height=13 xoffset=0 yoffset=21 xadvance=9 page=0 chnl=15
+char id=37 x=17 y=64 width=23 height=26 xoffset=0 yoffset=8 xadvance=23 page=0 chnl=15
+char id=46 x=44 y=64 width=10 height=4 xoffset=0 yoffset=30 xadvance=10 page=0 chnl=15
+char id=47 x=58 y=64 width=13 height=28 xoffset=0 yoffset=8 xadvance=13 page=0 chnl=15
+char id=43 x=75 y=64 width=18 height=21 xoffset=0 yoffset=13 xadvance=18 page=0 chnl=15

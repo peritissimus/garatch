@@ -1,0 +1,15 @@
+info face="Rajdhani-Regular" size=104 bold=0 italic=0 charset="" unicode=1 stretchH=100 smooth=1 aa=1 padding=0,0,0,0 spacing=0,0
+common lineHeight=133 base=97 scaleW=512 scaleH=256 pages=1 packed=0 alphaChnl=1 redChnl=0 greenChnl=0 blueChnl=0
+page id=0 file="rajdhani_time.png"
+chars count=11
+char id=48 x=4 y=4 width=53 height=67 xoffset=0 yoffset=30 xadvance=53 page=0 chnl=15
+char id=49 x=61 y=4 width=33 height=67 xoffset=0 yoffset=30 xadvance=33 page=0 chnl=15
+char id=50 x=98 y=4 width=50 height=67 xoffset=0 yoffset=30 xadvance=50 page=0 chnl=15
+char id=51 x=152 y=4 width=52 height=67 xoffset=0 yoffset=30 xadvance=52 page=0 chnl=15
+char id=52 x=208 y=4 width=54 height=67 xoffset=0 yoffset=30 xadvance=54 page=0 chnl=15
+char id=53 x=266 y=4 width=50 height=67 xoffset=0 yoffset=30 xadvance=50 page=0 chnl=15
+char id=54 x=320 y=4 width=52 height=67 xoffset=0 yoffset=30 xadvance=52 page=0 chnl=15
+char id=55 x=376 y=4 width=40 height=67 xoffset=0 yoffset=30 xadvance=40 page=0 chnl=15
+char id=56 x=420 y=4 width=54 height=67 xoffset=0 yoffset=30 xadvance=54 page=0 chnl=15
+char id=57 x=4 y=75 width=52 height=67 xoffset=0 yoffset=30 xadvance=52 page=0 chnl=15
+char id=58 x=60 y=75 width=20 height=54 xoffset=0 yoffset=43 xadvance=20 page=0 chnl=15
