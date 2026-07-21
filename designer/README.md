@@ -16,7 +16,10 @@ ZIP. Users compile the downloaded project locally with Garmin's official
 - Fixed 320×360 canvas
 - Digital time, date, steps, current heart rate, battery, calories, distance,
   and static labels
-- Rectangle, ellipse, and adjustable line primitives
+- Rectangle, ellipse, adjustable line, and Garmin-safe icon primitives
+- Six complete editable watch-face templates for fast starting points
+- Seven built-in icons: heart, steps, battery, flame, location, sun, and bolt
+- One-click canvas alignment for selected text, shape, line, and icon layers
 - Null-safe metric reads
 - Sparse always-on time rendering
 - One face-wide typeface choice shared by every text layer and the generated
@@ -65,6 +68,7 @@ export orchestration. The surrounding composites have focused contracts:
 - `Stage.svelte` owns canvas rendering, hit testing, and direct manipulation
 - `InspectorPanel.svelte` composes property fields and layer actions
 - `ProjectHealth.svelte` presents WASM validation and project-level controls
+- `TemplateGallery.svelte` presents complete face designs without flattening them
 
 Shared project operations and catalog metadata live in `ui/lib/`. Motion powers
 the runtime button and control feedback. DialKit is loaded only by the Vite
@@ -75,6 +79,11 @@ Pretext measures text, chooses line breaks, and produces the label line layout.
 The canvas then draws those lines with the same BMFont glyph atlases packaged in
 the generated Garmin project, keeping the browser preview and simulator output
 visually aligned.
+
+Templates are ordinary project specs. Applying one creates fresh layer and app
+IDs, after which every item remains editable and exports through the same Rust
+generator. Icons use matching canvas and Monkey C primitives, adding no image
+assets or third-party runtime dependency to downloaded faces.
 
 For live UI tuning with DialKit:
 
