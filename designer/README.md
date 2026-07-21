@@ -71,7 +71,8 @@ export orchestration. The surrounding composites have focused contracts:
 - `TemplateGallery.svelte` presents complete face designs without flattening them
 
 Shared project operations and catalog metadata live in `ui/lib/`. Motion powers
-the runtime button and control feedback. DialKit is loaded only by the Vite
+the runtime button and control feedback. Phosphor supplies the editor's shared
+interface icon system through a single semantic adapter. DialKit is loaded only by the Vite
 development build so spacing, color, and motion values can be tuned in-browser;
 it is eliminated from the production static bundle.
 
