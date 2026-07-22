@@ -711,6 +711,15 @@ kbd { display: inline-grid; min-width: 17px; height: 17px; place-items: center; 
 .toast { position: fixed; z-index: 60; right: 16px; bottom: 16px; display: inline-flex; min-height: 42px; align-items: center; gap: 9px; padding: 0 13px; color: var(--ink); background: var(--panel-raised); border: 1px solid var(--line-strong); border-radius: 11px; box-shadow: var(--shadow-panel), inset 0 1px 0 rgba(255, 255, 255, 0.05); font-size: 10px; font-weight: 610; animation: toast-in 260ms cubic-bezier(0.22, 1, 0.36, 1) both; }
 .toast > span { display: grid; width: 24px; height: 24px; place-items: center; color: var(--accent-ink); background: var(--accent); border-radius: 7px; }
 
+.app-loader { position: fixed; z-index: 100; inset: 0; display: grid; place-items: center; padding: 24px; background: var(--bg); animation: fade-in 200ms ease-out both; }
+.app-loader-inner { display: grid; justify-items: center; gap: 16px; }
+.app-loader-spinner { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--line-strong); border-top-color: var(--accent); animation: spin 720ms linear infinite; }
+.app-loader-icon { display: grid; width: 46px; height: 46px; place-items: center; color: var(--danger); background: var(--danger-surface); border: 1px solid var(--danger-line); border-radius: 13px; }
+.app-loader-copy { display: grid; justify-items: center; gap: 4px; text-align: center; }
+.app-loader-copy strong { font-size: 13px; font-weight: 680; }
+.app-loader-copy span { max-width: 260px; color: var(--muted); font-size: 10px; line-height: 1.5; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
 @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes dialog-in { from { opacity: 0; transform: translateY(8px) scale(0.97); filter: blur(4px); } to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); } }
 @keyframes toast-in { from { opacity: 0; transform: translateY(10px) scale(0.96); filter: blur(4px); } to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); } }

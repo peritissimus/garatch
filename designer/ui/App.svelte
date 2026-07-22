@@ -354,3 +354,19 @@
 {#if DialTuner}
   <DialTuner ontune={(values) => { tuning = values; }} />
 {/if}
+
+{#if coreState.state !== "ready"}
+  <div class="app-loader" class:error={coreState.state === "error"} role="status" aria-live="polite">
+    <div class="app-loader-inner">
+      {#if coreState.state === "error"}
+        <span class="app-loader-icon"><Icon name="alert" size={22} /></span>
+      {:else}
+        <span class="app-loader-spinner" aria-hidden="true"></span>
+      {/if}
+      <div class="app-loader-copy">
+        <strong>{coreState.label}</strong>
+        <span>{coreState.state === "error" ? coreState.detail : "Loading the watch face exporter…"}</span>
+      </div>
+    </div>
+  </div>
+{/if}
