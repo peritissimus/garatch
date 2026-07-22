@@ -38,13 +38,22 @@
     },
     {
       "type": "heart-rate",
-      "id": "heart-progress",
+      "id": "heart-history",
       "x": 236,
       "y": 190,
       "color": "#EF7E74",
       "align": "center",
-      "representation": "progress-bar",
+      "representation": "history-graph",
       "progressMax": 180
+    },
+    {
+      "type": "stress",
+      "id": "stress-zone",
+      "x": 236,
+      "y": 225,
+      "color": "#B6A0E8",
+      "align": "center",
+      "representation": "zone-gauge"
     },
     {
       "type": "battery",

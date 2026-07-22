@@ -88,6 +88,19 @@ pub enum Element {
         #[serde(default)]
         progress_max: Option<f64>,
     },
+    Stress {
+        id: String,
+        x: i32,
+        y: i32,
+        #[serde(default = "default_foreground")]
+        color: String,
+        #[serde(default)]
+        font: Font,
+        #[serde(default)]
+        align: Alignment,
+        #[serde(default)]
+        representation: Representation,
+    },
     Battery {
         id: String,
         x: i32,
@@ -216,6 +229,9 @@ pub enum Representation {
     FullDate,
     DateYear,
     Calendar,
+    GoalRing,
+    HistoryGraph,
+    ZoneGauge,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Default)]
@@ -229,6 +245,7 @@ pub enum IconKind {
     Pin,
     Sun,
     Bolt,
+    Stress,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Default)]
@@ -327,6 +344,7 @@ impl Element {
             | Self::Date { id, .. }
             | Self::Steps { id, .. }
             | Self::HeartRate { id, .. }
+            | Self::Stress { id, .. }
             | Self::Battery { id, .. }
             | Self::Calories { id, .. }
             | Self::Distance { id, .. }
@@ -344,6 +362,7 @@ impl Element {
             | Self::Date { x, y, .. }
             | Self::Steps { x, y, .. }
             | Self::HeartRate { x, y, .. }
+            | Self::Stress { x, y, .. }
             | Self::Battery { x, y, .. }
             | Self::Calories { x, y, .. }
             | Self::Distance { x, y, .. }
@@ -361,6 +380,7 @@ impl Element {
             | Self::Date { color, .. }
             | Self::Steps { color, .. }
             | Self::HeartRate { color, .. }
+            | Self::Stress { color, .. }
             | Self::Battery { color, .. }
             | Self::Calories { color, .. }
             | Self::Distance { color, .. }

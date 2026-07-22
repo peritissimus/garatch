@@ -53,6 +53,8 @@ const ICON_ASSETS: &[IconAsset] = &[
     icon_asset!(Sun, Outline, "IconSunOutline", "sun_outline.png"),
     icon_asset!(Bolt, Filled, "IconBoltFilled", "bolt_filled.png"),
     icon_asset!(Bolt, Outline, "IconBoltOutline", "bolt_outline.png"),
+    icon_asset!(Stress, Filled, "IconStressFilled", "stress_filled.png"),
+    icon_asset!(Stress, Outline, "IconStressOutline", "stress_outline.png"),
 ];
 
 fn selected_icon_asset(kind: IconKind, style: IconStyle) -> &'static IconAsset {
@@ -76,6 +78,11 @@ fn selected_icon_assets(spec: &ProjectSpec) -> Vec<&'static IconAsset> {
                 Element::HeartRate { representation, .. } => {
                     *representation == Representation::IconValue
                         && asset.kind == IconKind::Heart
+                        && asset.style == IconStyle::Filled
+                }
+                Element::Stress { representation, .. } => {
+                    *representation == Representation::IconValue
+                        && asset.kind == IconKind::Stress
                         && asset.style == IconStyle::Filled
                 }
                 Element::Battery { representation, .. } => {
@@ -422,11 +429,6 @@ pub fn validate_spec(spec: &ProjectSpec) -> ValidationReport {
                 progress_max,
                 ..
             }
-            | Element::HeartRate {
-                representation,
-                progress_max,
-                ..
-            }
             | Element::Battery {
                 representation,
                 progress_max,
@@ -444,12 +446,15 @@ pub fn validate_spec(spec: &ProjectSpec) -> ValidationReport {
             } => {
                 if !matches!(
                     representation,
-                    Representation::Value | Representation::IconValue | Representation::ProgressBar
+                    Representation::Value
+                        | Representation::IconValue
+                        | Representation::ProgressBar
+                        | Representation::GoalRing
                 ) {
                     issue(
                         &mut issues,
                         format!("{field}.representation"),
-                        "must be value, icon-value, or progress-bar for metrics",
+                        "must be value, icon-value, progress-bar, or goal-ring for goal metrics",
                     );
                 }
                 if progress_max.is_some_and(|maximum| maximum <= 0.0 || maximum > 1_000_000.0) {
@@ -457,6 +462,47 @@ pub fn validate_spec(spec: &ProjectSpec) -> ValidationReport {
                         &mut issues,
                         format!("{field}.progressMax"),
                         "must be greater than zero and no more than 1000000",
+                    );
+                }
+            }
+            Element::HeartRate {
+                representation,
+                progress_max,
+                ..
+            } => {
+                if !matches!(
+                    representation,
+                    Representation::Value
+                        | Representation::IconValue
+                        | Representation::ZoneGauge
+                        | Representation::HistoryGraph
+                ) {
+                    issue(
+                        &mut issues,
+                        format!("{field}.representation"),
+                        "must be value, icon-value, zone-gauge, or history-graph for heart rate",
+                    );
+                }
+                if progress_max.is_some_and(|maximum| maximum <= 0.0 || maximum > 300.0) {
+                    issue(
+                        &mut issues,
+                        format!("{field}.progressMax"),
+                        "must be greater than zero and no more than 300",
+                    );
+                }
+            }
+            Element::Stress { representation, .. } => {
+                if !matches!(
+                    representation,
+                    Representation::Value
+                        | Representation::IconValue
+                        | Representation::ZoneGauge
+                        | Representation::HistoryGraph
+                ) {
+                    issue(
+                        &mut issues,
+                        format!("{field}.representation"),
+                        "must be value, icon-value, zone-gauge, or history-graph for stress",
                     );
                 }
             }
@@ -643,6 +689,16 @@ pub fn generate_project(spec: &ProjectSpec) -> Result<GeneratedProject, Generate
     let folder_name = folder_name(&spec.name);
     let class_name = class_name(&spec.name);
     let app_id = normalize_app_id(&spec.app_id).expect("validated app id");
+    let needs_sensor_history = spec.elements.iter().any(|element| {
+        matches!(element, Element::Stress { .. })
+            || matches!(
+                element,
+                Element::HeartRate {
+                    representation: Representation::HistoryGraph,
+                    ..
+                }
+            )
+    });
     // Time uses the primary family; value + label use the secondary family
     // (which falls back to the primary when unset).
     let primary_fonts = selected_font_assets(spec.font_family, spec.font_heights);
@@ -663,7 +719,10 @@ pub fn generate_project(spec: &ProjectSpec) -> Result<GeneratedProject, Generate
     };
     let icon_assets = selected_icon_assets(spec);
     let mut files = vec![
-        text_file("manifest.xml", manifest_xml(&class_name, &app_id)),
+        text_file(
+            "manifest.xml",
+            manifest_xml(&class_name, &app_id, needs_sensor_history),
+        ),
         text_file("monkey.jungle", jungle()),
         text_file(
             format!("source/{class_name}App.mc"),
@@ -754,7 +813,12 @@ fn binary_file(path: impl Into<String>, bytes: &[u8]) -> GeneratedFile {
     }
 }
 
-fn manifest_xml(class_name: &str, app_id: &str) -> String {
+fn manifest_xml(class_name: &str, app_id: &str, needs_sensor_history: bool) -> String {
+    let permissions = if needs_sensor_history {
+        "    <iq:permissions>\n      <iq:uses-permission id=\"SensorHistory\"/>\n    </iq:permissions>\n"
+    } else {
+        ""
+    };
     format!(
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\
 <iq:manifest xmlns:iq=\"http://www.garmin.com/xml/connectiq\" version=\"3\">\n\
@@ -762,12 +826,14 @@ fn manifest_xml(class_name: &str, app_id: &str) -> String {
     <iq:products>\n\
       <iq:product id=\"venusq2\"/>\n\
     </iq:products>\n\
+{permissions}\
     <iq:languages><iq:language>eng</iq:language></iq:languages>\n\
     <iq:barrels/>\n\
   </iq:application>\n\
 </iq:manifest>\n",
         class_name = class_name,
-        app_id = app_id
+        app_id = app_id,
+        permissions = permissions,
     )
 }
 
@@ -795,13 +861,30 @@ fn view_source(spec: &ProjectSpec, class_name: &str) -> String {
     let has_activity_monitor = spec.elements.iter().any(|element| {
         matches!(
             element,
-            Element::Steps { .. } | Element::Calories { .. } | Element::Distance { .. }
+            Element::Steps { .. }
+                | Element::Stress { .. }
+                | Element::Calories { .. }
+                | Element::Distance { .. }
         )
     });
     let has_heart_rate = spec
         .elements
         .iter()
         .any(|element| matches!(element, Element::HeartRate { .. }));
+    let has_stress = spec
+        .elements
+        .iter()
+        .any(|element| matches!(element, Element::Stress { .. }));
+    let has_heart_history = spec.elements.iter().any(|element| {
+        matches!(
+            element,
+            Element::HeartRate {
+                representation: Representation::HistoryGraph,
+                ..
+            }
+        )
+    });
+    let has_sensor_history = has_stress || has_heart_history;
 
     let mut source = String::new();
     if has_heart_rate {
@@ -809,6 +892,9 @@ fn view_source(spec: &ProjectSpec, class_name: &str) -> String {
     }
     if has_activity_monitor {
         source.push_str("using Toybox.ActivityMonitor;\n");
+    }
+    if has_sensor_history {
+        source.push_str("using Toybox.SensorHistory;\n");
     }
     source.push_str("using Toybox.Graphics;\nusing Toybox.Math;\nusing Toybox.System;\n");
     if has_date {
@@ -851,9 +937,28 @@ fn view_source(spec: &ProjectSpec, class_name: &str) -> String {
             dc.drawText(cursor, y, font, glyph, Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER);\n\
             cursor += dc.getTextWidthInPixels(glyph, font) + spacing;\n\
         }\n\
-    }\n\n\
-    function onUpdate(dc) {\n",
+    }\n\n",
     );
+    if has_sensor_history {
+        source.push_str("    private var _historyStamp = -1;\n");
+        if has_heart_history {
+            source.push_str("    private var _heartHistory = [];\n");
+        }
+        if has_stress {
+            source.push_str(
+                "    private var _stressHistory = [];\n    private var _stressValue = null;\n",
+            );
+        }
+        source.push_str("\n    function refreshHistoryData() {\n        var historyClock = System.getClockTime();\n        var historyStamp = (historyClock.hour * 60) + historyClock.min;\n        if (historyStamp == _historyStamp) { return; }\n        _historyStamp = historyStamp;\n");
+        if has_heart_history {
+            source.push_str("        _heartHistory = [];\n        try {\n            if ((Toybox has :SensorHistory) && (SensorHistory has :getHeartRateHistory)) {\n                var heartIterator = SensorHistory.getHeartRateHistory({ :period => 24, :order => SensorHistory.ORDER_NEWEST_FIRST });\n                if (heartIterator != null) {\n                    var heartSample = heartIterator.next();\n                    while (heartSample != null && _heartHistory.size() < 24) {\n                        if (heartSample.data != null) { _heartHistory.add(heartSample.data); }\n                        heartSample = heartIterator.next();\n                    }\n                }\n            }\n        } catch (heartHistoryError) {}\n");
+        }
+        if has_stress {
+            source.push_str("        _stressHistory = [];\n        _stressValue = null;\n        try {\n            if ((Toybox has :SensorHistory) && (SensorHistory has :getStressHistory)) {\n                var stressIterator = SensorHistory.getStressHistory({ :period => 24, :order => SensorHistory.ORDER_NEWEST_FIRST });\n                if (stressIterator != null) {\n                    var stressSample = stressIterator.next();\n                    while (stressSample != null && _stressHistory.size() < 24) {\n                        if (stressSample.data != null) {\n                            if (_stressValue == null) { _stressValue = stressSample.data; }\n                            _stressHistory.add(stressSample.data);\n                        }\n                        stressSample = stressIterator.next();\n                    }\n                }\n            }\n        } catch (stressHistoryError) {}\n");
+        }
+        source.push_str("    }\n\n    function drawHistoryGraph(dc, samples, graphX, graphY, graphWidth, graphHeight, graphColor) {\n        if (samples == null || samples.size() < 2) { return; }\n        var graphMin = samples[0];\n        var graphMax = samples[0];\n        for (var graphIndex = 1; graphIndex < samples.size(); graphIndex++) {\n            if (samples[graphIndex] < graphMin) { graphMin = samples[graphIndex]; }\n            if (samples[graphIndex] > graphMax) { graphMax = samples[graphIndex]; }\n        }\n        var graphRange = graphMax - graphMin;\n        if (graphRange < 1) { graphRange = 1; }\n        dc.setColor(graphColor, Graphics.COLOR_TRANSPARENT);\n        dc.setPenWidth(2);\n        var previousX = graphX;\n        var previousY = graphY + graphHeight;\n        for (var pointIndex = 0; pointIndex < samples.size(); pointIndex++) {\n            var sampleValue = samples[samples.size() - 1 - pointIndex];\n            var pointX = graphX + ((pointIndex * graphWidth) / (samples.size() - 1));\n            var pointY = graphY + graphHeight - (((sampleValue - graphMin) * graphHeight) / graphRange);\n            if (pointIndex > 0) { dc.drawLine(previousX, previousY, pointX, pointY); }\n            previousX = pointX;\n            previousY = pointY;\n        }\n        dc.setPenWidth(1);\n    }\n\n");
+    }
+    source.push_str("    function onUpdate(dc) {\n");
     writeln!(
         source,
         "        dc.setColor({}, {});",
@@ -868,6 +973,9 @@ fn view_source(spec: &ProjectSpec, class_name: &str) -> String {
             return;\n\
         }\n",
     );
+    if has_sensor_history {
+        source.push_str("        refreshHistoryData();\n");
+    }
 
     for (index, element) in spec.elements.iter().enumerate() {
         source.push('\n');
@@ -996,20 +1104,98 @@ fn render_element(element: &Element, index: usize, indent: &str, spacing: Letter
 {indent}    heartValue{index} = heartInfo{index}.currentHeartRate.format(\"%d\");\n\
 {indent}}}\n\
 {}",
-            render_metric_display(
-                index,
-                *x,
-                *y,
-                color,
-                *align,
-                &format!("heartValue{index}"),
-                &format!("heartNumber{index}"),
-                &progress_max_expression(*progress_max, "200"),
-                *representation,
-                IconKind::Heart,
-                spacing.value,
-                indent
-            )
+            match representation {
+                Representation::ZoneGauge => render_zone_gauge(
+                    index,
+                    *x,
+                    *y,
+                    color,
+                    *align,
+                    &format!("heartValue{index}"),
+                    &format!("heartNumber{index}"),
+                    &progress_max_expression(*progress_max, "200"),
+                    spacing.value,
+                    0.5,
+                    indent,
+                ),
+                Representation::HistoryGraph => render_history_display(
+                    *x,
+                    *y,
+                    color,
+                    *align,
+                    &format!("heartValue{index}"),
+                    "_heartHistory",
+                    spacing.value,
+                    indent,
+                ),
+                _ => render_metric_display(
+                    index,
+                    *x,
+                    *y,
+                    color,
+                    *align,
+                    &format!("heartValue{index}"),
+                    &format!("heartNumber{index}"),
+                    &progress_max_expression(*progress_max, "200"),
+                    *representation,
+                    IconKind::Heart,
+                    spacing.value,
+                    indent,
+                ),
+            }
+        ),
+        Element::Stress {
+            x,
+            y,
+            color,
+            align,
+            representation,
+            ..
+        } => format!(
+            "{indent}var stressInfo{index} = ActivityMonitor.getInfo();\n\
+{indent}var stressNumber{index} = _stressValue;\n\
+{indent}if (stressInfo{index} != null && (stressInfo{index} has :stressScore) && stressInfo{index}.stressScore != null) {{ stressNumber{index} = stressInfo{index}.stressScore; }}\n\
+{indent}var stressValue{index} = stressNumber{index} == null ? \"--\" : stressNumber{index}.format(\"%d\");\n\
+{}",
+            match representation {
+                Representation::ZoneGauge => render_zone_gauge(
+                    index,
+                    *x,
+                    *y,
+                    color,
+                    *align,
+                    &format!("stressValue{index}"),
+                    &format!("stressNumber{index} == null ? 0 : stressNumber{index}"),
+                    "100",
+                    spacing.value,
+                    0.0,
+                    indent,
+                ),
+                Representation::HistoryGraph => render_history_display(
+                    *x,
+                    *y,
+                    color,
+                    *align,
+                    &format!("stressValue{index}"),
+                    "_stressHistory",
+                    spacing.value,
+                    indent,
+                ),
+                _ => render_metric_display(
+                    index,
+                    *x,
+                    *y,
+                    color,
+                    *align,
+                    &format!("stressValue{index}"),
+                    &format!("stressNumber{index} == null ? 0 : stressNumber{index}"),
+                    "100",
+                    *representation,
+                    IconKind::Stress,
+                    spacing.value,
+                    indent,
+                ),
+            }
         ),
         Element::Battery {
             x,
@@ -1307,6 +1493,29 @@ fn render_metric_display(
                 y + 15,
             )
         }
+        Representation::GoalRing => {
+            let left = match align {
+                Alignment::Left => x,
+                Alignment::Center => x - 44,
+                Alignment::Right => x - 88,
+            };
+            format!(
+                "{indent}var ringProgress{index} = {numeric_value}.toFloat() / {maximum};\n\
+{indent}if (ringProgress{index} < 0.0) {{ ringProgress{index} = 0.0; }}\n\
+{indent}else if (ringProgress{index} > 1.0) {{ ringProgress{index} = 1.0; }}\n\
+{indent}dc.setColor(0x242725, Graphics.COLOR_TRANSPARENT);\n\
+{indent}dc.setPenWidth(4);\n\
+{indent}dc.drawCircle({}, {y}, 18);\n\
+{indent}dc.setColor({}, Graphics.COLOR_TRANSPARENT);\n\
+{indent}dc.drawArc({}, {y}, 18, Graphics.ARC_CLOCKWISE, -90, -90 + (ringProgress{index} * 360).toNumber());\n\
+{indent}dc.setPenWidth(1);\n\
+{indent}drawText(dc, {}, {y}, _fontValue, {value}, Graphics.TEXT_JUSTIFY_LEFT, {spacing});\n",
+                left + 20,
+                color_code(color),
+                left + 20,
+                left + 44,
+            )
+        }
         _ => draw_text(
             x,
             y,
@@ -1318,6 +1527,92 @@ fn render_metric_display(
             indent,
         ),
     }
+}
+
+#[allow(clippy::too_many_arguments)]
+fn render_zone_gauge(
+    index: usize,
+    x: i32,
+    y: i32,
+    color: &str,
+    align: Alignment,
+    value: &str,
+    numeric_value: &str,
+    maximum: &str,
+    spacing: i32,
+    zone_floor: f64,
+    indent: &str,
+) -> String {
+    let left = match align {
+        Alignment::Left => x,
+        Alignment::Center => x - 52,
+        Alignment::Right => x - 104,
+    };
+    format!(
+        "{}{indent}var zoneRatio{index} = (({numeric_value}.toFloat() / {maximum}) - {zone_floor}) / {};\n\
+{indent}if (zoneRatio{index} < 0.0) {{ zoneRatio{index} = 0.0; }}\n\
+{indent}else if (zoneRatio{index} > 1.0) {{ zoneRatio{index} = 1.0; }}\n\
+{indent}var zoneColors{index} = [0x5AC8FA, 0x72D6B2, 0xE5AD59, 0xEF7E74, 0xB8566F];\n\
+{indent}for (var zoneIndex{index} = 0; zoneIndex{index} < 5; zoneIndex{index}++) {{\n\
+{indent}    dc.setColor(zoneColors{index}[zoneIndex{index}], Graphics.COLOR_TRANSPARENT);\n\
+{indent}    dc.fillRoundedRectangle({left} + (zoneIndex{index} * 21), {}, 19, 6, 3);\n\
+{indent}}}\n\
+{indent}var zoneMarker{index} = {left} + (zoneRatio{index} * 103).toNumber();\n\
+{indent}dc.setColor({}, Graphics.COLOR_TRANSPARENT);\n\
+{indent}dc.fillRectangle(zoneMarker{index} - 1, {}, 3, 12);\n",
+        draw_text(
+            x,
+            y - 13,
+            color,
+            font_resource(FontRole::Value),
+            align,
+            value,
+            spacing,
+            indent,
+        ),
+        1.0 - zone_floor,
+        y + 13,
+        color_code(color),
+        y + 10,
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+fn render_history_display(
+    x: i32,
+    y: i32,
+    color: &str,
+    align: Alignment,
+    value: &str,
+    samples: &str,
+    spacing: i32,
+    indent: &str,
+) -> String {
+    let left = match align {
+        Alignment::Left => x,
+        Alignment::Center => x - 52,
+        Alignment::Right => x - 104,
+    };
+    format!(
+        "{}{indent}dc.setColor(0x242725, Graphics.COLOR_TRANSPARENT);\n\
+{indent}dc.drawLine({left}, {}, {}, {});\n\
+{indent}drawHistoryGraph(dc, {samples}, {left}, {}, 104, 30, {});\n",
+        draw_text(
+            x,
+            y - 18,
+            color,
+            font_resource(FontRole::Value),
+            align,
+            value,
+            spacing,
+            indent,
+        ),
+        y + 32,
+        left + 104,
+        y + 32,
+        y + 2,
+        color_code(color),
+    )
 }
 
 #[allow(clippy::too_many_arguments)]

@@ -304,8 +304,8 @@ fn exports_phosphor_icon_resources_and_draw_calls() {
 fn exports_dynamic_component_representations() {
     let mut project: serde_json::Value = serde_json::from_str(&sample_json()).unwrap();
     project["elements"][0]["representation"] = "stacked".into();
-    project["elements"][1]["representation"] = "icon-value".into();
-    project["elements"][2]["representation"] = "progress-bar".into();
+    project["elements"][1]["representation"] = "goal-ring".into();
+    project["elements"][2]["representation"] = "zone-gauge".into();
     project["elements"][2]["progressMax"] = 180.into();
     project["elements"].as_array_mut().unwrap().extend([
         serde_json::json!({
@@ -324,6 +324,10 @@ fn exports_dynamic_component_representations() {
             "type": "distance", "id": "distance", "x": 160, "y": 330,
             "color": "#78A6D6", "align": "center", "unit": "kilometers",
             "representation": "progress-bar"
+        }),
+        serde_json::json!({
+            "type": "stress", "id": "stress", "x": 160, "y": 290,
+            "color": "#B6A0E8", "align": "center", "representation": "history-graph"
         }),
     ]);
 
@@ -345,13 +349,20 @@ fn exports_dynamic_component_representations() {
     assert!(view.contains("hourValue0"));
     assert!(view.contains("minuteValue0"));
     assert!(view.contains("date3.day.format(\"%02d\")"));
-    assert!(view.contains("metricTransform1.scale(0.187500, 0.187500)"));
-    assert!(view.contains("Rez.Drawables.IconStepsFilled"));
+    assert!(view.contains("var ringProgress1 = stepsNumber1.toFloat()"));
     assert!(view.contains("Rez.Drawables.IconBatteryFilled"));
-    assert!(view.contains("var progress2 = heartNumber2.toFloat() / 180"));
+    assert!(view.contains("var zoneRatio2 = ((heartNumber2.toFloat() / 180) - 0.5) / 0.5"));
     assert!(view.contains("fillRoundedRectangle(116, 345, 88, 6, 3)"));
-    assert!(paths.contains(&"resources/drawables/steps_filled.png"));
+    assert!(view.contains("drawHistoryGraph(dc, _stressHistory"));
+    assert!(view.contains("SensorHistory.getStressHistory"));
     assert!(paths.contains(&"resources/drawables/battery_filled.png"));
+    let manifest = generated
+        .files
+        .iter()
+        .find(|file| file.path == "manifest.xml")
+        .map(|file| String::from_utf8(file.bytes.clone()).unwrap())
+        .unwrap();
+    assert!(manifest.contains("uses-permission id=\"SensorHistory\""));
 }
 
 #[test]

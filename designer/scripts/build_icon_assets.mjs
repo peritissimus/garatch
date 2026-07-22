@@ -15,6 +15,7 @@ const icons = {
   pin: "MapPinIcon",
   sun: "SunIcon",
   bolt: "LightningIcon",
+  stress: "PulseIcon",
 };
 const weights = { filled: "fill", outline: "regular" };
 
