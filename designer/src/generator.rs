@@ -954,7 +954,7 @@ fn view_source(spec: &ProjectSpec, class_name: &str) -> String {
         if has_stress {
             source.push_str("        _stressHistory = [];\n        _stressValue = null;\n        try {\n            if ((Toybox has :SensorHistory) && (SensorHistory has :getStressHistory)) {\n                var stressIterator = SensorHistory.getStressHistory({ :period => 24, :order => SensorHistory.ORDER_NEWEST_FIRST });\n                if (stressIterator != null) {\n                    var stressSample = stressIterator.next();\n                    while (stressSample != null && _stressHistory.size() < 24) {\n                        if (stressSample.data != null) {\n                            if (_stressValue == null) { _stressValue = stressSample.data; }\n                            _stressHistory.add(stressSample.data);\n                        }\n                        stressSample = stressIterator.next();\n                    }\n                }\n            }\n        } catch (stressHistoryError) {}\n");
         }
-        source.push_str("    }\n\n    function drawHistoryGraph(dc, samples, graphX, graphY, graphWidth, graphHeight, graphColor) {\n        if (samples == null || samples.size() < 2) { return; }\n        var graphMin = samples[0];\n        var graphMax = samples[0];\n        for (var graphIndex = 1; graphIndex < samples.size(); graphIndex++) {\n            if (samples[graphIndex] < graphMin) { graphMin = samples[graphIndex]; }\n            if (samples[graphIndex] > graphMax) { graphMax = samples[graphIndex]; }\n        }\n        var graphRange = graphMax - graphMin;\n        if (graphRange < 1) { graphRange = 1; }\n        dc.setColor(graphColor, Graphics.COLOR_TRANSPARENT);\n        dc.setPenWidth(2);\n        var previousX = graphX;\n        var previousY = graphY + graphHeight;\n        for (var pointIndex = 0; pointIndex < samples.size(); pointIndex++) {\n            var sampleValue = samples[samples.size() - 1 - pointIndex];\n            var pointX = graphX + ((pointIndex * graphWidth) / (samples.size() - 1));\n            var pointY = graphY + graphHeight - (((sampleValue - graphMin) * graphHeight) / graphRange);\n            if (pointIndex > 0) { dc.drawLine(previousX, previousY, pointX, pointY); }\n            previousX = pointX;\n            previousY = pointY;\n        }\n        dc.setPenWidth(1);\n    }\n\n");
+        source.push_str("    }\n\n    function smoothedHistorySample(samples, pointIndex) {\n        var sourceIndex = samples.size() - 1 - pointIndex;\n        var sampleTotal = samples[sourceIndex];\n        var sampleCount = 1;\n        if (sourceIndex > 0) { sampleTotal += samples[sourceIndex - 1]; sampleCount += 1; }\n        if (sourceIndex > 1) { sampleTotal += samples[sourceIndex - 2]; sampleCount += 1; }\n        if (sourceIndex + 1 < samples.size()) { sampleTotal += samples[sourceIndex + 1]; sampleCount += 1; }\n        if (sourceIndex + 2 < samples.size()) { sampleTotal += samples[sourceIndex + 2]; sampleCount += 1; }\n        return sampleTotal.toFloat() / sampleCount;\n    }\n\n    function drawHistoryGraph(dc, samples, graphX, graphY, graphWidth, graphHeight, graphColor) {\n        if (samples == null || samples.size() < 2) { return; }\n        var graphMin = smoothedHistorySample(samples, 0);\n        var graphMax = graphMin;\n        for (var graphIndex = 1; graphIndex < samples.size(); graphIndex++) {\n            var graphValue = smoothedHistorySample(samples, graphIndex);\n            if (graphValue < graphMin) { graphMin = graphValue; }\n            if (graphValue > graphMax) { graphMax = graphValue; }\n        }\n        var graphRange = graphMax - graphMin;\n        if (graphRange < 1) { graphRange = 1; }\n        dc.setColor(graphColor, Graphics.COLOR_TRANSPARENT);\n        dc.setPenWidth(2);\n        var previousX = graphX;\n        var previousY = graphY + graphHeight;\n        for (var pointIndex = 0; pointIndex < samples.size(); pointIndex++) {\n            var sampleValue = smoothedHistorySample(samples, pointIndex);\n            var pointX = graphX + ((pointIndex * graphWidth) / (samples.size() - 1));\n            var pointY = graphY + graphHeight - (((sampleValue - graphMin) * graphHeight) / graphRange);\n            if (pointIndex > 0) { dc.drawLine(previousX, previousY, pointX, pointY); }\n            previousX = pointX;\n            previousY = pointY;\n        }\n        dc.setPenWidth(1);\n    }\n\n");
     }
     source.push_str("    function onUpdate(dc) {\n");
     writeln!(
@@ -1391,7 +1391,14 @@ fn render_icon(
     let _ = (icon, style, color);
     format!(
         "{indent}var iconBitmap{index} = WatchUi.loadResource(Rez.Drawables.Icon{index});\n\
-{indent}dc.drawBitmap({}, {}, iconBitmap{index});\n",
+{indent}if (dc has :drawBitmap2) {{\n\
+{indent}    dc.drawBitmap2({}, {}, iconBitmap{index}, {{ :tintColor => {} }});\n\
+{indent}}} else {{\n\
+{indent}    dc.drawBitmap({}, {}, iconBitmap{index});\n\
+{indent}}}\n",
+        x - half,
+        y - half,
+        color_code(color),
         x - half,
         y - half,
     )
@@ -1429,7 +1436,13 @@ fn render_metric_display(
             format!(
                 "{indent}var metricLeft{index} = {left};\n\
 {indent}var metricBitmap{index} = WatchUi.loadResource(Rez.Drawables.Icon{index});\n\
-{indent}dc.drawBitmap(metricLeft{index}, {}, metricBitmap{index});\n",
+{indent}if (dc has :drawBitmap2) {{\n\
+{indent}    dc.drawBitmap2(metricLeft{index}, {}, metricBitmap{index}, {{ :tintColor => {} }});\n\
+{indent}}} else {{\n\
+{indent}    dc.drawBitmap(metricLeft{index}, {}, metricBitmap{index});\n\
+{indent}}}\n",
+                y - 9,
+                color_code(color),
                 y - 9
             )
         }
@@ -1856,7 +1869,7 @@ fn render_time(
                 color_code(color)
             )
             .unwrap();
-            writeln!(output, "{indent}dc.setPenWidth(3);\n{indent}dc.drawCircle({x}, {y}, 61);\n{indent}dc.drawArc({x}, {y}, 61, Graphics.ARC_CLOCKWISE, -90, -90 + (clock{index}.sec * 6));\n{indent}dc.setPenWidth(1);").unwrap();
+            writeln!(output, "{indent}dc.setPenWidth(3);\n{indent}dc.drawCircle({x}, {y}, 68);\n{indent}dc.drawArc({x}, {y}, 68, Graphics.ARC_CLOCKWISE, -90, -90 + (clock{index}.sec * 6));\n{indent}dc.setPenWidth(1);").unwrap();
             output.push_str(&draw_text(
                 x,
                 y,
@@ -2029,51 +2042,40 @@ fn drawables_xml(spec: &ProjectSpec) -> String {
     for (index, element) in spec.elements.iter().enumerate() {
         let icon = match element {
             Element::Icon {
-                icon,
-                style,
-                size,
-                color,
-                ..
-            } => Some((*icon, *style, *size, color.as_str())),
+                icon, style, size, ..
+            } => Some((*icon, *style, *size)),
             Element::Steps {
                 representation: Representation::Icon,
-                color,
                 ..
-            } => Some((IconKind::Steps, IconStyle::Filled, 18, color.as_str())),
+            } => Some((IconKind::Steps, IconStyle::Filled, 18)),
             Element::HeartRate {
                 representation: Representation::Icon,
-                color,
                 ..
-            } => Some((IconKind::Heart, IconStyle::Filled, 18, color.as_str())),
+            } => Some((IconKind::Heart, IconStyle::Filled, 18)),
             Element::Stress {
                 representation: Representation::Icon,
-                color,
                 ..
-            } => Some((IconKind::Stress, IconStyle::Filled, 18, color.as_str())),
+            } => Some((IconKind::Stress, IconStyle::Filled, 18)),
             Element::Battery {
                 representation: Representation::Icon,
-                color,
                 ..
-            } => Some((IconKind::Battery, IconStyle::Filled, 18, color.as_str())),
+            } => Some((IconKind::Battery, IconStyle::Filled, 18)),
             Element::Calories {
                 representation: Representation::Icon,
-                color,
                 ..
-            } => Some((IconKind::Flame, IconStyle::Filled, 18, color.as_str())),
+            } => Some((IconKind::Flame, IconStyle::Filled, 18)),
             Element::Distance {
                 representation: Representation::Icon,
-                color,
                 ..
-            } => Some((IconKind::Pin, IconStyle::Filled, 18, color.as_str())),
+            } => Some((IconKind::Pin, IconStyle::Filled, 18)),
             _ => None,
         };
-        if let Some((kind, style, size, color)) = icon {
+        if let Some((kind, style, size)) = icon {
             let asset = selected_icon_asset(kind, style);
             writeln!(
                 output,
-                "  <bitmap id=\"Icon{index}\" filename=\"{}\" scaleX=\"{size}\" scaleY=\"{size}\" scaleRelativeTo=\"image\" dithering=\"none\" automaticPalette=\"false\">\n    <palette disableTransparency=\"false\"><color>{}</color></palette>\n  </bitmap>",
+                "  <bitmap id=\"Icon{index}\" filename=\"{}\" scaleX=\"{size}\" scaleY=\"{size}\" scaleRelativeTo=\"screen\" dithering=\"none\" automaticPalette=\"false\"/>",
                 asset.file_name,
-                color.trim_start_matches('#')
             )
             .unwrap();
         }

@@ -7,6 +7,7 @@
   import { ensureProjectFonts, positionedWatchText } from "../lib/textLayout.js";
   import { tactile } from "../lib/motion.js";
   import { drawCanvasIcon } from "../lib/iconDrawing.js";
+  import { smoothHistorySamples } from "../lib/history.js";
 
   let { project, selectedId, showGrid, aod, onselect, onposition, ongrid, onaod } = $props();
   let canvas;
@@ -191,7 +192,7 @@
     const left = alignedLeft(element, 104);
     const top = element.y + 2;
     const height = 30;
-    const samples = previewHistory[element.type] ?? [];
+    const samples = smoothHistorySamples(previewHistory[element.type] ?? []);
     drawText(element, null, previewText(element), element.x, element.y - 18);
     if (samples.length < 2) return;
     const minimum = Math.min(...samples);
@@ -231,8 +232,8 @@
     }
     if (element.type === "time" && representation === "seconds-ring") {
       context.save(); context.strokeStyle = element.color; context.lineWidth = 3;
-      context.beginPath(); context.arc(element.x, element.y, 61, 0, Math.PI * 2); context.stroke();
-      context.beginPath(); context.arc(element.x, element.y, 61, -Math.PI / 2, -Math.PI / 2 + (now.getSeconds() / 60) * Math.PI * 2); context.stroke(); context.restore();
+      context.beginPath(); context.arc(element.x, element.y, 68, 0, Math.PI * 2); context.stroke();
+      context.beginPath(); context.arc(element.x, element.y, 68, -Math.PI / 2, -Math.PI / 2 + (now.getSeconds() / 60) * Math.PI * 2); context.stroke(); context.restore();
       drawText(element, null, previewText(element), element.x, element.y, "center");
       return;
     }
@@ -335,7 +336,7 @@
     if (element.type === "time" && representation === "analog-digital") {
       return unionBounds([{ x: element.x - 53, y: element.y - 53, width: 106, height: 106 }, textLayout({ ...element, type: "date" }, previewText(element), element.x, element.y + 66, "center")]);
     }
-    if (element.type === "time" && representation === "seconds-ring") return { x: element.x - 63, y: element.y - 63, width: 126, height: 126 };
+    if (element.type === "time" && representation === "seconds-ring") return { x: element.x - 70, y: element.y - 70, width: 140, height: 140 };
     if (element.type === "date" && representation === "calendar") return { x: element.x - 32, y: element.y - 33, width: 64, height: 66 };
     if (representation === "goal-ring") {
       const left = alignedLeft(element, 88);

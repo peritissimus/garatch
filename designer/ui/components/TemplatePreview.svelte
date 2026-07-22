@@ -1,5 +1,6 @@
 <script>
   import { PHOSPHOR_ICON_PATHS } from "../lib/phosphorIconPaths.generated.js";
+  import { smoothHistorySamples } from "../lib/history.js";
 
   let { template } = $props();
   const samples = { time: "10:28", date: "22/07", steps: "8421", "heart-rate": "72", stress: "38", battery: "83%", calories: "356", distance: "4.2" };
@@ -44,7 +45,7 @@
   }
 
   function pointsFor(element) {
-    const values = history[element.type] ?? [];
+    const values = smoothHistorySamples(history[element.type] ?? []);
     const minimum = Math.min(...values);
     const maximum = Math.max(...values);
     const range = Math.max(1, maximum - minimum);
@@ -77,8 +78,8 @@
       <circle cx={element.x} cy={element.y} r="4" fill={element.color} />
       {#if representation === "analog-digital"}<text x={element.x} y={element.y + 66} fill={element.color} text-anchor="middle" dominant-baseline="middle" font-size="17" font-family="system-ui, sans-serif" font-weight="650">10:28</text>{/if}
     {:else if element.type === "time" && representation === "seconds-ring"}
-      <circle cx={element.x} cy={element.y} r="61" fill="none" stroke="#29201E" stroke-width="4" />
-      <circle cx={element.x} cy={element.y} r="61" fill="none" stroke={element.color} stroke-width="4" stroke-linecap="round" stroke-dasharray="244 383" transform={`rotate(-90 ${element.x} ${element.y})`} />
+      <circle cx={element.x} cy={element.y} r="68" fill="none" stroke="#29201E" stroke-width="4" />
+      <circle cx={element.x} cy={element.y} r="68" fill="none" stroke={element.color} stroke-width="4" stroke-linecap="round" stroke-dasharray="271 427" transform={`rotate(-90 ${element.x} ${element.y})`} />
       <text x={element.x} y={element.y} fill={element.color} text-anchor="middle" dominant-baseline="middle" font-size={fontSizeFor(element)} font-family="system-ui, sans-serif" font-weight="650">10:28</text>
     {:else if element.type === "date" && representation === "calendar"}
       <rect x={element.x - 32} y={element.y - 33} width="64" height="66" rx="8" fill="#17191B" stroke={element.color} stroke-width="1" />

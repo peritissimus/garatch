@@ -286,7 +286,9 @@ fn exports_phosphor_icon_resources_and_draw_calls() {
         .unwrap();
 
     assert!(!view.contains("Graphics.AffineTransform"));
-    assert!(!view.contains("drawBitmap2"));
+    assert!(view.contains("if (dc has :drawBitmap2)"));
+    assert!(view.contains("dc.drawBitmap2"));
+    assert!(view.contains(":tintColor => 0x72D6B2"));
     assert!(view.contains("dc.drawBitmap"));
     assert!(view.contains("Rez.Drawables.Icon3"));
     assert!(view.contains("Rez.Drawables.Icon4"));
@@ -298,7 +300,10 @@ fn exports_phosphor_icon_resources_and_draw_calls() {
         drawables
             .contains("id=\"Icon4\" filename=\"steps_outline.png\" scaleX=\"24\" scaleY=\"24\"")
     );
-    assert!(drawables.contains("<color>72D6B2</color>"));
+    assert!(drawables.contains("scaleRelativeTo=\"screen\""));
+    assert!(drawables.contains("automaticPalette=\"false\""));
+    assert!(!drawables.contains("<palette"));
+    assert!(!drawables.contains("scaleRelativeTo=\"image\""));
     assert!(paths.contains(&"resources/drawables/heart_filled.png"));
     assert!(paths.contains(&"resources/drawables/steps_outline.png"));
     assert!(paths.contains(&"LICENSES/Phosphor-MIT.txt"));
@@ -356,11 +361,13 @@ fn exports_dynamic_component_representations() {
     assert!(view.contains("date3.day.format(\"%02d\")"));
     assert!(view.contains("var ringProgress1 = stepsNumber1.toFloat()"));
     assert!(view.contains("Rez.Drawables.Icon4"));
+    assert!(view.contains("dc.drawBitmap2(metricLeft4, 291, metricBitmap4"));
     assert!(view.contains("dc.drawBitmap(metricLeft4, 291, metricBitmap4)"));
     assert!(!view.contains("metricLeft4 + 24"));
     assert!(view.contains("var zoneRatio2 = ((heartNumber2.toFloat() / 180) - 0.5) / 0.5"));
     assert!(view.contains("fillRoundedRectangle(116, 345, 88, 6, 3)"));
     assert!(view.contains("drawHistoryGraph(dc, _stressHistory"));
+    assert!(view.contains("smoothedHistorySample(samples, graphIndex)"));
     assert!(view.contains("SensorHistory.getStressHistory"));
     assert!(paths.contains(&"resources/drawables/battery_filled.png"));
     let manifest = generated
@@ -386,6 +393,10 @@ fn exports_extended_time_and_date_representations() {
             "type": "date", "id": "date-calendar", "x": 250, "y": 250,
             "color": "#78A6D6", "align": "center", "representation": "calendar"
         }),
+        serde_json::json!({
+            "type": "time", "id": "time-ring", "x": 160, "y": 320,
+            "color": "#72D6B2", "align": "center", "representation": "seconds-ring"
+        }),
     ]);
 
     let spec = parse_spec(&project.to_string()).unwrap();
@@ -405,6 +416,8 @@ fn exports_extended_time_and_date_representations() {
     assert!(view.contains("var fullDateValue3 = weekdayValue3"));
     assert!(view.contains("dc.drawRoundedRectangle(219, 218, 62, 64, 8)"));
     assert!(view.contains("date4.day.format(\"%02d\")"));
+    assert!(view.contains("dc.drawCircle(160, 320, 68)"));
+    assert!(!view.contains("dc.drawCircle(160, 320, 61)"));
 }
 
 #[test]
