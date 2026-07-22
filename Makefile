@@ -35,6 +35,35 @@ simulator:
 	@echo "Starting Connect IQ simulator..."
 	connectiq &
 
+# Capture a PNG of the face from the running simulator window.
+#
+# Garmin's SDK has no headless screenshot (the simulator's "Save Screenshot"
+# only opens a save dialog), so this grabs the sim window with macOS
+# screencapture. Needs the sim running with the face loaded (make simulator,
+# then make run in another terminal) and a one-time "Screen Recording"
+# permission for your terminal (System Settings > Privacy & Security).
+#
+#   make screenshot                       # click the sim window to capture
+#   make screenshot WINDOW_ID=<id>        # non-interactive (see: make sim-window)
+SHOT ?= bin/$(FACE).png
+WINDOW_ID ?=
+.PHONY: screenshot
+screenshot:
+ifeq ($(WINDOW_ID),)
+	@echo "Click the simulator's watch window to capture -> $(SHOT)"
+	@screencapture -o -x -w "$(SHOT)"
+else
+	@screencapture -o -x -l$(WINDOW_ID) "$(SHOT)"
+endif
+	@echo "Saved $(SHOT)"
+	@sips -g pixelWidth -g pixelHeight "$(SHOT)" 2>/dev/null | awk '/pixelWidth|pixelHeight/{print "  "$$1" "$$2}'
+
+# Print the simulator's on-screen window id (for screenshot WINDOW_ID=...).
+.PHONY: sim-window
+sim-window:
+	@osascript -e 'tell application "System Events" to tell (first process whose name contains "simulator") to get id of window 1' 2>/dev/null \
+		|| echo "Could not read window id (needs Accessibility permission for your terminal)."
+
 # Build and run
 .PHONY: test
 test: build run
