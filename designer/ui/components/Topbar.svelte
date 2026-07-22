@@ -26,10 +26,6 @@
   </label>
 
   <div class="topbar-actions">
-    <div class="core-status" data-state={coreState.state} role="status">
-      <span class="status-dot"></span>
-      <span>{coreState.label}</span>
-    </div>
     <button class="button secondary templates-button" type="button" onclick={ontemplates} use:tactile>
       <Icon name="templates" size={16} /><span>Templates</span>
     </button>
