@@ -89,7 +89,7 @@ export const WATCH_TEMPLATES = [
   ], { fontHeights: { time: 72, value: 24, label: 14 } }),
   face("minimal-halo", "Minimal Halo", "A soft geometric frame with only essentials.", "Minimal", "#D9B7FF", "space-grotesk", [
     { type: "ellipse", x: 160, y: 176, radiusX: 118, radiusY: 118, fillColor: "#17131E" },
-    { type: "icon", x: 160, y: 76, icon: "sun", style: "regular", size: 24, color: "#D9B7FF" },
+    { type: "icon", x: 160, y: 76, icon: "sun", style: "outline", size: 24, color: "#D9B7FF" },
     { type: "time", x: 160, y: 158, color: "#FFFFFF", align: "center", format: "device", showSeconds: false, representation: "value" },
     { type: "date", x: 160, y: 216, color: "#B9ACCA", align: "center", representation: "month-day" },
     { type: "battery", x: 142, y: 322, color: "#D9B7FF", align: "center", representation: "icon" },
@@ -106,7 +106,7 @@ export const WATCH_TEMPLATES = [
     { type: "distance", x: 58, y: 310, color: "#8CC8FF", align: "left", unit: "kilometers", representation: "value" },
   ], { fontHeights: { time: 72, value: 30, label: 14 } }),
   face("linear", "Solar Transit", "A split-time solar composition with calendar and stress telemetry.", "Digital", "#FFB14E", "archivo-narrow", [
-    { type: "ellipse", x: 286, y: 54, radiusX: 108, radiusY: 108, fillColor: "#2A1608" },
+    { type: "ellipse", x: 246, y: 82, radiusX: 72, radiusY: 72, fillColor: "#2A1608" },
     { type: "rectangle", x: 0, y: 0, width: 18, height: 360, fillColor: "#FFB14E", cornerRadius: 0 },
     { type: "rectangle", x: 18, y: 190, width: 302, height: 2, fillColor: "#50331A", cornerRadius: 0 },
     { type: "label", x: 42, y: 38, text: "SOLAR TRANSIT", color: "#FFB14E", align: "left", maxWidth: 170, lineHeight: 16 },
