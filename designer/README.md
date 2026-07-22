@@ -28,7 +28,8 @@ ZIP. Users compile the downloaded project locally with Garmin's official
   distance; battery progress is fixed to its natural 100% scale
 - Rectangle, ellipse, adjustable line, and Phosphor watch icons
 - Twelve complete editable watch-face templates across analog, digital, data,
-  wellness, and minimal styles
+  wellness, and minimal styles; Minimal Halo is the single intentionally simple
+  starting point
 - Seven built-in icons with filled and outline appearances: heart, steps,
   battery, flame, location, sun, and bolt
 - One-click canvas alignment for selected text, shape, line, and icon layers
