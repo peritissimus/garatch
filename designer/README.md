@@ -14,14 +14,16 @@ ZIP. Users compile the downloaded project locally with Garmin's official
 
 - Venu SQ 2 and Venu SQ 2 Music (shared `venusq2` device profile)
 - Fixed 320×360 canvas
-- Digital time, date, steps, current heart rate, battery, calories, distance,
+- Digital time, date, steps, current heart rate, stress, battery, calories, distance,
   and static labels
 - Dynamic components are separated from static design layers in the palette
 - Six clock representations: digital, stacked, split, analog, analog + digital,
   and a live seconds ring
 - Seven date representations: numeric, stacked, weekday, month + day, full
   date, date + year, and a compact calendar tile
-- Value, icon-value, and progress-bar representations for activity metrics
+- Value and icon-value representations for every metric
+- Goal bars and rings for cumulative metrics; zone gauges and real
+  sensor-history graphs for heart rate and stress
 - Editable progress goals or scale maxima for steps, heart rate, calories, and
   distance; battery progress is fixed to its natural 100% scale
 - Rectangle, ellipse, adjustable line, and Phosphor watch icons
