@@ -554,6 +554,16 @@ kbd { display: inline-grid; min-width: 17px; height: 17px; place-items: center; 
 .representation-card:hover { background: var(--surface-hover); border-color: var(--line-strong); }
 .representation-card.selected { border-color: color-mix(in srgb, var(--mint) 42%, var(--line)); background: color-mix(in srgb, var(--mint) 7%, var(--surface)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--mint) 9%, transparent); }
 .representation-preview { display: grid; place-items: center; min-height: 42px; padding: 4px; border-radius: 8px; background: rgba(0,0,0,.2); color: var(--mint); font-family: "Barlow Condensed", sans-serif; font-size: 17px; font-weight: 600; line-height: .82; text-align: center; white-space: pre-line; font-variant-numeric: tabular-nums; box-shadow: inset 0 0 0 1px rgba(255,255,255,.035); }
+.representation-preview.visual-preview { grid-auto-flow: column; align-content: center; justify-content: center; gap: 6px; }
+.mini-history { width: 38px; height: 24px; overflow: visible; }
+.mini-history path { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.mini-gauge { position: relative; display: grid; grid-template-columns: repeat(5, 7px); gap: 2px; }
+.mini-gauge i { width: 7px; height: 5px; border-radius: 2px; background: currentColor; opacity: .28; }
+.mini-gauge i:nth-child(2) { opacity: .42; }.mini-gauge i:nth-child(3) { opacity: .58; }.mini-gauge i:nth-child(4) { opacity: .74; }.mini-gauge i:nth-child(5) { opacity: .9; }
+.mini-gauge b { position: absolute; top: -3px; left: 21px; width: 2px; height: 11px; border-radius: 1px; background: #fff; }
+.mini-ring { width: 23px; height: 23px; border: 4px solid rgba(114,214,178,.2); border-top-color: currentColor; border-right-color: currentColor; border-radius: 50%; rotate: -25deg; }
+.mini-progress { display: block; width: 38px; height: 5px; overflow: hidden; border-radius: 3px; background: rgba(114,214,178,.18); }
+.mini-progress i { display: block; width: 68%; height: 100%; border-radius: inherit; background: currentColor; }
 .representation-copy { display: grid; gap: 2px; min-width: 0; padding-left: 8px; }
 .representation-copy strong { font-size: 10px; font-weight: 670; }
 .representation-copy small { color: var(--muted); font-size: 8px; }

@@ -85,10 +85,10 @@
           value={element.representation ?? "value"}
           onselect={(value) => update("representation", value, true)}
         />
-        {#if element.representation === "progress-bar" && element.type !== "battery"}
+        {#if (["progress-bar", "goal-ring"].includes(element.representation) && element.type !== "battery") || (element.type === "heart-rate" && element.representation === "zone-gauge")}
           <div class="representation-target">
             <Field
-              label={element.type === "heart-rate" ? "Scale maximum" : element.type === "distance" ? "Goal distance" : "Goal"}
+              label={element.type === "heart-rate" ? "Maximum heart rate" : element.type === "distance" ? "Goal distance" : "Goal"}
               type="number"
               value={element.progressMax ?? defaultProgressMax(element.type)}
               min={1}

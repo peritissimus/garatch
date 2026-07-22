@@ -14,8 +14,12 @@
   let fonts = $state(null);
   let drag = $state(null);
   let now = $state(new Date());
-  const metricIcons = { steps: "steps", "heart-rate": "heart", battery: "battery", calories: "flame", distance: "pin" };
-  const previewNumbers = { steps: 8421, "heart-rate": 72, battery: 83, calories: 356, distance: 4.2 };
+  const metricIcons = { steps: "steps", "heart-rate": "heart", stress: "stress", battery: "battery", calories: "flame", distance: "pin" };
+  const previewNumbers = { steps: 8421, "heart-rate": 72, stress: 38, battery: 83, calories: 356, distance: 4.2 };
+  const previewHistory = {
+    "heart-rate": [62, 65, 64, 68, 72, 69, 74, 78, 75, 81, 77, 83, 79, 76, 72, 74],
+    stress: [18, 22, 20, 31, 28, 35, 44, 39, 52, 48, 43, 37, 41, 34, 38, 32],
+  };
 
   function previewProgress(element) {
     const maximum = Math.max(1, Number(element.progressMax) || defaultProgressMax(element.type));
@@ -38,6 +42,7 @@
     }
     if (element.type === "steps") return "8421";
     if (element.type === "heart-rate") return "72";
+    if (element.type === "stress") return "38";
     if (element.type === "battery") return "83%";
     if (element.type === "calories") return "356";
     if (element.type === "distance") return element.unit === "miles" ? "2.6" : "4.2";
@@ -141,6 +146,67 @@
     drawText(element, null, day, element.x, element.y + 11, "center");
   }
 
+  function drawGoalRing(element) {
+    const left = alignedLeft(element, 88);
+    const centerX = left + 20;
+    context.save();
+    context.lineWidth = 4;
+    context.lineCap = "round";
+    context.strokeStyle = "#242725";
+    context.beginPath(); context.arc(centerX, element.y, 18, 0, Math.PI * 2); context.stroke();
+    context.strokeStyle = element.color;
+    context.beginPath(); context.arc(centerX, element.y, 18, -Math.PI / 2, -Math.PI / 2 + previewProgress(element) * Math.PI * 2); context.stroke();
+    context.restore();
+    drawText(element, null, previewText(element), left + 44, element.y, "left");
+  }
+
+  function drawZoneGauge(element) {
+    const left = alignedLeft(element, 104);
+    const colors = ["#5AC8FA", "#72D6B2", "#E5AD59", "#EF7E74", "#B8566F"];
+    drawText(element, null, previewText(element), element.x, element.y - 13);
+    context.save();
+    colors.forEach((color, index) => {
+      context.fillStyle = color;
+      context.beginPath(); context.roundRect(left + index * 21, element.y + 13, 19, 6, 3); context.fill();
+    });
+    const maximum = element.type === "heart-rate" ? Math.max(1, Number(element.progressMax) || 200) : 100;
+    const rawRatio = (previewNumbers[element.type] ?? 0) / maximum;
+    const ratio = element.type === "heart-rate"
+      ? Math.max(0, Math.min(1, (rawRatio - 0.5) / 0.5))
+      : Math.max(0, Math.min(1, rawRatio));
+    context.fillStyle = element.color;
+    context.fillRect(left + ratio * 103 - 1, element.y + 10, 3, 12);
+    context.restore();
+  }
+
+  function drawHistoryGraph(element) {
+    const left = alignedLeft(element, 104);
+    const top = element.y + 2;
+    const height = 30;
+    const samples = previewHistory[element.type] ?? [];
+    drawText(element, null, previewText(element), element.x, element.y - 18);
+    if (samples.length < 2) return;
+    const minimum = Math.min(...samples);
+    const maximum = Math.max(...samples);
+    const range = Math.max(1, maximum - minimum);
+    context.save();
+    context.strokeStyle = "#242725";
+    context.lineWidth = 1;
+    context.beginPath(); context.moveTo(left, top + height); context.lineTo(left + 104, top + height); context.stroke();
+    context.strokeStyle = element.color;
+    context.lineWidth = 2;
+    context.lineCap = "round";
+    context.lineJoin = "round";
+    context.beginPath();
+    samples.forEach((sample, index) => {
+      const x = left + index * 104 / (samples.length - 1);
+      const y = top + height - (sample - minimum) * height / range;
+      if (index === 0) context.moveTo(x, y); else context.lineTo(x, y);
+    });
+    context.stroke();
+    context.restore();
+  }
+
   function drawDynamicElement(element) {
     const representation = element.representation ?? "value";
     if (element.type === "time" && representation === "split") {
@@ -164,6 +230,18 @@
     }
     if (element.type === "date" && representation === "calendar") {
       drawCalendar(element);
+      return;
+    }
+    if (representation === "goal-ring") {
+      drawGoalRing(element);
+      return;
+    }
+    if (representation === "zone-gauge") {
+      drawZoneGauge(element);
+      return;
+    }
+    if (representation === "history-graph") {
+      drawHistoryGraph(element);
       return;
     }
     if (representation === "stacked") {
@@ -255,6 +333,18 @@
     }
     if (element.type === "time" && representation === "seconds-ring") return { x: element.x - 63, y: element.y - 63, width: 126, height: 126 };
     if (element.type === "date" && representation === "calendar") return { x: element.x - 32, y: element.y - 33, width: 64, height: 66 };
+    if (representation === "goal-ring") {
+      const left = alignedLeft(element, 88);
+      return unionBounds([{ x: left, y: element.y - 20, width: 40, height: 40 }, textLayout(element, previewText(element), left + 44, element.y, "left")]);
+    }
+    if (representation === "zone-gauge") {
+      const left = alignedLeft(element, 104);
+      return unionBounds([textLayout(element, previewText(element), element.x, element.y - 13), { x: left, y: element.y + 10, width: 104, height: 12 }]);
+    }
+    if (representation === "history-graph") {
+      const left = alignedLeft(element, 104);
+      return unionBounds([textLayout(element, previewText(element), element.x, element.y - 18), { x: left, y: element.y + 2, width: 104, height: 31 }]);
+    }
     if (representation === "stacked") {
       const parts = previewText(element).split(/[/:]/);
       const gap = element.type === "time" ? project.fontHeights.time / 2 : Math.max(10, project.fontHeights.label / 2);

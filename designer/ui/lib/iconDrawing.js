@@ -8,6 +8,7 @@ export const ICON_OPTIONS = [
   ["pin", "Location"],
   ["sun", "Sun"],
   ["bolt", "Bolt"],
+  ["stress", "Stress"],
 ];
 
 export const ICON_STYLE_OPTIONS = [

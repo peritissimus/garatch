@@ -3,6 +3,7 @@ export const ELEMENT_CATALOG = [
   { type: "date", glyph: "21", name: "Date", description: "Today’s date", tone: "blue", group: "dynamic" },
   { type: "steps", glyph: "8K", name: "Steps", description: "Daily activity", tone: "amber", group: "dynamic" },
   { type: "heart-rate", glyph: "♥", name: "Heart rate", description: "Current BPM", tone: "coral", group: "dynamic" },
+  { type: "stress", glyph: "≈", name: "Stress", description: "Current stress", tone: "violet", group: "dynamic" },
   { type: "battery", glyph: "83", name: "Battery", description: "Device charge", tone: "violet", group: "dynamic" },
   { type: "calories", glyph: "356", name: "Calories", description: "Daily burn", tone: "amber", group: "dynamic" },
   { type: "distance", glyph: "4.2", name: "Distance", description: "Km or miles", tone: "blue", group: "dynamic" },
@@ -35,18 +36,34 @@ export const REPRESENTATION_OPTIONS = {
     { id: "date-year", name: "Date + year", description: "Date, month, and year", preview: "22 JUL 2026" },
     { id: "calendar", name: "Calendar", description: "Compact calendar tile", preview: "JUL\n22" },
   ],
-  steps: metricRepresentations("8.4K", "ST"),
-  "heart-rate": metricRepresentations("72", "♥"),
-  battery: metricRepresentations("83%", "▰"),
-  calories: metricRepresentations("356", "◆"),
-  distance: metricRepresentations("4.2", "⌖"),
+  steps: goalRepresentations("8.4K", "ST", "Daily goal"),
+  "heart-rate": historyRepresentations("72", "♥", "Five zones · 50–100% max"),
+  stress: historyRepresentations("38", "≈", "Five levels · 0–100"),
+  battery: goalRepresentations("83%", "▰", "Charge level"),
+  calories: goalRepresentations("356", "◆", "Daily goal"),
+  distance: goalRepresentations("4.2", "⌖", "Distance goal"),
 };
 
-function metricRepresentations(value, icon) {
+function baseRepresentations(value, icon) {
   return [
     { id: "value", name: "Value", description: "Number only", preview: value },
     { id: "icon-value", name: "Icon + value", description: "Symbol and number", preview: `${icon} ${value}` },
-    { id: "progress-bar", name: "Progress", description: "Value with goal bar", preview: `${value}\n━━━━` },
+  ];
+}
+
+function goalRepresentations(value, icon, ringDescription) {
+  return [
+    ...baseRepresentations(value, icon),
+    { id: "progress-bar", name: "Goal bar", description: "Progress toward a target", preview: value },
+    { id: "goal-ring", name: "Goal ring", description: ringDescription, preview: value },
+  ];
+}
+
+function historyRepresentations(value, icon, gaugeDescription) {
+  return [
+    ...baseRepresentations(value, icon),
+    { id: "zone-gauge", name: "Zone gauge", description: gaugeDescription, preview: value },
+    { id: "history-graph", name: "History graph", description: "Recent sensor samples", preview: value },
   ];
 }
 
@@ -57,6 +74,7 @@ export const TYPE_GLYPHS = {
   date: "D",
   steps: "ST",
   "heart-rate": "HR",
+  stress: "STR",
   battery: "%",
   calories: "CAL",
   distance: "KM",

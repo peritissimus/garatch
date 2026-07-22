@@ -56,6 +56,7 @@ function migrateFontFamily(project) {
     }
     if (element.type === "icon") element.style ??= "filled";
     if (DYNAMIC_TYPES.has(element.type)) element.representation ??= "value";
+    if (element.type === "heart-rate" && element.representation === "progress-bar") element.representation = "zone-gauge";
     if (["steps", "heart-rate", "battery", "calories", "distance"].includes(element.type)) {
       element.progressMax ??= defaultProgressMax(element.type);
     }
@@ -117,6 +118,7 @@ export function elementFactory(type) {
   if (type === "date") return { ...base, y: 210, representation: "value" };
   if (type === "steps") return { ...base, y: 260, color: "#72D6B2", representation: "value", progressMax: 10000 };
   if (type === "heart-rate") return { ...base, y: 290, color: "#EF7E74", representation: "value", progressMax: 200 };
+  if (type === "stress") return { ...base, y: 290, color: "#B6A0E8", representation: "value" };
   if (type === "battery") return { ...base, y: 320, representation: "value", progressMax: 100 };
   if (type === "calories") return { ...base, y: 290, color: "#E5AD59", representation: "value", progressMax: 500 };
   if (type === "distance") return { ...base, y: 290, color: "#78A6D6", representation: "value", progressMax: 10, unit: "kilometers" };
