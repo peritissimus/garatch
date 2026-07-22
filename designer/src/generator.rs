@@ -16,7 +16,6 @@ const PHOSPHOR_LICENSE: &[u8] = include_bytes!("../assets/icons/Phosphor-MIT.txt
 struct IconAsset {
     kind: IconKind,
     style: IconStyle,
-    resource_id: &'static str,
     file_name: &'static str,
     bytes: &'static [u8],
 }
@@ -26,7 +25,6 @@ macro_rules! icon_asset {
         IconAsset {
             kind: IconKind::$kind,
             style: IconStyle::$style,
-            resource_id: $id,
             file_name: $file,
             bytes: include_bytes!(concat!("../assets/icons/", $file)),
         }
@@ -732,10 +730,7 @@ pub fn generate_project(spec: &ProjectSpec) -> Result<GeneratedProject, Generate
             format!("source/{class_name}View.mc"),
             view_source(spec, &class_name),
         ),
-        text_file(
-            "resources/drawables/drawables.xml",
-            drawables_xml(&icon_assets),
-        ),
+        text_file("resources/drawables/drawables.xml", drawables_xml(spec)),
         GeneratedFile {
             path: "resources/drawables/launcher_icon.png".to_owned(),
             bytes: LAUNCHER_ICON.to_vec(),
@@ -1393,20 +1388,11 @@ fn render_icon(
     style: IconStyle,
     indent: &str,
 ) -> String {
-    let asset = selected_icon_asset(icon, style);
     let half = i32::try_from(size / 2).expect("validated icon size");
-    let scale = f64::from(size) / 96.0;
-    let color = color_code(color);
+    let _ = (icon, style, color);
     format!(
-        "{indent}var iconTransform{index} = new Graphics.AffineTransform();\n\
-{indent}iconTransform{index}.scale({scale:.6}, {scale:.6});\n\
-{indent}var iconBitmap{index} = WatchUi.loadResource(Rez.Drawables.{});\n\
-{indent}dc.drawBitmap2({}, {}, iconBitmap{index}, {{\n\
-{indent}    :transform => iconTransform{index},\n\
-{indent}    :tintColor => {color},\n\
-{indent}    :filterMode => Graphics.FILTER_MODE_BILINEAR\n\
-{indent}}});\n",
-        asset.resource_id,
+        "{indent}var iconBitmap{index} = WatchUi.loadResource(Rez.Drawables.Icon{index});\n\
+{indent}dc.drawBitmap({}, {}, iconBitmap{index});\n",
         x - half,
         y - half,
     )
@@ -1435,7 +1421,7 @@ fn render_metric_display(
 ) -> String {
     match representation {
         Representation::IconValue => {
-            let asset = selected_icon_asset(icon, IconStyle::Filled);
+            let _ = icon;
             let left = match align {
                 Alignment::Left => format!("{x}"),
                 Alignment::Center => {
@@ -1447,19 +1433,11 @@ fn render_metric_display(
             };
             format!(
                 "{indent}var metricLeft{index} = {left};\n\
-{indent}var metricTransform{index} = new Graphics.AffineTransform();\n\
-{indent}metricTransform{index}.scale(0.187500, 0.187500);\n\
-{indent}var metricBitmap{index} = WatchUi.loadResource(Rez.Drawables.{});\n\
-{indent}dc.drawBitmap2(metricLeft{index}, {}, metricBitmap{index}, {{\n\
-{indent}    :transform => metricTransform{index},\n\
-{indent}    :tintColor => {},\n\
-{indent}    :filterMode => Graphics.FILTER_MODE_BILINEAR\n\
-{indent}}});\n\
+{indent}var metricBitmap{index} = WatchUi.loadResource(Rez.Drawables.Icon{index});\n\
+{indent}dc.drawBitmap(metricLeft{index}, {}, metricBitmap{index});\n\
 {indent}dc.setColor({}, Graphics.COLOR_TRANSPARENT);\n\
 {indent}drawText(dc, metricLeft{index} + 24, {y}, _fontValue, {value}, Graphics.TEXT_JUSTIFY_LEFT, {spacing});\n",
-                asset.resource_id,
                 y - 9,
-                color_code(color),
                 color_code(color),
             )
         }
@@ -2063,18 +2041,62 @@ fn render_label(
     output
 }
 
-fn drawables_xml(icon_assets: &[&IconAsset]) -> String {
+fn drawables_xml(spec: &ProjectSpec) -> String {
     let mut output = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\
 <drawables>\n\
   <bitmap id=\"LauncherIcon\" filename=\"launcher_icon.png\"/>\n"
         .to_owned();
-    for asset in icon_assets {
-        writeln!(
-            output,
-            "  <bitmap id=\"{}\" filename=\"{}\"/>",
-            asset.resource_id, asset.file_name
-        )
-        .unwrap();
+    for (index, element) in spec.elements.iter().enumerate() {
+        let icon = match element {
+            Element::Icon {
+                icon,
+                style,
+                size,
+                color,
+                ..
+            } => Some((*icon, *style, *size, color.as_str())),
+            Element::Steps {
+                representation: Representation::IconValue,
+                color,
+                ..
+            } => Some((IconKind::Steps, IconStyle::Filled, 18, color.as_str())),
+            Element::HeartRate {
+                representation: Representation::IconValue,
+                color,
+                ..
+            } => Some((IconKind::Heart, IconStyle::Filled, 18, color.as_str())),
+            Element::Stress {
+                representation: Representation::IconValue,
+                color,
+                ..
+            } => Some((IconKind::Stress, IconStyle::Filled, 18, color.as_str())),
+            Element::Battery {
+                representation: Representation::IconValue,
+                color,
+                ..
+            } => Some((IconKind::Battery, IconStyle::Filled, 18, color.as_str())),
+            Element::Calories {
+                representation: Representation::IconValue,
+                color,
+                ..
+            } => Some((IconKind::Flame, IconStyle::Filled, 18, color.as_str())),
+            Element::Distance {
+                representation: Representation::IconValue,
+                color,
+                ..
+            } => Some((IconKind::Pin, IconStyle::Filled, 18, color.as_str())),
+            _ => None,
+        };
+        if let Some((kind, style, size, color)) = icon {
+            let asset = selected_icon_asset(kind, style);
+            writeln!(
+                output,
+                "  <bitmap id=\"Icon{index}\" filename=\"{}\" scaleX=\"{size}\" scaleY=\"{size}\" scaleRelativeTo=\"image\" dithering=\"none\" automaticPalette=\"false\">\n    <palette disableTransparency=\"false\"><color>{}</color></palette>\n  </bitmap>",
+                asset.file_name,
+                color.trim_start_matches('#')
+            )
+            .unwrap();
+        }
     }
     output.push_str("</drawables>\n");
     output

@@ -285,15 +285,20 @@ fn exports_phosphor_icon_resources_and_draw_calls() {
         .map(|file| String::from_utf8(file.bytes.clone()).unwrap())
         .unwrap();
 
-    assert!(view.contains("new Graphics.AffineTransform()"));
-    assert!(view.contains(".scale(0.250000, 0.250000)"));
-    assert!(view.contains("dc.drawBitmap2"));
-    assert!(view.contains(":tintColor => 0x72D6B2"));
-    assert!(view.contains(":filterMode => Graphics.FILTER_MODE_BILINEAR"));
-    assert!(view.contains("Rez.Drawables.IconHeartFilled"));
-    assert!(view.contains("Rez.Drawables.IconStepsOutline"));
-    assert!(drawables.contains("id=\"IconHeartFilled\" filename=\"heart_filled.png\""));
-    assert!(drawables.contains("id=\"IconStepsOutline\" filename=\"steps_outline.png\""));
+    assert!(!view.contains("Graphics.AffineTransform"));
+    assert!(!view.contains("drawBitmap2"));
+    assert!(view.contains("dc.drawBitmap"));
+    assert!(view.contains("Rez.Drawables.Icon3"));
+    assert!(view.contains("Rez.Drawables.Icon4"));
+    assert!(
+        drawables
+            .contains("id=\"Icon3\" filename=\"heart_filled.png\" scaleX=\"24\" scaleY=\"24\"")
+    );
+    assert!(
+        drawables
+            .contains("id=\"Icon4\" filename=\"steps_outline.png\" scaleX=\"24\" scaleY=\"24\"")
+    );
+    assert!(drawables.contains("<color>72D6B2</color>"));
     assert!(paths.contains(&"resources/drawables/heart_filled.png"));
     assert!(paths.contains(&"resources/drawables/steps_outline.png"));
     assert!(paths.contains(&"LICENSES/Phosphor-MIT.txt"));
@@ -350,7 +355,7 @@ fn exports_dynamic_component_representations() {
     assert!(view.contains("minuteValue0"));
     assert!(view.contains("date3.day.format(\"%02d\")"));
     assert!(view.contains("var ringProgress1 = stepsNumber1.toFloat()"));
-    assert!(view.contains("Rez.Drawables.IconBatteryFilled"));
+    assert!(view.contains("Rez.Drawables.Icon4"));
     assert!(view.contains("var zoneRatio2 = ((heartNumber2.toFloat() / 180) - 0.5) / 0.5"));
     assert!(view.contains("fillRoundedRectangle(116, 345, 88, 6, 3)"));
     assert!(view.contains("drawHistoryGraph(dc, _stressHistory"));
