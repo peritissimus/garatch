@@ -219,6 +219,9 @@ fn selected_font_assets(family: FontFamily, heights: FontHeights) -> FontAssets 
             "ArchivoNarrow-OFL.txt",
             heights
         ),
+        FontFamily::Dseg7Classic => {
+            family_assets!("dseg7_classic", "DSEG-OFL.txt", "DSEG-OFL.txt", heights)
+        }
     }
 }
 

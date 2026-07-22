@@ -120,6 +120,14 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: "Garatch DSEG7 Classic";
+  src: url("./assets/fonts/DSEG7Classic-Regular.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
 /* ── dialkit-aligned monochrome system ──────────────────────────────
    Surfaces are alpha-white layered over a neutral near-black base
    (dialkit's signature "glass"), text is white-with-opacity tiers,

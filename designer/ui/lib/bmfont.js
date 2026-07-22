@@ -15,6 +15,7 @@ const FONT_FILES = {
   oxanium: "oxanium",
   "space-grotesk": "space_grotesk",
   "archivo-narrow": "archivo_narrow",
+  "dseg7-classic": "dseg7_classic",
 };
 
 export const FONT_FAMILIES = [
@@ -28,6 +29,7 @@ export const FONT_FAMILIES = [
   { id: "oxanium", name: "Oxanium", tone: "Future", cssFamily: "Garatch Oxanium" },
   { id: "space-grotesk", name: "Space Grotesk", tone: "Modern", cssFamily: "Garatch Space Grotesk" },
   { id: "archivo-narrow", name: "Archivo Narrow", tone: "Compact", cssFamily: "Garatch Archivo Narrow" },
+  { id: "dseg7-classic", name: "DSEG 7 Classic", tone: "LCD", cssFamily: "Garatch DSEG7 Classic" },
 ];
 
 export const DEFAULT_FONT_FAMILY = "barlow-condensed";

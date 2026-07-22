@@ -284,6 +284,8 @@ pub enum FontFamily {
     Oxanium,
     SpaceGrotesk,
     ArchivoNarrow,
+    #[serde(rename = "dseg7-classic")]
+    Dseg7Classic,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
