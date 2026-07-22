@@ -17,8 +17,8 @@ ZIP. Users compile the downloaded project locally with Garmin's official
 - Digital time, date, steps, current heart rate, stress, battery, calories, distance,
   and static labels
 - Dynamic components are separated from static design layers in the palette
-- Six clock representations: digital, stacked, split, analog, analog + digital,
-  and a live seconds ring
+- Six clock representations: digital, stacked, split, a marked analog dial,
+  analog + digital, and a live seconds ring
 - Seven date representations: numeric, stacked, weekday, month + day, full
   date, date + year, and a compact calendar tile
 - Value and icon-value representations for every metric
@@ -27,7 +27,8 @@ ZIP. Users compile the downloaded project locally with Garmin's official
 - Editable progress goals or scale maxima for steps, heart rate, calories, and
   distance; battery progress is fixed to its natural 100% scale
 - Rectangle, ellipse, adjustable line, and Phosphor watch icons
-- Six complete editable watch-face templates for fast starting points
+- Twelve complete editable watch-face templates across analog, digital, data,
+  wellness, and minimal styles
 - Seven built-in icons with filled and outline appearances: heart, steps,
   battery, flame, location, sun, and bolt
 - One-click canvas alignment for selected text, shape, line, and icon layers
@@ -122,6 +123,14 @@ Generate the expanded-components example:
 cargo run --manifest-path designer/Cargo.toml \
   --example export_sample -- /tmp/garatch-expanded.zip \
   designer/examples/expanded_components.json
+```
+
+Generate the analog-dial example:
+
+```sh
+cargo run --manifest-path designer/Cargo.toml \
+  --example export_sample -- /tmp/garatch-analog.zip \
+  designer/examples/analog_dial.json
 ```
 
 ## Input format
