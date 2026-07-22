@@ -361,7 +361,14 @@
       {#if coreState.state === "error"}
         <span class="app-loader-icon"><Icon name="alert" size={22} /></span>
       {:else}
-        <span class="app-loader-spinner" aria-hidden="true"></span>
+        <span class="app-loader-clock" aria-hidden="true">
+          <svg viewBox="0 0 48 48" width="52" height="52">
+            <circle class="clock-face" cx="24" cy="24" r="22" />
+            <line class="clock-hand hour" x1="24" y1="24" x2="24" y2="15" />
+            <line class="clock-hand minute" x1="24" y1="24" x2="24" y2="8" />
+            <circle class="clock-pin" cx="24" cy="24" r="1.8" />
+          </svg>
+        </span>
       {/if}
       <div class="app-loader-copy">
         <strong>{coreState.label}</strong>
