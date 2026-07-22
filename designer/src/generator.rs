@@ -1936,6 +1936,12 @@ fn render_analog_clock(
         "{indent}dc.setColor({}, Graphics.COLOR_TRANSPARENT);\n\
 {indent}dc.setPenWidth(2);\n\
 {indent}dc.drawCircle({x}, {y}, 52);\n\
+{indent}for (var dialMarker{index} = 0; dialMarker{index} < 12; dialMarker{index}++) {{\n\
+{indent}    var markerAngle{index} = Math.toRadians((dialMarker{index} * 30) - 90);\n\
+{indent}    var markerInner{index} = (dialMarker{index} % 3 == 0) ? 39 : 43;\n\
+{indent}    dc.setPenWidth((dialMarker{index} % 3 == 0) ? 2 : 1);\n\
+{indent}    dc.drawLine({x} + (markerInner{index} * Math.cos(markerAngle{index})).toNumber(), {y} + (markerInner{index} * Math.sin(markerAngle{index})).toNumber(), {x} + (47 * Math.cos(markerAngle{index})).toNumber(), {y} + (47 * Math.sin(markerAngle{index})).toNumber());\n\
+{indent}}}\n\
 {indent}var hourAngle{index} = Math.toRadians((((clock{index}.hour % 12) * 60) + clock{index}.min) * 0.5 - 90);\n\
 {indent}var minuteAngle{index} = Math.toRadians(clock{index}.min * 6 - 90);\n\
 {indent}dc.setPenWidth(4);\n\

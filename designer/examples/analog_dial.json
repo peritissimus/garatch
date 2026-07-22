@@ -1,0 +1,68 @@
+{
+  "name": "Orbit Analog",
+  "appId": "2468ace013579bdf2468ace013579bdf",
+  "backgroundColor": "#050504",
+  "fontFamily": "space-grotesk",
+  "fontFamilySecondary": "space-grotesk",
+  "fontHeights": { "time": 72, "value": 24, "label": 18 },
+  "letterSpacing": { "time": 0, "value": 0, "label": 0 },
+  "elements": [
+    {
+      "type": "ellipse",
+      "id": "dial-field",
+      "x": 160,
+      "y": 166,
+      "radiusX": 93,
+      "radiusY": 93,
+      "fillColor": "#15140F"
+    },
+    {
+      "type": "date",
+      "id": "weekday",
+      "x": 160,
+      "y": 37,
+      "color": "#F4D06F",
+      "align": "center",
+      "representation": "weekday"
+    },
+    {
+      "type": "time",
+      "id": "analog-time",
+      "x": 160,
+      "y": 166,
+      "color": "#F4D06F",
+      "align": "center",
+      "format": "device",
+      "showSeconds": true,
+      "representation": "analog"
+    },
+    {
+      "type": "line",
+      "id": "lower-rule",
+      "x": 76,
+      "y": 276,
+      "endX": 244,
+      "endY": 276,
+      "color": "#343126",
+      "thickness": 1
+    },
+    {
+      "type": "steps",
+      "id": "steps",
+      "x": 92,
+      "y": 310,
+      "color": "#FFFFFF",
+      "align": "center",
+      "representation": "icon-value"
+    },
+    {
+      "type": "battery",
+      "id": "battery",
+      "x": 228,
+      "y": 310,
+      "color": "#FFFFFF",
+      "align": "center",
+      "representation": "icon-value"
+    }
+  ]
+}

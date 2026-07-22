@@ -392,6 +392,7 @@ fn exports_extended_time_and_date_representations() {
         .unwrap();
 
     assert!(view.contains("using Toybox.Math;"));
+    assert!(view.contains("for (var dialMarker0 = 0; dialMarker0 < 12; dialMarker0++)"));
     assert!(view.contains("var hourAngle0 = Math.toRadians"));
     assert!(view.contains("var secondAngle0 = Math.toRadians"));
     assert!(view.contains("var fullDateValue3 = weekdayValue3"));

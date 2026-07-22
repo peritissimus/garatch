@@ -119,6 +119,15 @@
     context.lineCap = "round";
     context.lineWidth = 2;
     context.beginPath(); context.arc(element.x, element.y, radius, 0, Math.PI * 2); context.stroke();
+    for (let marker = 0; marker < 12; marker += 1) {
+      const angle = (marker * 30 - 90) * Math.PI / 180;
+      const innerRadius = marker % 3 === 0 ? 39 : 43;
+      context.lineWidth = marker % 3 === 0 ? 2 : 1;
+      context.beginPath();
+      context.moveTo(element.x + Math.cos(angle) * innerRadius, element.y + Math.sin(angle) * innerRadius);
+      context.lineTo(element.x + Math.cos(angle) * 47, element.y + Math.sin(angle) * 47);
+      context.stroke();
+    }
     context.lineWidth = 4;
     context.beginPath(); context.moveTo(element.x, element.y); context.lineTo(element.x + Math.cos(hourAngle) * 27, element.y + Math.sin(hourAngle) * 27); context.stroke();
     context.lineWidth = 2;
