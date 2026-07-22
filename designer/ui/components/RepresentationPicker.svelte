@@ -23,7 +23,6 @@
           <span>{option.preview}</span>
         {:else if option.id === "zone-gauge"}
           <span class="mini-gauge" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><b></b></span>
-          <span>{option.preview}</span>
         {:else if option.id === "goal-ring"}
           <span class="mini-ring" aria-hidden="true"></span><span>{option.preview}</span>
         {:else if option.id === "progress-bar"}

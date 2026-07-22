@@ -56,6 +56,7 @@ function migrateFontFamily(project) {
     }
     if (element.type === "icon") element.style ??= "filled";
     if (DYNAMIC_TYPES.has(element.type)) element.representation ??= "value";
+    if (element.representation === "icon-value") element.representation = "icon";
     if (element.type === "heart-rate" && element.representation === "progress-bar") element.representation = "zone-gauge";
     if (["steps", "heart-rate", "battery", "calories", "distance"].includes(element.type)) {
       element.progressMax ??= defaultProgressMax(element.type);

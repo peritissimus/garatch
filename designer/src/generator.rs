@@ -69,32 +69,32 @@ fn selected_icon_assets(spec: &ProjectSpec) -> Vec<&'static IconAsset> {
             spec.elements.iter().any(|element| match element {
                 Element::Icon { icon, style, .. } => *icon == asset.kind && *style == asset.style,
                 Element::Steps { representation, .. } => {
-                    *representation == Representation::IconValue
+                    *representation == Representation::Icon
                         && asset.kind == IconKind::Steps
                         && asset.style == IconStyle::Filled
                 }
                 Element::HeartRate { representation, .. } => {
-                    *representation == Representation::IconValue
+                    *representation == Representation::Icon
                         && asset.kind == IconKind::Heart
                         && asset.style == IconStyle::Filled
                 }
                 Element::Stress { representation, .. } => {
-                    *representation == Representation::IconValue
+                    *representation == Representation::Icon
                         && asset.kind == IconKind::Stress
                         && asset.style == IconStyle::Filled
                 }
                 Element::Battery { representation, .. } => {
-                    *representation == Representation::IconValue
+                    *representation == Representation::Icon
                         && asset.kind == IconKind::Battery
                         && asset.style == IconStyle::Filled
                 }
                 Element::Calories { representation, .. } => {
-                    *representation == Representation::IconValue
+                    *representation == Representation::Icon
                         && asset.kind == IconKind::Flame
                         && asset.style == IconStyle::Filled
                 }
                 Element::Distance { representation, .. } => {
-                    *representation == Representation::IconValue
+                    *representation == Representation::Icon
                         && asset.kind == IconKind::Pin
                         && asset.style == IconStyle::Filled
                 }
@@ -445,14 +445,14 @@ pub fn validate_spec(spec: &ProjectSpec) -> ValidationReport {
                 if !matches!(
                     representation,
                     Representation::Value
-                        | Representation::IconValue
+                        | Representation::Icon
                         | Representation::ProgressBar
                         | Representation::GoalRing
                 ) {
                     issue(
                         &mut issues,
                         format!("{field}.representation"),
-                        "must be value, icon-value, progress-bar, or goal-ring for goal metrics",
+                        "must be value, icon, progress-bar, or goal-ring for goal metrics",
                     );
                 }
                 if progress_max.is_some_and(|maximum| maximum <= 0.0 || maximum > 1_000_000.0) {
@@ -471,14 +471,14 @@ pub fn validate_spec(spec: &ProjectSpec) -> ValidationReport {
                 if !matches!(
                     representation,
                     Representation::Value
-                        | Representation::IconValue
+                        | Representation::Icon
                         | Representation::ZoneGauge
                         | Representation::HistoryGraph
                 ) {
                     issue(
                         &mut issues,
                         format!("{field}.representation"),
-                        "must be value, icon-value, zone-gauge, or history-graph for heart rate",
+                        "must be value, icon, zone-gauge, or history-graph for heart rate",
                     );
                 }
                 if progress_max.is_some_and(|maximum| maximum <= 0.0 || maximum > 300.0) {
@@ -493,14 +493,14 @@ pub fn validate_spec(spec: &ProjectSpec) -> ValidationReport {
                 if !matches!(
                     representation,
                     Representation::Value
-                        | Representation::IconValue
+                        | Representation::Icon
                         | Representation::ZoneGauge
                         | Representation::HistoryGraph
                 ) {
                     issue(
                         &mut issues,
                         format!("{field}.representation"),
-                        "must be value, icon-value, zone-gauge, or history-graph for stress",
+                        "must be value, icon, zone-gauge, or history-graph for stress",
                     );
                 }
             }
@@ -1106,10 +1106,8 @@ fn render_element(element: &Element, index: usize, indent: &str, spacing: Letter
                     *y,
                     color,
                     *align,
-                    &format!("heartValue{index}"),
                     &format!("heartNumber{index}"),
                     &progress_max_expression(*progress_max, "200"),
-                    spacing.value,
                     0.5,
                     indent,
                 ),
@@ -1159,10 +1157,8 @@ fn render_element(element: &Element, index: usize, indent: &str, spacing: Letter
                     *y,
                     color,
                     *align,
-                    &format!("stressValue{index}"),
                     &format!("stressNumber{index} == null ? 0 : stressNumber{index}"),
                     "100",
-                    spacing.value,
                     0.0,
                     indent,
                 ),
@@ -1420,25 +1416,18 @@ fn render_metric_display(
     indent: &str,
 ) -> String {
     match representation {
-        Representation::IconValue => {
+        Representation::Icon => {
             let _ = icon;
             let left = match align {
                 Alignment::Left => format!("{x}"),
-                Alignment::Center => {
-                    format!("{x} - (dc.getTextWidthInPixels({value}, _fontValue) + 24) / 2")
-                }
-                Alignment::Right => {
-                    format!("{x} - dc.getTextWidthInPixels({value}, _fontValue) - 24")
-                }
+                Alignment::Center => format!("{x} - 9"),
+                Alignment::Right => format!("{x} - 18"),
             };
             format!(
                 "{indent}var metricLeft{index} = {left};\n\
 {indent}var metricBitmap{index} = WatchUi.loadResource(Rez.Drawables.Icon{index});\n\
-{indent}dc.drawBitmap(metricLeft{index}, {}, metricBitmap{index});\n\
-{indent}dc.setColor({}, Graphics.COLOR_TRANSPARENT);\n\
-{indent}drawText(dc, metricLeft{index} + 24, {y}, _fontValue, {value}, Graphics.TEXT_JUSTIFY_LEFT, {spacing});\n",
-                y - 9,
-                color_code(color),
+{indent}dc.drawBitmap(metricLeft{index}, {}, metricBitmap{index});\n",
+                y - 9
             )
         }
         Representation::ProgressBar => {
@@ -1514,10 +1503,8 @@ fn render_zone_gauge(
     y: i32,
     color: &str,
     align: Alignment,
-    value: &str,
     numeric_value: &str,
     maximum: &str,
-    spacing: i32,
     zone_floor: f64,
     indent: &str,
 ) -> String {
@@ -1527,7 +1514,7 @@ fn render_zone_gauge(
         Alignment::Right => x - 104,
     };
     format!(
-        "{}{indent}var zoneRatio{index} = (({numeric_value}.toFloat() / {maximum}) - {zone_floor}) / {};\n\
+        "{indent}var zoneRatio{index} = (({numeric_value}.toFloat() / {maximum}) - {zone_floor}) / {};\n\
 {indent}if (zoneRatio{index} < 0.0) {{ zoneRatio{index} = 0.0; }}\n\
 {indent}else if (zoneRatio{index} > 1.0) {{ zoneRatio{index} = 1.0; }}\n\
 {indent}var zoneColors{index} = [0x5AC8FA, 0x72D6B2, 0xE5AD59, 0xEF7E74, 0xB8566F];\n\
@@ -1538,20 +1525,10 @@ fn render_zone_gauge(
 {indent}var zoneMarker{index} = {left} + (zoneRatio{index} * 103).toNumber();\n\
 {indent}dc.setColor({}, Graphics.COLOR_TRANSPARENT);\n\
 {indent}dc.fillRectangle(zoneMarker{index} - 1, {}, 3, 12);\n",
-        draw_text(
-            x,
-            y - 13,
-            color,
-            font_resource(FontRole::Value),
-            align,
-            value,
-            spacing,
-            indent,
-        ),
         1.0 - zone_floor,
-        y + 13,
+        y - 3,
         color_code(color),
-        y + 10,
+        y - 6,
     )
 }
 
@@ -2056,32 +2033,32 @@ fn drawables_xml(spec: &ProjectSpec) -> String {
                 ..
             } => Some((*icon, *style, *size, color.as_str())),
             Element::Steps {
-                representation: Representation::IconValue,
+                representation: Representation::Icon,
                 color,
                 ..
             } => Some((IconKind::Steps, IconStyle::Filled, 18, color.as_str())),
             Element::HeartRate {
-                representation: Representation::IconValue,
+                representation: Representation::Icon,
                 color,
                 ..
             } => Some((IconKind::Heart, IconStyle::Filled, 18, color.as_str())),
             Element::Stress {
-                representation: Representation::IconValue,
+                representation: Representation::Icon,
                 color,
                 ..
             } => Some((IconKind::Stress, IconStyle::Filled, 18, color.as_str())),
             Element::Battery {
-                representation: Representation::IconValue,
+                representation: Representation::Icon,
                 color,
                 ..
             } => Some((IconKind::Battery, IconStyle::Filled, 18, color.as_str())),
             Element::Calories {
-                representation: Representation::IconValue,
+                representation: Representation::Icon,
                 color,
                 ..
             } => Some((IconKind::Flame, IconStyle::Filled, 18, color.as_str())),
             Element::Distance {
-                representation: Representation::IconValue,
+                representation: Representation::Icon,
                 color,
                 ..
             } => Some((IconKind::Pin, IconStyle::Filled, 18, color.as_str())),

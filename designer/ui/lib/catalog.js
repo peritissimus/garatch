@@ -47,7 +47,7 @@ export const REPRESENTATION_OPTIONS = {
 function baseRepresentations(value, icon) {
   return [
     { id: "value", name: "Value", description: "Number only", preview: value },
-    { id: "icon-value", name: "Icon + value", description: "Symbol and number", preview: `${icon} ${value}` },
+    { id: "icon", name: "Icon", description: "Symbol only", preview: icon },
   ];
 }
 
@@ -62,7 +62,7 @@ function goalRepresentations(value, icon, ringDescription) {
 function historyRepresentations(value, icon, gaugeDescription) {
   return [
     ...baseRepresentations(value, icon),
-    { id: "zone-gauge", name: "Zone gauge", description: gaugeDescription, preview: value },
+    { id: "zone-gauge", name: "Zone gauge", description: gaugeDescription, preview: "" },
     { id: "history-graph", name: "History graph", description: "Recent sensor samples", preview: value },
   ];
 }

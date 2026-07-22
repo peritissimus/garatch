@@ -217,7 +217,8 @@ pub enum Element {
 pub enum Representation {
     #[default]
     Value,
-    IconValue,
+    #[serde(alias = "icon-value")]
+    Icon,
     ProgressBar,
     Stacked,
     Split,

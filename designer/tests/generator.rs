@@ -319,7 +319,7 @@ fn exports_dynamic_component_representations() {
         }),
         serde_json::json!({
             "type": "battery", "id": "battery", "x": 240, "y": 300,
-            "color": "#FFFFFF", "align": "center", "representation": "icon-value"
+            "color": "#FFFFFF", "align": "center", "representation": "icon"
         }),
         serde_json::json!({
             "type": "calories", "id": "calories", "x": 80, "y": 300,
@@ -356,6 +356,8 @@ fn exports_dynamic_component_representations() {
     assert!(view.contains("date3.day.format(\"%02d\")"));
     assert!(view.contains("var ringProgress1 = stepsNumber1.toFloat()"));
     assert!(view.contains("Rez.Drawables.Icon4"));
+    assert!(view.contains("dc.drawBitmap(metricLeft4, 291, metricBitmap4)"));
+    assert!(!view.contains("metricLeft4 + 24"));
     assert!(view.contains("var zoneRatio2 = ((heartNumber2.toFloat() / 180) - 0.5) / 0.5"));
     assert!(view.contains("fillRoundedRectangle(116, 345, 88, 6, 3)"));
     assert!(view.contains("drawHistoryGraph(dc, _stressHistory"));
@@ -408,7 +410,7 @@ fn exports_extended_time_and_date_representations() {
 #[test]
 fn rejects_representation_that_does_not_fit_the_dynamic_type() {
     let mut project: serde_json::Value = serde_json::from_str(&sample_json()).unwrap();
-    project["elements"][0]["representation"] = "icon-value".into();
+    project["elements"][0]["representation"] = "icon".into();
     let spec = parse_spec(&project.to_string()).unwrap();
     let report = validate_spec(&spec);
 

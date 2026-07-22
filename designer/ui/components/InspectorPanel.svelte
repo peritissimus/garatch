@@ -12,6 +12,7 @@
   let primaryFamily = $derived(FONT_FAMILIES.find((family) => family.id === normalizeFontFamily(fontFamily)) ?? FONT_FAMILIES[0]);
   let secondaryFamily = $derived(FONT_FAMILIES.find((family) => family.id === normalizeFontFamily(fontFamilySecondary ?? fontFamily)) ?? FONT_FAMILIES[0]);
   let selectedRole = $derived(element && !isShapeElement(element) ? roleForElement(element) : null);
+  let usesTypography = $derived(element && !isShapeElement(element) && !["icon", "zone-gauge"].includes(element.representation));
 
   function update(property, value, commit = false) {
     onupdate(property, value, commit);
@@ -37,7 +38,7 @@
     {/if}
   </header>
 
-  {#if !element || !isShapeElement(element)}
+  {#if !element || usesTypography}
     <section class="inspector-group face-typeface-group">
       <div class="group-heading">
         <h3>Face typefaces</h3>
@@ -168,9 +169,10 @@
         </section>
       {/if}
 
-      <section class="inspector-group">
-        <h3>Typography</h3>
-        <div class="field-grid">
+      {#if usesTypography}
+        <section class="inspector-group">
+          <h3>Typography</h3>
+          <div class="field-grid">
           <p class="font-role-note">{FONT_ROLE_DETAILS[selectedRole].name} settings apply to every {FONT_ROLE_DETAILS[selectedRole].name.toLowerCase()} layer.</p>
           <div class="field-grid two">
             <Field
@@ -199,8 +201,17 @@
             <Field label="Align" value={element.align} options={ALIGN_OPTIONS} oninput={(value) => update("align", value, true)} />
             <Field label="Color" type="color" value={element.color} oninput={(value) => update("color", value.toUpperCase())} onchange={(value) => update("color", value.toUpperCase(), true)} />
           </div>
-        </div>
-      </section>
+          </div>
+        </section>
+      {:else}
+        <section class="inspector-group">
+          <h3>Appearance</h3>
+          <div class="field-grid two">
+            <Field label="Align" value={element.align} options={ALIGN_OPTIONS} oninput={(value) => update("align", value, true)} />
+            <Field label="Color" type="color" value={element.color} oninput={(value) => update("color", value.toUpperCase())} onchange={(value) => update("color", value.toUpperCase(), true)} />
+          </div>
+        </section>
+      {/if}
 
       {#if element.type === "time"}
         <section class="inspector-group">

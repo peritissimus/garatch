@@ -91,11 +91,10 @@
       <text x={left + 44} y={element.y} fill={element.color} dominant-baseline="middle" font-size={fontSizeFor(element)} font-family="system-ui, sans-serif" font-weight="650">{textFor(element)}</text>
     {:else if representation === "zone-gauge"}
       {@const left = metricWidth(element, 104)}
-      <text x={element.x} y={element.y - 13} fill={element.color} text-anchor={anchorFor(element)} dominant-baseline="middle" font-size={fontSizeFor(element)} font-family="system-ui, sans-serif" font-weight="650">{textFor(element)}</text>
       {#each ["#5AC8FA", "#72D6B2", "#E5AD59", "#EF7E74", "#B8566F"] as color, index}
-        <rect x={left + index * 21} y={element.y + 13} width="19" height="6" rx="3" fill={color} />
+        <rect x={left + index * 21} y={element.y - 3} width="19" height="6" rx="3" fill={color} />
       {/each}
-      <rect x={left + 39} y={element.y + 10} width="3" height="12" fill={element.color} />
+      <rect x={left + 39} y={element.y - 6} width="3" height="12" fill={element.color} />
     {:else if representation === "history-graph"}
       {@const left = metricWidth(element, 104)}
       <text x={element.x} y={element.y - 18} fill={element.color} text-anchor={anchorFor(element)} dominant-baseline="middle" font-size={fontSizeFor(element)} font-family="system-ui, sans-serif" font-weight="650">{textFor(element)}</text>
@@ -106,12 +105,11 @@
       <text x={element.x} y={element.y - 11} fill={element.color} text-anchor={anchorFor(element)} dominant-baseline="middle" font-size={fontSizeFor(element)} font-family="system-ui, sans-serif" font-weight="650">{textFor(element)}</text>
       <rect x={left} y={element.y + 15} width="88" height="6" rx="3" fill="#242725" />
       <rect x={left} y={element.y + 15} width={Math.max(6, 88 * progressFor(element))} height="6" rx="3" fill={element.color} />
-    {:else if representation === "icon-value"}
+    {:else if representation === "icon"}
       {@const iconName = metricIcons[element.type]}
       {@const path = PHOSPHOR_ICON_PATHS[iconName]?.filled}
-      {@const iconX = element.align === "right" ? element.x - 56 : element.align === "center" ? element.x - 32 : element.x}
+      {@const iconX = element.align === "right" ? element.x - 18 : element.align === "center" ? element.x - 9 : element.x}
       {#if path}<path d={path} fill={element.color} transform={`translate(${iconX} ${element.y - 9}) scale(${18 / 256})`} />{/if}
-      <text x={iconX + 24} y={element.y} fill={element.color} text-anchor="start" dominant-baseline="middle" font-size={fontSizeFor(element)} font-family="system-ui, sans-serif" font-weight="650">{textFor(element)}</text>
     {:else if representation === "stacked"}
       {@const parts = textFor(element).split(/[/:]/)}
       <text x={element.x} y={element.y - fontSizeFor(element) * 0.48} fill={element.color} text-anchor={anchorFor(element)} dominant-baseline="middle" font-size={fontSizeFor(element)} font-family="system-ui, sans-serif" font-weight="650">{parts[0]}</text>

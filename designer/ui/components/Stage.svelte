@@ -172,11 +172,10 @@
   function drawZoneGauge(element) {
     const left = alignedLeft(element, 104);
     const colors = ["#5AC8FA", "#72D6B2", "#E5AD59", "#EF7E74", "#B8566F"];
-    drawText(element, null, previewText(element), element.x, element.y - 13);
     context.save();
     colors.forEach((color, index) => {
       context.fillStyle = color;
-      context.beginPath(); context.roundRect(left + index * 21, element.y + 13, 19, 6, 3); context.fill();
+      context.beginPath(); context.roundRect(left + index * 21, element.y - 3, 19, 6, 3); context.fill();
     });
     const maximum = element.type === "heart-rate" ? Math.max(1, Number(element.progressMax) || 200) : 100;
     const rawRatio = (previewNumbers[element.type] ?? 0) / maximum;
@@ -184,7 +183,7 @@
       ? Math.max(0, Math.min(1, (rawRatio - 0.5) / 0.5))
       : Math.max(0, Math.min(1, rawRatio));
     context.fillStyle = element.color;
-    context.fillRect(left + ratio * 103 - 1, element.y + 10, 3, 12);
+    context.fillRect(left + ratio * 103 - 1, element.y - 6, 3, 12);
     context.restore();
   }
 
@@ -260,14 +259,10 @@
       drawText(element, null, parts.slice(1).join(":") || "--", element.x, element.y + gap);
       return;
     }
-    if (representation === "icon-value" && metricIcons[element.type]) {
-      const value = previewText(element);
-      const measured = textLayout(element, value, 0, element.y, "left");
+    if (representation === "icon" && metricIcons[element.type]) {
       const iconSize = 18;
-      const gap = 6;
-      const left = alignedLeft(element, iconSize + gap + measured.width);
+      const left = alignedLeft(element, iconSize);
       drawCanvasIcon(context, { x: left + iconSize / 2, y: element.y, size: iconSize, icon: metricIcons[element.type], style: "filled", color: element.color });
-      drawText(element, null, value, left + iconSize + gap, element.y, "left");
       return;
     }
     if (representation === "progress-bar") {
@@ -348,7 +343,7 @@
     }
     if (representation === "zone-gauge") {
       const left = alignedLeft(element, 104);
-      return unionBounds([textLayout(element, previewText(element), element.x, element.y - 13), { x: left, y: element.y + 10, width: 104, height: 12 }]);
+      return { x: left, y: element.y - 6, width: 104, height: 12 };
     }
     if (representation === "history-graph") {
       const left = alignedLeft(element, 104);
@@ -362,14 +357,9 @@
         textLayout(element, parts.slice(1).join(":") || "--", element.x, element.y + gap),
       ]);
     }
-    if (representation === "icon-value" && metricIcons[element.type]) {
-      const measured = textLayout(element, previewText(element), 0, element.y, "left");
-      const width = 18 + 6 + measured.width;
-      const left = alignedLeft(element, width);
-      return unionBounds([
-        { x: left, y: element.y - 9, width: 18, height: 18 },
-        textLayout(element, previewText(element), left + 24, element.y, "left"),
-      ]);
+    if (representation === "icon" && metricIcons[element.type]) {
+      const left = alignedLeft(element, 18);
+      return { x: left, y: element.y - 9, width: 18, height: 18 };
     }
     if (representation === "progress-bar") {
       const left = alignedLeft(element, 88);
